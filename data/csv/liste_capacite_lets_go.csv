@@ -1,0 +1,226 @@
+nom_français,type,classe,description,puissance,précision,pp,type_degats
+Abîme,sol,physique,"Le lanceur fait tomber l'ennemi dans une crevasse. Si cette attaque réussit, elle met K.O. sur le coup.",,30,5,ko_en_un_coup
+Abri,normal,autre,Le lanceur esquive toutes les attaques. Le risque d'échec augmente lorsque la capacité est utilisée plusieurs fois de suite.,,,10,protection_change_plusieur
+Acidarmure,poison,autre,Le lanceur modifie sa structure moléculaire pour se liquéfier et beaucoup augmenter sa Défense.,,,20,statut
+Acide,poison,spécial,Le lanceur attaque l'ennemi avec un jet d'acide corrosif. Peut aussi baisser sa Défense Spéciale.,40,100,30,
+Affûtage,normal,autre,Le lanceur réduit son nombre de polygones pour accentuer ses angles et augmenter son Attaque.,,,30,statut
+Amnésie,psy,autre,Le lanceur fait le vide dans son esprit pour oublier ses soucis. Augmente beaucoup sa Défense Spéciale.,,,20,statut
+Aqua-Jet,eau,physique,Le lanceur fonce sur l'ennemi si rapidement qu'on parvient à peine à le discerner. Frappe en priorité.,40,100,20,
+Armure,normal,autre,Le lanceur contracte tous ses muscles pour augmenter sa Défense.,,,30,statut
+Atterrissage,vol,autre,Le lanceur atterrit et se repose. Restaure jusqu'à la moitié de ses PV max.,,,10,statut
+Bâillement,normal,autre,Fait bâiller l'ennemi qui s'endort au tour suivant.,,100,10,
+Bain de Smog,poison,spécial,Le lanceur jette un tas de détritus spéciaux sur la cible. Les changements de stats de la cible sont annulés.,50,,15,
+Balayage,combat,physique,Un puissant coup de pied bas qui fauche l'ennemi. Il est plus efficace contre les ennemis lourds.,,100,20,variable_degats_poids
+Ball'Ombre,spectre,spécial,Projette une grande ombre sur l'ennemi. Peut aussi faire baisser sa Défense Spéciale.,80,100,15,
+Bec Vrille,vol,physique,Une attaque utilisant le bec comme une perceuse.,80,100,20,
+Bélier,normal,physique,Une charge violente qui blesse aussi légèrement le lanceur.,90,85,20,
+Berceuse,normal,autre,Une berceuse plonge l'ennemi dans un profond sommeil.,,55,15,
+Blizzard,glace,spécial,Une violente tempête de neige s'abat sur l'ennemi. Peut aussi le geler.,110,70,5,
+Bluff,normal,physique,Permet de frapper en priorité et apeure l'ennemi. Ne fonctionne qu'au premier tour.,40,100,10,
+Bomb-Beurk,poison,spécial,Des détritus toxiques sont projetés sur l'ennemi. Peut aussi l'empoisonner.,90,100,10,
+Bomb'Œuf,normal,physique,"De toutes ses forces, le lanceur jette un gros œuf sur l'ennemi pour lui infliger des dégâts.",100,75,10,
+Bouclier,psy,autre,Le lanceur érige un mur solide qui augmente beaucoup sa Défense.,,,20,statut
+Boul'Armure,normal,autre,"Le lanceur s'enroule pour cacher ses points faibles, ce qui augmente sa Défense.",,,40,statut
+Bourdon,insecte,spécial,Le lanceur fait vibrer son corps pour lancer une vague sonique. Peut aussi baisser la Défense Spéciale de l'ennemi.,90,100,10,
+Boutefeu,feu,physique,Le lanceur s'embrase avant de charger l'ennemi. Le choc blesse aussi gravement le lanceur. Peut brûler l'ennemi.,120,100,15,
+Brouillard,normal,autre,Le lanceur disperse un nuage d'encre ou de fumée. Réduit la Précision de l'ennemi.,,100,20,
+Brume,glace,autre,Une brume blanche enveloppe l'équipe du lanceur et empêche la réduction des stats pour cinq tours.,,,30,statut
+Buée Noire,glace,autre,Un brouillard qui annule les changements de stats de tous les Pokémon au combat.,,,30,statut
+Bulles d'O,eau,spécial,Des bulles sont envoyées avec puissance sur l'ennemi. Peut aussi baisser sa Vitesse.,65,100,20,
+Cage-Éclair,électrik,autre,"Un faible choc électrique frappe l'ennemi. Si l'attaque le touche, celui-ci est paralysé.",,90,20,
+Câlinerie,fée,physique,Attaque l'ennemi avec un câlin. Peut diminuer son Attaque.,90,90,10,
+Canicule,feu,spécial,Le lanceur provoque une vague de chaleur. Peut aussi brûler l'ennemi.,95,90,10,
+Cascade,eau,physique,"Le lanceur charge l'ennemi à une vitesse remarquable, ce qui peut l'apeurer.",80,100,15,
+Casse-Brique,combat,physique,Une attaque avec le tranchant de la main. Permet aussi de briser les barrières comme Mur Lumière et Protection.,75,100,15,
+Charge,normal,physique,Le lanceur charge l'ennemi et le percute de tout son poids.,40,100,35,
+Choc Mental,psy,spécial,Une faible vague télékinétique frappe l'ennemi. Peut aussi le plonger dans la confusion.,50,100,25,
+Claquoir,eau,physique,Le lanceur piège l'ennemi dans sa dure coquille et l'écrase pendant quatre à cinq tours.,35,85,10,
+Clonage,normal,autre,Le lanceur fait une copie de lui-même en sacrifiant quelques PV. La copie sert de leurre.,,,10,statut
+Colère,dragon,physique,Le lanceur enrage et attaque pendant deux ou trois tours avant de devenir confus.,120,100,15,
+Combo-Griffe,normal,physique,L'ennemi est lacéré par des faux ou des griffes de deux à cinq fois d'affilée.,18,80,15,
+Constriction,normal,physique,De longs tentacules ou lianes attaquent l'ennemi. Peut aussi baisser sa Vitesse.,10,100,35,
+Conversion,normal,autre,Le lanceur change de type pour prendre celui de la première capacité de sa liste.,,,30,statut
+Copie,normal,autre,Le lanceur copie la dernière capacité utilisée par la cible et la conserve tant qu'il reste au combat.,,,10,statut
+Coud'Krâne,normal,physique,Le lanceur baisse la tête pour augmenter sa Défense au premier tour et percuter l'ennemi au second.,130,100,15,
+Coup Bas,ténèbres,physique,Permet au lanceur de frapper en priorité. Échoue si l'ennemi ne prépare pas une attaque.,70,100,5,
+Coup d'Boule,normal,physique,Le lanceur donne un coup de tête. Peut apeurer l'ennemi.,70,100,15,
+Coup d'Main,normal,autre,Une capacité qui augmente la puissance d'attaque d'un allié.,,100,20,
+Coupe,normal,physique,Coupe l'ennemi avec des lames ou des griffes.,50,95,30,
+Coupe-Vent,normal,spécial,Attaque en deux tours. Des lames de vent frappent l'ennemi au second tour. Taux de critique élevé.,80,100,10,
+Croc de Mort,normal,physique,Le lanceur mord l'ennemi à l'aide de ses incisives aiguisées. Peut aussi l'apeurer.,80,90,15,
+Croc Fatal,normal,physique,Une vilaine morsure d'incisives qui réduit de moitié les PV de l'ennemi.,,90,10,fixe_moitie_degats
+Croissance,normal,autre,Le corps du lanceur se développe. Augmente l'Attaque et l'Attaque Spéciale.,,,20,statut
+Cru-Aile,vol,physique,L'ennemi est frappé par de larges ailes déployées pour infliger des dégâts.,60,100,35,
+Cyclone,normal,autre,Éjecte le Pokémon ennemi et le remplace par un autre.,,,20,statut
+Damoclès,normal,physique,Une charge dangereuse et imprudente. Blesse aussi gravement le lanceur.,120,100,15,
+Danse Flamme,feu,spécial,Un tourbillon de flammes emprisonne l'ennemi pendant quatre à cinq tours.,35,85,15,
+Danse-Fleur,plante,spécial,Le lanceur attaque en projetant des pétales pendant deux à trois tours avant de céder à la confusion.,120,100,20,
+Danse-Lames,normal,autre,Une danse frénétique qui exalte l'esprit combatif. Augmente beaucoup l'Attaque du lanceur.,,,20,statut
+Dard-Nuée,insecte,physique,Envoie une rafale de dards. Peut toucher de deux à cinq fois.,25,95,20,
+Dard-Venin,poison,physique,Un dard toxique qui transperce l'ennemi. Peut aussi l'empoisonner.,15,100,35,
+Déflagration,feu,spécial,Un déluge de flammes ardentes submerge l'ennemi. Peut aussi le brûler.,110,85,5,
+Demi-Tour,insecte,physique,"Après son attaque, le lanceur revient à toute vitesse et change de place avec un Pokémon de l'équipe prêt au combat.",70,100,20,
+Destruction,normal,physique,Le lanceur explose en blessant tous les Pokémon autour de lui. Le lanceur tombe K.O.,200,100,5,
+Détritus,poison,spécial,Des détritus toxiques sont projetés sur l'ennemi. Peut aussi l'empoisonner.,65,100,20,
+Dévorêve,psy,spécial,Le lanceur mange le rêve de l'ennemi endormi et récupère en PV la moitié des dégâts infligés.,100,100,15,
+Direct Toxik,poison,physique,"Attaque l'ennemi avec un tentacule, un bras, ou un autre membre plein de poison. Peut aussi l'empoisonner.",80,100,20,
+Double Pied,combat,physique,Deux coups de pied qui frappent l'ennemi deux fois d'affilée.,30,100,30,
+Double-Dard,insecte,physique,Un double coup de dard qui transperce l'ennemi deux fois d'affilée. Peut aussi l'empoisonner.,25,100,20,
+Dracochoc,dragon,spécial,Le lanceur ouvre la bouche pour envoyer une onde de choc qui frappe l'ennemi.,85,100,10,
+Draco-Queue,dragon,physique,Un coup puissant qui blesse la cible et l'envoie au loin pour forcer un autre membre de l'équipe adverse à venir au combat.,60,90,10,
+Draco-Rage,dragon,spécial,La colère du lanceur déclenche une onde de choc destructrice qui inflige toujours 40 PV de dégâts.,,100,10,fixe_degat_40
+Éboulement,roche,physique,Envoie de gros rochers sur l'ennemi pour infliger des dégâts. Peut aussi l'apeurer.,75,90,10,
+Ébullition,eau,spécial,L'ennemi est attaqué par un jet d'eau bouillante. Peut aussi le brûler.,80,100,15,
+Éclair,électrik,spécial,Une décharge électrique tombe sur l'ennemi. Peut aussi le paralyser.,40,100,30,
+Éclat Magique,fée,spécial,Libère une puissante décharge lumineuse qui inflige des dégâts à l'ennemi.,80,100,10,
+Éclats Glace,glace,physique,Le lanceur crée des éclats de glace qu'il envoie sur l'ennemi. Frappe en priorité.,40,100,30,
+E-Coque,normal,autre,Le lanceur récupère jusqu'à la moitié de ses PV max.,,100,10,
+Écrasement,normal,physique,Écrase l'ennemi avec un énorme pied. Peut aussi l'apeurer.,65,100,20,
+Écras'Face,normal,physique,"Écrase l'ennemi avec les pattes avant ou la queue, par exemple.",40,100,35,
+Écrous d'Poing,acier,physique,Le lanceur fait pivoter l'écrou de sa poitrine deux fois d'affilée pour frapper l'adversaire avec ses bras. Peut apeurer l'ennemi.,60,100,5,
+Écume,eau,spécial,Des bulles frappent l'ennemi. Peut réduire sa Vitesse.,40,100,30,
+Empal'Korne,normal,physique,"Un coup de corne en vrille qui empale l'ennemi, le mettant K.O. sur le coup s'il est touché.",,30,5,ko_en_un_coup
+Encore,normal,autre,Oblige l'ennemi à répéter durant trois tours la dernière capacité utilisée.,,100,5,
+Entrave,normal,autre,Empêche l'ennemi d'employer à nouveau sa dernière attaque. Dure quatre tours.,,100,20,
+Étreinte,normal,physique,Ligote l'ennemi avec les tentacules ou le corps pour l'écraser durant quatre à cinq tours.,15,85,20,
+Évo-Chardasso,normal,physique,Une charge dont la puissance est proportionnelle à l'amour qu'Évoli vous porte. Touche à coup sûr.,1,100,15,
+Évo-Congélo,glace,spécial,Évoli frappe l'adversaire avec un cristal de buée noire gelée. Annule les changements de stats de tous les Pokémon au combat.,90,100,15,
+Évo-Dynamo,électrik,physique,Une attaque qui foudroie et paralyse l'adversaire.,90,100,15,
+Évo-Écolo,plante,physique,Une liane géante surgit du sol et bombarde l'adversaire de graines qui lui dérobent des PV à chaque tour. Ces PV sont ensuite absorbés par Évoli.,90,100,15,
+Évo-Fabulo,fée,spécial,Une attaque qui enserre l'adversaire dans un tourbillon de senteurs oppressantes. Guérit toutes les altérations de statut de l'équipe.,90,100,15,
+Évo-Flambo,feu,physique,Évoli s'embrase et percute violemment l'adversaire. Brûle aussi l'ennemi.,90,100,15,
+Évo-Psycho,psy,spécial,Évoli submerge l'adversaire sous un flot d'ondes psychiques et crée un mur fabuleux qui réduit les dégâts causés par les attaques spéciales de l'ennemi.,90,100,15,
+Évo-Ténébro,ténèbres,spécial,Évoli fait appel à son côté sombre pour attaquer l'adversaire et créer un mur fabuleux qui réduit les dégâts causés par les attaques physiques de l'ennemi.,90,100,15,
+Évo-Thalasso,eau,physique,Évoli frappe l'adversaire avec des bulles d'eau qu'il absorbe ensuite pour récupérer un nombre de PV égal à la moitié des dégâts infligés à l'ennemi.,90,100,15,
+Explosion,normal,physique,Le lanceur explose et inflige des dégâts à tous les Pokémon autour de lui. Met K.O. le lanceur.,250,100,5,
+Exuviation,normal,autre,"Le lanceur brise sa coquille. Il baisse sa Défense et sa Défense Spéciale, mais augmente beaucoup son Attaque, son Attaque Spéciale et sa Vitesse.",,,15,statut
+Façade,normal,physique,"Une attaque dont la puissance double lorsque le lanceur est empoisonné, paralysé ou brûlé.",70,100,20,
+Fatal-Foudre,électrik,spécial,La foudre tombe sur l'ennemi pour lui infliger des dégâts. Peut aussi le paralyser.,110,70,10,
+Feu Follet,feu,autre,Lance un bouquet de flammes maléfiques à l'ennemi pour lui infliger une brûlure.,,85,15,
+Flammèche,feu,spécial,L'ennemi est attaqué par une faible flamme. Peut aussi le brûler.,40,100,25,
+Flash,normal,autre,Explosion lumineuse qui fait baisser la Précision de l'ennemi.,,100,20,
+Force,normal,physique,Le lanceur cogne l'ennemi de toutes ses forces.,80,100,15,
+Force Poigne,normal,physique,L'ennemi est attrapé et compressé par les côtés.,55,100,30,
+Fouet Lianes,plante,physique,Fouette l'ennemi avec de fines lianes pour infliger des dégâts.,45,100,25,
+Frappe Atlas,combat,physique,L'ennemi est projeté grâce au pouvoir de la gravité. Inflige des dégâts équivalents au niveau du lanceur.,,100,20,fixe_niveau
+Frénésie,normal,physique,"Une fois activée, cette capacité augmente l'Attaque du lanceur à mesure que celui-ci subit des attaques.",20,100,20,
+Furie,normal,physique,"Frappe l'ennemi deux à cinq fois d'affilée avec un bec ou une corne, par exemple.",15,85,20,
+Gaz Toxik,poison,autre,Un nuage de gaz toxique est projeté au visage de l'ennemi pour l'empoisonner.,,90,40,
+Gonflette,combat,autre,"Le lanceur tend ses muscles pour se gonfler, ce qui booste son Attaque et sa Défense.",,,20,statut
+Griffe,normal,physique,Lacère l'ennemi avec des griffes acérées pour lui infliger des dégâts.,40,100,35,
+Grincement,normal,autre,Cri strident qui baisse beaucoup la Défense de l'ennemi.,,85,40,
+Grobisou,normal,autre,Le lanceur fait un bisou à l'ennemi en prenant une mine effrayante. Endort l'ennemi.,,75,10,
+Groz'Yeux,normal,autre,Le lanceur fait les gros yeux à l'ennemi pour l'intimider et baisser sa Défense.,,100,30,
+Guillotine,normal,physique,"Des pinces lacèrent violemment l'ennemi, le mettant K.O. sur le coup s'il est touché.",,30,5,ko_en_un_coup
+Hâte,psy,autre,Le lanceur se relaxe et allège son corps pour beaucoup augmenter sa Vitesse.,,,30,statut
+Hurlement,normal,autre,Effraie le Pokémon ennemi et le remplace par un autre.,,,20,statut
+Hydrocanon,eau,spécial,Un puissant jet d'eau est dirigé sur l'ennemi.,110,80,5,
+Hypnose,psy,autre,Le lanceur hypnotise l'ennemi pour le plonger dans un profond sommeil.,,60,20,
+Jackpot,normal,physique,Des pièces sont lancées sur l'ennemi. Permet d'obtenir de l'argent à la fin du combat.,40,100,20,
+Jet de Sable,sol,autre,Lance du sable au visage de l'ennemi pour baisser sa Précision.,,100,15,
+Jet-Pierres,roche,physique,Le lanceur lâche une pierre sur l'ennemi.,50,90,15,
+Koud'Korne,normal,physique,Frappe l'ennemi d'un coup de corne pointue pour infliger des dégâts.,65,100,25,
+Lame d'Air,vol,spécial,Le lanceur attaque avec une lame d'air qui fend tout. Peut aussi apeurer l'ennemi.,75,95,20,
+Lance-Flammes,feu,spécial,L'ennemi reçoit un torrent de flammes. Peut aussi le brûler.,90,100,15,
+Lance-Soleil,plante,spécial,Absorbe la lumière au premier tour et envoie un rayon puissant au tour suivant.,200,100,10,
+Laser Glace,glace,spécial,Un rayon de glace frappe l'ennemi. Peut aussi le geler.,90,100,10,
+Léchouille,spectre,physique,Un grand coup de langue qui inflige des dégâts à l'ennemi. Peut aussi le paralyser.,30,100,30,
+Ligotage,normal,physique,Le lanceur ligote l'ennemi avec des lianes ou son corps pour l'écraser durant quatre à cinq tours.,15,90,20,
+Lilliput,normal,autre,Le lanceur comprime son corps pour se faire tout petit et beaucoup augmenter son Esquive.,,,10,statut
+Luminocanon,acier,spécial,Le lanceur concentre son énergie lumineuse et la fait exploser. Peut aussi baisser la Défense Spéciale de l'ennemi.,80,100,10,
+Lutte,normal,physique,"Une attaque désespérée, utilisée quand le lanceur n'a plus de PP. Le blesse aussi légèrement.",50,100,-,
+Machination,ténèbres,autre,Stimule l'esprit par de mauvaises pensées. Augmente beaucoup l'Attaque Spéciale du lanceur.,,,20,statut
+Mâchouille,ténèbres,physique,Le lanceur mord l'ennemi de ses crocs pointus. Peut aussi baisser sa Défense.,80,100,15,
+Mania,normal,physique,Une attaque furieuse qui dure de deux à trois tours. Le lanceur devient confus.,120,100,10,
+Massd'Os,sol,physique,Le lanceur frappe l'ennemi à grands coups d'os. Peut aussi l'apeurer.,65,85,20,
+Mawashi Geri,combat,physique,Le lanceur effectue un coup de pied tournoyant et extrêmement rapide. Peut apeurer l'ennemi.,60,85,15,
+Mégacorne,insecte,physique,Le lanceur utilise ses gigantesques cornes pour charger l'ennemi.,120,85,10,
+Mégafouet,plante,physique,Le lanceur fait virevolter violemment ses lianes ou ses tentacules pour fouetter l'ennemi.,120,85,10,
+Méga-Sangsue,plante,spécial,Une attaque qui convertit la moitié des dégâts infligés en PV pour le lanceur.,75,100,10,
+Météores,normal,spécial,Le lanceur envoie des rayons d'étoiles. Touche toujours l'ennemi.,60,,20,
+Métronome,normal,autre,Le lanceur agite un doigt et stimule son cerveau pour utiliser presque n'importe quelle capacité au hasard.,,,10,statut
+Mimique,vol,autre,Le lanceur riposte à l'attaque de l'ennemi avec la même attaque.,,,20,statut
+Mimi-Queue,normal,autre,Le lanceur remue son adorable queue pour tromper la vigilance de l'ennemi et baisser sa Défense.,,100,30,
+Morphing,normal,autre,Le lanceur devient une copie de sa cible et obtient la même palette de capacités.,,,10,statut
+Morsure,ténèbres,physique,L'ennemi est mordu par de tranchantes canines. Peut l'apeurer.,60,100,25,
+Mur Lumière,psy,autre,Un fabuleux mur de lumière qui réduit les dégâts causés par les capacités spéciales durant cinq tours.,,,30,statut
+Ombre Nocturne,spectre,spécial,Le lanceur invoque un mirage. Inflige des dégâts équivalents au niveau du lanceur.,,100,15,fixe_niveau
+Onde Boréale,glace,spécial,Envoie un rayon arc-en-ciel sur l'ennemi. Peut aussi baisser son Attaque.,65,100,20,
+Onde Folie,spectre,autre,Un rayon sinistre qui plonge l'ennemi dans un état de confusion.,,100,10,
+Osmerang,sol,physique,Le lanceur projette son os comme un boomerang. Cette attaque frappe à l'aller et au retour.,50,90,10,
+Papillodanse,insecte,autre,"Une danse mystique dont le rythme parfait augmente l'Attaque Spéciale, la Défense Spéciale et la Vitesse du lanceur.",,,20,statut
+Para-Spore,plante,autre,Le lanceur répand sur l'ennemi une poudre qui le paralyse.,,75,30,
+Patience,normal,physique,Le lanceur encaisse les coups durant deux tours et réplique en infligeant le double des dégâts subis.,,,10,renvoi_degat_double_deux_tours
+Picanon,normal,physique,Envoie une rafale de dards. Peut toucher de deux à cinq fois.,20,100,15,
+Picpic,vol,physique,Frappe l'ennemi d'un bec pointu ou d'une corne pour infliger des dégâts.,35,100,35,
+Pied Sauté,combat,physique,"Le lanceur s'envole pour décocher un coup de pied sauté. S'il échoue, le lanceur se blesse.",100,95,10,
+Piège de Roc,roche,autre,"Lance des pierres flottantes autour de l'ennemi, qui blessent tout adversaire entrant au combat.",,,20,statut
+Pika-Fracas,électrik,spécial,Une attaque électrique dont la puissance est proportionnelle à l'amour que Pikachu vous porte. Touche à coup sûr.,1,100,20,
+Pika-Piqué,vol,physique,Pikachu prend de la hauteur avant de fondre sur son adversaire. Peut aussi apeurer l'ennemi.,90,95,15,
+Pika-Splash,eau,spécial,Pikachu frappe l'adversaire avec une vague géante chargée d'électricité. Peut aussi paralyser l'ennemi.,90,100,15,
+Pika-Sprint,électrik,physique,Une attaque électrique rapide comme l'éclair qui inflige un coup critique à coup sûr. Frappe en priorité.,50,100,15,
+Pilonnage,normal,physique,Projette de deux à cinq grosses boules sur l'ennemi.,15,85,20,
+Pince-Masse,eau,physique,Une grande pince martèle l'ennemi. Taux de critique élevé.,100,90,10,
+Piqué,vol,physique,Une attaque en deux tours au taux de critique élevé. Peut aussi apeurer l'ennemi.,200,90,5,
+Pistolet à O,eau,spécial,De l'eau est projetée avec force sur l'ennemi.,40,100,25,
+Plaie-Croix,insecte,physique,Le lanceur taillade l'ennemi en utilisant ses faux ou ses griffes comme une paire de ciseaux.,80,100,15,
+Plaquage,normal,physique,Le lanceur se laisse tomber sur l'ennemi de tout son poids. Peut aussi le paralyser.,85,100,15,
+Plénitude,psy,autre,Le lanceur se concentre et fait le vide dans son esprit pour augmenter son Attaque Spéciale et sa Défense Spéciale.,,,20,statut
+Poing Comète,normal,physique,Une tornade de coups de poing qui frappe de deux à cinq fois d'affilée.,18,85,15,
+Poing de Feu,feu,physique,Un coup de poing enflammé vient frapper l'ennemi. Peut le brûler.,75,100,15,
+Poing-Éclair,électrik,physique,Un coup de poing électrique vient frapper l'ennemi. Peut le paralyser.,75,100,15,
+Poing-Glace,glace,physique,Un coup de poing glacé vient frapper l'ennemi. Peut le geler.,75,100,15,
+Poing-Karaté,combat,physique,L'ennemi est tranché violemment. Taux de critique élevé.,50,100,25,
+Poudre Dodo,plante,autre,Le lanceur répand une poudre soporifique qui endort la cible.,,75,15,
+Poudre Toxik,poison,autre,Une poudre toxique empoisonne l'ennemi.,,75,35,
+Pouvoir Lunaire,fée,spécial,Attaque l'ennemi grâce au pouvoir de la lune. Peut diminuer son Attaque Spéciale.,95,100,15,
+Protection,psy,autre,Un fabuleux mur de lumière qui réduit les dégâts causés par les capacités physiques durant cinq tours.,,,20,statut
+Provoc,ténèbres,autre,Provoque l'ennemi. L'oblige à n'utiliser que des attaques pendant trois tours.,,100,20,
+Psyko,psy,spécial,Une puissante force télékinétique frappe l'ennemi. Peut aussi faire baisser sa Défense Spéciale.,90,100,10,
+Puissance,normal,autre,Le lanceur prend une profonde inspiration et se concentre pour augmenter son taux de critique.,,,30,statut
+Purédpois,poison,spécial,Le lanceur attaque à l'aide d'une éruption de gaz répugnants. Peut aussi empoisonner l'ennemi.,30,70,20,
+Queue de Fer,acier,physique,Attaque l'ennemi avec une queue de fer. Peut aussi baisser sa Défense.,100,75,15,
+Rafale Psy,psy,spécial,Un étrange rayon frappe l'ennemi. Peut aussi le rendre confus.,65,100,20,
+Reflet,normal,autre,"Le lanceur se déplace si vite qu'il crée des copies illusoires de lui-même, augmentant son Esquive.",,,15,statut
+Regard Médusant,normal,autre,Le lanceur intimide l'ennemi grâce à son regard terrifiant pour le paralyser.,,100,30,
+Repli,eau,autre,"Le lanceur se recroqueville dans sa carapace, ce qui augmente sa Défense.",,,40,statut
+Repos,psy,autre,"Le lanceur regagne tous ses PV et soigne ses altérations de statut, puis il dort pendant deux tours.",,,10,statut
+Riposte,combat,physique,Une riposte qui répond à toute capacité physique en infligeant le double de dégâts.,,100,20,renvoi_degat_double_physique
+Rugissement,normal,autre,Le lanceur pousse un cri tout mimi pour tromper la vigilance de l'ennemi et baisser son Attaque.,,100,40,
+Ruse,normal,physique,Une attaque capable de toucher un ennemi qui utilise Abri. Annule l'effet de cette capacité.,50,100,10,
+Sacrifice,combat,physique,Le lanceur agrippe l'ennemi et l'écrase au sol. Blesse aussi légèrement le lanceur.,80,80,20,
+Sécrétion,insecte,autre,Le lanceur crache de la soie pour ligoter l'ennemi et beaucoup baisser sa Vitesse.,,95,40,
+Séisme,sol,physique,Le lanceur provoque un tremblement de terre touchant tous les Pokémon autour de lui.,100,100,10,
+Soin,normal,autre,Un soin qui permet au lanceur de récupérer jusqu'à la moitié de ses PV max.,,,10,statut
+Sonicboom,normal,spécial,Une onde de choc destructrice qui inflige toujours 20 PV de dégâts.,,90,20,fixe_degat_20
+Souplesse,normal,physique,"Fouette l'ennemi avec la queue ou une liane, par exemple, pour infliger des dégâts.",80,75,20,
+Spore,plante,autre,Le lanceur répand un nuage de spores qui endort.,,100,15,
+Surf,eau,spécial,Une énorme vague s'abat sur le champ de bataille et inflige des dégâts à tous les Pokémon autour du lanceur.,90,100,15,
+Surpuissance,combat,physique,"Une attaque puissante, mais qui baisse l'Attaque et la Défense du lanceur.",120,100,5,
+Télékinésie,psy,autre,"Le lanceur distrait l'ennemi en pliant une cuiller, ce qui baisse sa Précision.",,80,15,
+Téléport,psy,autre,Le lanceur utilise sa force psychique pour se téléporter et échanger sa place avec un autre Pokémon de l'équipe.,,,20,statut
+Tonnerre,électrik,spécial,Une grosse décharge électrique tombe sur l'ennemi. Peut aussi le paralyser.,90,100,15,
+Torgnoles,normal,physique,Gifle rapidement l'ennemi de deux à cinq fois d'affilée.,15,85,10,
+Tornade,vol,spécial,Le lanceur bat des ailes pour générer une bourrasque qui blesse l'ennemi.,40,100,35,
+Toxik,poison,autre,Empoisonne gravement l'ennemi. Les dégâts dus au poison augmentent à chaque tour.,,90,10,
+Tranche,normal,physique,Un coup de griffe ou autre tranche l'ennemi. Taux de critique élevé.,70,100,20,
+Tranch'Herbe,plante,physique,Des feuilles aiguisées comme des rasoirs entaillent l'ennemi. Taux de critique élevé.,55,95,25,
+Trempette,normal,autre,Le lanceur barbote et éclabousse les environs. Cette capacité n'a aucun effet.,,,40,statut
+Tricherie,ténèbres,physique,"Le lanceur utilise la force de l'ennemi. Plus l'Attaque de l'ennemi est élevée, plus le lanceur inflige de dégâts.",95,100,15,
+Triplattaque,normal,spécial,"Le lanceur envoie trois boules d'énergie simultanément. Peut aussi paralyser, brûler ou geler l'ennemi.",80,100,10,
+Tunnel,sol,physique,Le lanceur creuse au premier tour et frappe au second.,80,100,10,
+Tunnelier,sol,physique,Le lanceur tourne sur lui-même comme une perceuse et se jette sur l'ennemi. Taux de critique élevé.,80,95,10,
+Ultimapoing,normal,physique,L'ennemi reçoit un coup de poing d'une puissance incroyable.,80,85,20,
+Ultimawashi,normal,physique,Un coup de pied surpuissant qui frappe l'ennemi.,120,75,5,
+Ultralaser,normal,spécial,Projette un puissant rayon sur l'ennemi. Le lanceur doit se reposer au tour suivant.,150,90,5,
+Ultrason,normal,autre,Le lanceur produit d'étranges ondes sonores qui rendent la cible confuse.,,55,20,
+Uppercut,normal,physique,Un enchaînement de coups de poing cadencés frappe l'ennemi. Peut aussi le rendre confus.,70,100,10,
+Vague Psy,psy,spécial,Une étrange onde d'énergie chaude frappe l'ennemi. Cette attaque est d'intensité variable.,,100,15,degat_aleatoire
+Vampigraine,plante,autre,"Une graine est semée sur l'ennemi. À chaque tour, elle lui dérobe des PV que le lanceur récupère.",,90,10,
+Vampirisme,insecte,physique,Une attaque qui aspire le sang de l'ennemi. La moitié des dégâts sont convertis en PV pour le lanceur.,80,100,15,
+Vibrobscur,ténèbres,spécial,Le lanceur dégage une horrible aura chargée d'idées noires. Peut aussi apeurer l'ennemi.,80,100,15,
+Vive-Attaque,normal,physique,Le lanceur fonce sur l'ennemi si rapidement qu'on parvient à peine à le discerner. Frappe en priorité.,40,100,30,
+Voile Miroir,psy,spécial,Une riposte qui contre n'importe quelle capacité spéciale en infligeant le double des dégâts subis.,,100,20,renvoi_degat_double_special
+Vol,vol,physique,Le lanceur s'envole au premier tour et frappe au second.,90,95,15,
+Vol-Vie,plante,spécial,Une attaque qui convertit la moitié des dégâts infligés en PV pour le lanceur.,40,100,15,
+Yoga,psy,autre,Le lanceur médite pour éveiller son pouvoir latent et augmenter son Attaque.,,,40,statut
