@@ -1,0 +1,29 @@
+services:
+  db:
+    image: docker.io/library/postgres:15
+    container_name: letsgo_postgres
+    environment:
+      POSTGRES_DB: letsgo_db
+      POSTGRES_USER: letsgo_user
+      POSTGRES_PASSWORD: letsgo_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile  # chemin explicite vers le Dockerfile
+    container_name: letsgo_app
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true
+
+volumes:
+  postgres_data:
