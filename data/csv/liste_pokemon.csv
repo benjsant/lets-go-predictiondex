@@ -120,7 +120,7 @@ id,nom_fr,nom_eng,nom_pokeapi,nom_pokepedia,num_pokedex,type_1,type_2,alola,mega
 119,Poissoroy,Seaking,seaking,Poissoroy,119,Eau,,,
 120,Stari,Staryu,staryu,Stari,120,Eau,,,
 121,Staross,Starmie,starmie,Staross,121,Eau,Psy,,
-122,M. Mime,Mr. Mime,mr. mime,M. Mime,122,Psy,Fée,,
+122,M. Mime,Mr. Mime,mr-mime,M. Mime,122,Psy,Fée,,
 123,Insécateur,Scyther,scyther,Insécateur,123,Insecte,Vol,,
 124,Lippoutou,Jynx,jynx,Lippoutou,124,Glace,Psy,,
 125,Élektek,Electabuzz,electabuzz,Élektek,125,Électrik,,,
