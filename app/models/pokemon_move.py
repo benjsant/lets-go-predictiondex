@@ -7,9 +7,22 @@ from app.db.base import Base
 class PokemonMove(Base):
     __tablename__ = "pokemon_move"
 
-    pokemon_id = Column(Integer, ForeignKey("pokemon.id", ondelete="CASCADE"), primary_key=True)
-    move_id = Column(Integer, ForeignKey("move.id", ondelete="CASCADE"), primary_key=True)
-    learn_method_id = Column(Integer, ForeignKey("learn_method.id"), nullable=False)
+    pokemon_id = Column(
+        Integer,
+        ForeignKey("pokemon.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    move_id = Column(
+        Integer,
+        ForeignKey("move.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+
+    learn_method_id = Column(
+        Integer,
+        ForeignKey("learn_method.id"),
+        nullable=False,
+    )
     learn_level = Column(Integer)
 
     pokemon = relationship("Pokemon", back_populates="moves")

@@ -9,5 +9,9 @@ class LearnMethod(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False, unique=True)
+    # ex: level_up, ct, move_tutor, starter_exclusive, mega_exclusive
 
-    pokemon_moves = relationship("PokemonMove", back_populates="learn_method")
+    pokemon_moves = relationship(
+        "PokemonMove",
+        back_populates="learn_method",
+    )

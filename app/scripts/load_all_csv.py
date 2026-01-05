@@ -1,9 +1,13 @@
 import csv
 from decimal import Decimal
 
+# ⚠️ OBLIGATOIRE : force l’enregistrement de TOUS les models
+import app.models  # noqa: F401
+
 from app.db.session import SessionLocal
 from app.models import (
     Pokemon,
+    PokemonSpecies,
     Type,
     Move,
     PokemonType,
@@ -11,7 +15,6 @@ from app.models import (
 )
 
 DATA_PATH = "data/csv"
-
 
 # ======================================================
 # Helpers
@@ -30,7 +33,7 @@ def normalize_key(value: str) -> str:
 
 
 # ======================================================
-# Load TYPES
+# Load TYPES (depuis liste_pokemon.csv)
 # ======================================================
 
 def load_types(session):
@@ -73,8 +76,8 @@ def load_moves(session):
                 name=row["nom_français"].strip(),
                 power=normalize_int(row.get("puissance")),
                 accuracy=normalize_int(row.get("précision")),
-                category=row["classe"].strip(),                 # physique / spécial / autre
-                damage_type=row.get("type_degats") or None,     # FEATURE ML
+                category=row["classe"].strip(),
+                damage_type=row.get("type_degats") or None,
                 description=row.get("description"),
                 type_id=type_map[normalize_key(row["type"])],
             )
@@ -85,30 +88,57 @@ def load_moves(session):
 
 
 # ======================================================
-# Load POKEMON
+# Load POKEMON SPECIES
+# ======================================================
+
+def load_pokemon_species(session):
+    print("➡ Loading pokemon species...")
+
+    with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            species = PokemonSpecies(
+                id=int(row["id"]),
+                pokedex_number=int(row["num_pokedex"]),
+                name_fr=row["nom_fr"].strip(),
+                name_en=row.get("nom_eng"),
+            )
+            session.merge(species)
+
+    session.commit()
+    print("✔ Pokemon species inserted")
+
+
+# ======================================================
+# Load POKEMON (formes)
 # ======================================================
 
 def load_pokemon(session):
-    print("➡ Loading pokemon...")
+    print("➡ Loading pokemon forms...")
 
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             pokemon = Pokemon(
                 id=int(row["id"]),
-                pokedex_number=int(row["num_pokedex"]),
-                name_fr=row["nom_fr"].strip(),
-                name_en=row.get("nom_eng"),
+                species_id=int(row["id"]),  # 1 forme = 1 espèce (LGPE)
+
+                nom_pokeapi=row.get("nom_pokeapi"),
+                nom_pokepedia=row.get("nom_pokepedia"),
+                form_name="base",
+
                 is_alola=normalize_bool(row.get("alola")),
                 is_mega=normalize_bool(row.get("mega")),
-                height_m=Decimal("0.00"),   # enrichi via PokeAPI plus tard
+                is_starter=normalize_bool(row.get("starter")),
+
+                height_m=Decimal("0.00"),
                 weight_kg=Decimal("0.00"),
                 sprite_url=None,
             )
             session.merge(pokemon)
 
     session.commit()
-    print("✔ Pokemon inserted")
+    print("✔ Pokemon forms inserted")
 
 
 # ======================================================
@@ -185,6 +215,7 @@ def main():
     try:
         load_types(session)
         load_moves(session)
+        load_pokemon_species(session)
         load_pokemon(session)
         load_pokemon_types(session)
         load_type_effectiveness(session)
