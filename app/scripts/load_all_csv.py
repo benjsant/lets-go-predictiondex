@@ -5,14 +5,16 @@ from decimal import Decimal
 import app.models  # noqa: F401
 
 from app.db.session import SessionLocal
+
 from app.models import (
-    Pokemon,
     PokemonSpecies,
-    Type,
-    Move,
     PokemonType,
     TypeEffectiveness,
 )
+
+from app.db.guards.type import upsert_type
+from app.db.guards.move import upsert_move
+from app.db.guards.pokemon import upsert_pokemon
 
 DATA_PATH = "data/csv"
 
@@ -33,28 +35,31 @@ def normalize_key(value: str) -> str:
 
 
 # ======================================================
-# Load TYPES (depuis liste_pokemon.csv)
+# Load TYPES
 # ======================================================
 
 def load_types(session):
     print("➡ Loading types...")
 
-    types_seen = {}
+    seen = set()
 
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             for col in ("type_1", "type_2"):
                 name = row.get(col)
-                if name:
-                    key = normalize_key(name)
-                    if key not in types_seen:
-                        types_seen[key] = Type(name=name.strip())
+                if not name:
+                    continue
 
-    session.add_all(types_seen.values())
+                key = normalize_key(name)
+                if key in seen:
+                    continue
+
+                upsert_type(session, name=name.strip())
+                seen.add(key)
+
     session.commit()
-
-    print(f"✔ {len(types_seen)} types inserted")
+    print(f"✔ {len(seen)} types inserted")
 
 
 # ======================================================
@@ -66,22 +71,22 @@ def load_moves(session):
 
     type_map = {
         normalize_key(t.name): t.id
-        for t in session.query(Type).all()
+        for t in session.query(app.models.Type).all()
     }
 
     with open(f"{DATA_PATH}/liste_capacite_lets_go.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            move = Move(
+            upsert_move(
+                session,
                 name=row["nom_français"].strip(),
+                type_id=type_map[normalize_key(row["type"])],
+                category=row["classe"].strip(),
                 power=normalize_int(row.get("puissance")),
                 accuracy=normalize_int(row.get("précision")),
-                category=row["classe"].strip(),
-                damage_type=row.get("type_degats") or None,
                 description=row.get("description"),
-                type_id=type_map[normalize_key(row["type"])],
+                damage_type=row.get("type_degats") or None,
             )
-            session.merge(move)
 
     session.commit()
     print("✔ Moves inserted")
@@ -125,7 +130,6 @@ def load_pokemon(session):
             is_alola = normalize_bool(row.get("alola"))
             is_starter = normalize_bool(row.get("starter"))
 
-            # 🎯 Nom de forme (purement descriptif)
             if is_mega:
                 form_name = "mega"
             elif is_alola:
@@ -135,24 +139,19 @@ def load_pokemon(session):
             else:
                 form_name = "base"
 
-            pokemon = Pokemon(
-                id=pokemon_id,
-                species_id=pokemon_id,  # ✅ CRUCIAL : cohérent avec PokemonSpecies
-
+            upsert_pokemon(
+                session,
+                species_id=pokemon_id,
+                form_name=form_name,
                 nom_pokeapi=row.get("nom_pokeapi"),
                 nom_pokepedia=row.get("nom_pokepedia"),
-                form_name=form_name,
-
                 is_mega=is_mega,
                 is_alola=is_alola,
                 is_starter=is_starter,
-
                 height_m=Decimal("0.00"),
                 weight_kg=Decimal("0.00"),
                 sprite_url=None,
             )
-
-            session.merge(pokemon)
 
     session.commit()
     print("✔ Pokemon forms inserted")
@@ -167,7 +166,7 @@ def load_pokemon_types(session):
 
     type_map = {
         normalize_key(t.name): t.id
-        for t in session.query(Type).all()
+        for t in session.query(app.models.Type).all()
     }
 
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as f:
@@ -206,7 +205,7 @@ def load_type_effectiveness(session):
 
     type_map = {
         normalize_key(t.name): t.id
-        for t in session.query(Type).all()
+        for t in session.query(app.models.Type).all()
     }
 
     with open(f"{DATA_PATH}/table_type.csv", encoding="utf-8") as f:

@@ -1,6 +1,9 @@
-# app/init_db.py
+# app/scripts/init_db.py
 import os
+
 from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+
 from app.db.base import Base
 
 # ======================================================
@@ -41,15 +44,31 @@ print(f"🔗 Connecting to database at {DB_HOST}:{DB_PORT} / DB: {DB_NAME}")
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True,           # utile en dev / CI
+    echo=True,   # utile en dev / CI
     future=True
 )
 
 # ======================================================
-# Création des tables
+# Création du schéma
 # ======================================================
 print("🛠️ Creating database schema...")
 
 Base.metadata.create_all(bind=engine)
 
-print("✅ Toutes les tables ont été créées avec succès !")
+print("✅ Tables created")
+
+# ======================================================
+# Insertion des données de référence
+# ======================================================
+print("📌 Initializing reference data (LearnMethod)...")
+
+methods = ["level_up", "ct", "move_tutor"]
+
+with Session(engine) as session:
+    for name in methods:
+        exists = session.query(LearnMethod).filter_by(name=name).first()
+        if not exists:
+            session.add(LearnMethod(name=name))
+    session.commit()
+
+print("✅ LearnMethod initialized")
