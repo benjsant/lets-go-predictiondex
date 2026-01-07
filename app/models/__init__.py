@@ -1,3 +1,5 @@
+from .pokemon_species import PokemonSpecies  # 👈 AJOUTER EN PREMIER
+
 from .pokemon import Pokemon
 from .pokemon_stat import PokemonStat
 from .pokemon_type import PokemonType
@@ -7,5 +9,4 @@ from .pokemon_move import PokemonMove
 from .learn_method import LearnMethod
 from .type_effectiveness import TypeEffectiveness
 
-# Exposer Base pour init_db
 from app.db.base import Base
