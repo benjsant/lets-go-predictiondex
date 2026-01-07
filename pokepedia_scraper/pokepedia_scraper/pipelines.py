@@ -1,41 +1,66 @@
-from pathlib import Path
-from itemadapter import ItemAdapter
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
+from app.db.session import engine
+from app.models import Move, LearnMethod, PokemonMove
 
 
-class PokemonMovesPipeline:
+class PokemonMovePipeline:
     def open_spider(self, spider):
-        project_root = Path(__file__).resolve().parents[2]
-        output_dir = project_root / "data" / "csv"
-        output_dir.mkdir(parents=True, exist_ok=True)
+        self.session = Session(engine)
 
-        self.file_path = output_dir / "pokemon_moves_letsgo.csv"
+        # --- Cache local (performance) ---
+        self.learn_method_cache = {
+            lm.name: lm.id
+            for lm in self.session.execute(select(LearnMethod)).scalars()
+        }
 
-        self.file = open(
-            self.file_path,
-            "w",
-            encoding="utf-8",
-            newline=""
-        )
-
-        self.file.write(
-            "pokemon_id,pokemon_fr,pokemon_pokepedia,"
-            "move_name,learn_method,learn_level\n"
-        )
+        self.move_cache = {
+            m.name.lower(): m.id
+            for m in self.session.execute(select(Move)).scalars()
+        }
 
     def close_spider(self, spider):
-        if hasattr(self, "file"):
-            self.file.close()
+        try:
+            self.session.commit()
+        except Exception as e:
+            spider.logger.warning(f"[CLOSE SPIDER COMMIT ERROR] {e}")
+            self.session.rollback()
+        finally:
+            self.session.close()
 
     def process_item(self, item, spider):
-        adapter = ItemAdapter(item)
+        # --- Normalisation du nom de la capacité ---
+        move_name = item["move_name"].strip().lower().replace("’", "'")
 
-        self.file.write(
-            f"{adapter.get('pokemon_id')},"
-            f"{adapter.get('pokemon_fr')},"
-            f"{adapter.get('pokemon_pokepedia')},"
-            f"{adapter.get('move_name')},"
-            f"{adapter.get('learn_method')},"
-            f"{adapter.get('learn_level')}\n"
+        move_id = self.move_cache.get(move_name)
+        if not move_id:
+            spider.logger.info(f"[MOVE NOT FOUND] {item['move_name']}")
+            return item
+
+        learn_method_id = self.learn_method_cache.get(item["learn_method"])
+        if not learn_method_id:
+            spider.logger.info(f"[LEARN METHOD NOT FOUND] {item['learn_method']}")
+            return item
+
+        learn_level = item.get("learn_level")
+
+        # --- Upsert PostgreSQL ---
+        stmt = insert(PokemonMove).values(
+            pokemon_id=item["pokemon_id"],
+            move_id=move_id,
+            learn_method_id=learn_method_id,
+            learn_level=learn_level,
+        ).on_conflict_do_update(
+            index_elements=['pokemon_id', 'move_id', 'learn_method_id'],
+            set_=dict(learn_level=learn_level)
         )
+
+        try:
+            self.session.execute(stmt)
+            self.session.flush()
+        except Exception as e:
+            spider.logger.warning(f"[UPSERT ERROR] {item} -> {e}")
+            self.session.rollback()  # sécurité
 
         return item

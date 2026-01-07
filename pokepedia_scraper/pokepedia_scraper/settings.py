@@ -94,7 +94,7 @@ AUTOTHROTTLE_DEBUG = False
 # - futur stockage BDD
 
 ITEM_PIPELINES = {
-    "pokepedia_scraper.pipelines.PokemonMovesPipeline": 300,
+    "pokepedia_scraper.pipelines.PokemonMovePipeline": 300,
 }
 
 

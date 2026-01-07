@@ -119,22 +119,39 @@ def load_pokemon(session):
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
+            pokemon_id = int(row["id"])
+
+            is_mega = normalize_bool(row.get("mega"))
+            is_alola = normalize_bool(row.get("alola"))
+            is_starter = normalize_bool(row.get("starter"))
+
+            # 🎯 Nom de forme (purement descriptif)
+            if is_mega:
+                form_name = "mega"
+            elif is_alola:
+                form_name = "alola"
+            elif is_starter:
+                form_name = "starter"
+            else:
+                form_name = "base"
+
             pokemon = Pokemon(
-                id=int(row["id"]),
-                species_id=int(row["id"]),  # 1 forme = 1 espèce (LGPE)
+                id=pokemon_id,
+                species_id=pokemon_id,  # ✅ CRUCIAL : cohérent avec PokemonSpecies
 
                 nom_pokeapi=row.get("nom_pokeapi"),
                 nom_pokepedia=row.get("nom_pokepedia"),
-                form_name="base",
+                form_name=form_name,
 
-                is_alola=normalize_bool(row.get("alola")),
-                is_mega=normalize_bool(row.get("mega")),
-                is_starter=normalize_bool(row.get("starter")),
+                is_mega=is_mega,
+                is_alola=is_alola,
+                is_starter=is_starter,
 
                 height_m=Decimal("0.00"),
                 weight_kg=Decimal("0.00"),
                 sprite_url=None,
             )
+
             session.merge(pokemon)
 
     session.commit()
