@@ -14,7 +14,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/Dockerfile  # chemin explicite vers le Dockerfile
+      dockerfile: docker/Dockerfile
     container_name: letsgo_app
     depends_on:
       - db
@@ -22,6 +22,8 @@ services:
       - .:/app
     env_file:
       - .env
+    environment:
+      - PYTHONPATH=/app
     stdin_open: true
     tty: true
 

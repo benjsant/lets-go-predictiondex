@@ -1,17 +1,22 @@
 import csv
 from decimal import Decimal
 
+# ⚠️ OBLIGATOIRE : force l’enregistrement de TOUS les models
+import app.models  # noqa: F401
+
 from app.db.session import SessionLocal
+
 from app.models import (
-    Pokemon,
-    Type,
-    Move,
+    PokemonSpecies,
     PokemonType,
     TypeEffectiveness,
 )
 
-DATA_PATH = "data/csv"
+from app.db.guards.type import upsert_type
+from app.db.guards.move import upsert_move
+from app.db.guards.pokemon import upsert_pokemon
 
+DATA_PATH = "data/csv"
 
 # ======================================================
 # Helpers
@@ -36,22 +41,25 @@ def normalize_key(value: str) -> str:
 def load_types(session):
     print("➡ Loading types...")
 
-    types_seen = {}
+    seen = set()
 
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             for col in ("type_1", "type_2"):
                 name = row.get(col)
-                if name:
-                    key = normalize_key(name)
-                    if key not in types_seen:
-                        types_seen[key] = Type(name=name.strip())
+                if not name:
+                    continue
 
-    session.add_all(types_seen.values())
+                key = normalize_key(name)
+                if key in seen:
+                    continue
+
+                upsert_type(session, name=name.strip())
+                seen.add(key)
+
     session.commit()
-
-    print(f"✔ {len(types_seen)} types inserted")
+    print(f"✔ {len(seen)} types inserted")
 
 
 # ======================================================
@@ -63,52 +71,90 @@ def load_moves(session):
 
     type_map = {
         normalize_key(t.name): t.id
-        for t in session.query(Type).all()
+        for t in session.query(app.models.Type).all()
     }
 
     with open(f"{DATA_PATH}/liste_capacite_lets_go.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            move = Move(
+            upsert_move(
+                session,
                 name=row["nom_français"].strip(),
+                type_id=type_map[normalize_key(row["type"])],
+                category=row["classe"].strip(),
                 power=normalize_int(row.get("puissance")),
                 accuracy=normalize_int(row.get("précision")),
-                category=row["classe"].strip(),                 # physique / spécial / autre
-                damage_type=row.get("type_degats") or None,     # FEATURE ML
                 description=row.get("description"),
-                type_id=type_map[normalize_key(row["type"])],
+                damage_type=row.get("type_degats") or None,
             )
-            session.merge(move)
 
     session.commit()
     print("✔ Moves inserted")
 
 
 # ======================================================
-# Load POKEMON
+# Load POKEMON SPECIES
 # ======================================================
 
-def load_pokemon(session):
-    print("➡ Loading pokemon...")
+def load_pokemon_species(session):
+    print("➡ Loading pokemon species...")
 
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            pokemon = Pokemon(
+            species = PokemonSpecies(
                 id=int(row["id"]),
                 pokedex_number=int(row["num_pokedex"]),
                 name_fr=row["nom_fr"].strip(),
                 name_en=row.get("nom_eng"),
-                is_alola=normalize_bool(row.get("alola")),
-                is_mega=normalize_bool(row.get("mega")),
-                height_m=Decimal("0.00"),   # enrichi via PokeAPI plus tard
+            )
+            session.merge(species)
+
+    session.commit()
+    print("✔ Pokemon species inserted")
+
+
+# ======================================================
+# Load POKEMON (formes)
+# ======================================================
+
+def load_pokemon(session):
+    print("➡ Loading pokemon forms...")
+
+    with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            pokemon_id = int(row["id"])
+
+            is_mega = normalize_bool(row.get("mega"))
+            is_alola = normalize_bool(row.get("alola"))
+            is_starter = normalize_bool(row.get("starter"))
+
+            if is_mega:
+                form_name = "mega"
+            elif is_alola:
+                form_name = "alola"
+            elif is_starter:
+                form_name = "starter"
+            else:
+                form_name = "base"
+
+            upsert_pokemon(
+                session,
+                species_id=pokemon_id,
+                form_name=form_name,
+                nom_pokeapi=row.get("nom_pokeapi"),
+                nom_pokepedia=row.get("nom_pokepedia"),
+                is_mega=is_mega,
+                is_alola=is_alola,
+                is_starter=is_starter,
+                height_m=Decimal("0.00"),
                 weight_kg=Decimal("0.00"),
                 sprite_url=None,
             )
-            session.merge(pokemon)
 
     session.commit()
-    print("✔ Pokemon inserted")
+    print("✔ Pokemon forms inserted")
 
 
 # ======================================================
@@ -120,7 +166,7 @@ def load_pokemon_types(session):
 
     type_map = {
         normalize_key(t.name): t.id
-        for t in session.query(Type).all()
+        for t in session.query(app.models.Type).all()
     }
 
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as f:
@@ -159,7 +205,7 @@ def load_type_effectiveness(session):
 
     type_map = {
         normalize_key(t.name): t.id
-        for t in session.query(Type).all()
+        for t in session.query(app.models.Type).all()
     }
 
     with open(f"{DATA_PATH}/table_type.csv", encoding="utf-8") as f:
@@ -185,6 +231,7 @@ def main():
     try:
         load_types(session)
         load_moves(session)
+        load_pokemon_species(session)
         load_pokemon(session)
         load_pokemon_types(session)
         load_type_effectiveness(session)

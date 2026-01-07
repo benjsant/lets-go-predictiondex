@@ -17,4 +17,8 @@ class Move(Base):
     type_id = Column(Integer, ForeignKey("type.id"), nullable=False)
 
     type = relationship("Type", back_populates="moves")
-    pokemons = relationship("PokemonMove", back_populates="move", cascade="all, delete-orphan")
+    pokemons = relationship(
+        "PokemonMove",
+        back_populates="move",
+        cascade="all, delete-orphan",
+    )
