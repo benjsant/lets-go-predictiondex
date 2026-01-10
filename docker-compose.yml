@@ -26,6 +26,8 @@ services:
       - PYTHONPATH=/app
     stdin_open: true
     tty: true
+    ports:
+      - "8000:8000"
 
 volumes:
   postgres_data:

@@ -26,38 +26,25 @@ def run(cmd, label, cwd=None):
 
 
 def main():
-    # 1️⃣ Init DB + reference tables
-    run(
-        ["python", "app/scripts/init_db.py"],
-        "Init DB & reference data"
-    )
+    print("🚀 ETL Pokémon Let's Go")
 
-    # 2️⃣ Load CSV
-    run(
-        ["python", "app/scripts/load_all_csv.py"],
-        "Load CSV data"
-    )
+    run(["python", "app/scripts/etl_init_db.py"], "Extract: init & reference data")
+    run(["python", "app/scripts/etl_load_csv.py"], "Extract/Load: CSV")
+    run(["python", "app/scripts/etl_enrich_pokeapi.py"], "Enrich: PokéAPI")
 
-    # 3️⃣ Enrich via PokéAPI
-    run(
-        ["python", "app/scripts/load_pokeapi.py"],
-        "Enrich Pokémon via PokéAPI"
-    )
-
-    # 4️⃣ Scrape Poképédia
     run(
         ["scrapy", "crawl", "letsgo_moves_sql"],
-        "Scrape Poképédia (LGPE moves)",
+        "Extract: Poképédia (LGPE moves)",
         cwd="pokepedia_scraper"
     )
 
-    # 5️⃣ Héritage Méga
     run(
-        ["python", "app/scripts/inherit_mega_moves.py"],
-        "Inherit Mega moves"
+        ["python", "app/scripts/etl_post_process.py"],
+        "Transform: inherit Mega moves"
     )
 
-    print("\n✅ ALL DONE — database fully initialized")
+    print("\n✅ ETL COMPLETED")
+
 
 
 if __name__ == "__main__":
