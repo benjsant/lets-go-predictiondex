@@ -1,3 +1,4 @@
+#app/scripts/etl_enrich_pokeapi.py
 import time
 from decimal import Decimal
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -12,23 +13,35 @@ from app.db.guards.pokemon import upsert_pokemon
 # Config
 # ----------------------------------
 MAX_WORKERS = 10
+REQUEST_DELAY = 0.05
+
 BASE_SPRITES = {
     "pikachu-starter": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
     "eevee-starter": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png",
 }
 
+POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon/{}"
+
 # ----------------------------------
 # PokéAPI
 # ----------------------------------
-def get_pokemon_data(name: str, retries=3, delay=2):
-    url = f"https://pokeapi.co/api/v2/pokemon/{name.lower()}"
+def get_pokemon_data(name: str, retries: int = 3, delay: int = 2):
+    """Récupère stats, taille, poids et sprite depuis PokéAPI"""
+    url = POKEAPI_URL.format(name.lower())
+
     for _ in range(retries):
         try:
             resp = requests.get(url, timeout=10)
             if resp.status_code == 200:
-                p = resp.json()
-                stats = {s["stat"]["name"]: s["base_stat"] for s in p["stats"]}
-                time.sleep(0.05)
+                payload = resp.json()
+
+                stats = {
+                    s["stat"]["name"]: s["base_stat"]
+                    for s in payload["stats"]
+                }
+
+                time.sleep(REQUEST_DELAY)
+
                 return {
                     "hp": stats.get("hp"),
                     "attack": stats.get("attack"),
@@ -36,13 +49,18 @@ def get_pokemon_data(name: str, retries=3, delay=2):
                     "sp_attack": stats.get("special-attack"),
                     "sp_defense": stats.get("special-defense"),
                     "speed": stats.get("speed"),
-                    "height_m": Decimal(p["height"]) / 10,
-                    "weight_kg": Decimal(p["weight"]) / 10,
-                    "sprite_url": p["sprites"]["front_default"],
+                    "height_m": Decimal(payload["height"]) / 10,
+                    "weight_kg": Decimal(payload["weight"]) / 10,
+                    "sprite_url": payload["sprites"]["front_default"],
                 }
-        except requests.RequestException as e:
-            print(f"⚠ {name}: {e}")
+
+            print(f"⚠ {name}: HTTP {resp.status_code}")
+
+        except requests.RequestException as exc:
+            print(f"⚠ {name}: {exc}")
+
         time.sleep(delay)
+
     return None
 
 # ----------------------------------
@@ -50,9 +68,9 @@ def get_pokemon_data(name: str, retries=3, delay=2):
 # ----------------------------------
 def process_pokemon(pokemon_id: int):
     session = SessionLocal()
+
     try:
         pokemon = session.get(Pokemon, pokemon_id)
-
         if not pokemon or not pokemon.nom_pokeapi:
             return None
 
@@ -61,13 +79,10 @@ def process_pokemon(pokemon_id: int):
             print(f"❌ {pokemon.nom_pokeapi} non récupéré")
             return None
 
-        # Sprite override pour starters partenaires
-        key = pokemon.nom_pokeapi.lower()
-        if pokemon.is_starter and key in BASE_SPRITES:
-            data["sprite_url"] = BASE_SPRITES[key]
-
-        # 🔒 Pokémon via guard
-        upsert_pokemon(
+        # -------------------------
+        # Pokémon (structure)
+        # -------------------------
+        poke = upsert_pokemon(
             session,
             species_id=pokemon.species_id,
             form_name=pokemon.form_name,
@@ -76,18 +91,32 @@ def process_pokemon(pokemon_id: int):
             is_mega=pokemon.is_mega,
             is_alola=pokemon.is_alola,
             is_starter=pokemon.is_starter,
-            height_m=data["height_m"],
-            weight_kg=data["weight_kg"],
-            sprite_url=data["sprite_url"],
         )
 
-        # 🔒 Stats (upsert simple, 1–1)
-        stats = session.query(PokemonStat).filter(
-            PokemonStat.pokemon_id == pokemon.id
-        ).one_or_none()
+        # -------------------------
+        # Enrichissement dimensions
+        # -------------------------
+        poke.height_m = data["height_m"]
+        poke.weight_kg = data["weight_kg"]
+
+        # Sprite (override pour starters partenaires)
+        key = poke.nom_pokeapi.lower()
+        if poke.is_starter and key in BASE_SPRITES:
+            poke.sprite_url = BASE_SPRITES[key]
+        else:
+            poke.sprite_url = data["sprite_url"]
+
+        # -------------------------
+        # Stats (1–1)
+        # -------------------------
+        stats = (
+            session.query(PokemonStat)
+            .filter(PokemonStat.pokemon_id == poke.id)
+            .one_or_none()
+        )
 
         if not stats:
-            stats = PokemonStat(pokemon_id=pokemon.id)
+            stats = PokemonStat(pokemon_id=poke.id)
             session.add(stats)
 
         stats.hp = data["hp"]
@@ -98,8 +127,14 @@ def process_pokemon(pokemon_id: int):
         stats.speed = data["speed"]
 
         session.commit()
-        print(f"✔ {pokemon.nom_pokeapi} enrichi")
-        return pokemon.nom_pokeapi
+        print(f"✔ {poke.nom_pokeapi} enrichi")
+
+        return poke.nom_pokeapi
+
+    except Exception as exc:
+        session.rollback()
+        print(f"💥 Erreur {pokemon_id}: {exc}")
+        return None
 
     finally:
         session.close()
@@ -110,9 +145,7 @@ def process_pokemon(pokemon_id: int):
 def main():
     session = SessionLocal()
     try:
-        pokemon_ids = [
-            p.id for p in session.query(Pokemon.id).all()
-        ]
+        pokemon_ids = [p.id for p in session.query(Pokemon.id).all()]
     finally:
         session.close()
 

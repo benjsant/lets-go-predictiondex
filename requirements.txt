@@ -1,19 +1,24 @@
 # --- Core ---
 python-dotenv==1.0.0
 
-# --- Database / ORM ---
+# --- API ---
+fastapi==0.110.0
+uvicorn[standard]==0.27.1
+pydantic==2.6.1
+
+# --- Database ---
 sqlalchemy==2.0.23
-asyncpg==0.29.0
 psycopg2-binary==2.9.9
+asyncpg==0.29.0
 
 # --- HTTP / Async ---
-aiohttp==3.9.1
 requests==2.31.0
+aiohttp==3.9.1
 
 # --- Data ---
 pandas==2.1.4
 
-# --- Scraping (future pipeline) ---
+# --- Scraping ---
 scrapy==2.11.0
 parsel==1.8.1
 lxml==5.1.0

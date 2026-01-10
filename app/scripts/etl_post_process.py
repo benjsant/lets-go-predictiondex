@@ -1,3 +1,4 @@
+#app/scripts/etl_post_process.py
 from app.db.session import SessionLocal
 from app.models import Pokemon, PokemonSpecies
 from app.db.guards.pokemon_move import upsert_pokemon_move
