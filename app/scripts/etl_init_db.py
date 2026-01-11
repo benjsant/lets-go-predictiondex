@@ -1,4 +1,4 @@
-# app/scripts/init_db.py
+# app/scripts/etl_init_db.py
 import os
 
 from sqlalchemy import create_engine

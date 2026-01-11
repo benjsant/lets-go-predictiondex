@@ -224,3 +224,4 @@ Voile Miroir,psy,spécial,Une riposte qui contre n'importe quelle capacité spé
 Vol,vol,physique,Le lanceur s'envole au premier tour et frappe au second.,90,95,15,
 Vol-Vie,plante,spécial,Une attaque qui convertit la moitié des dégâts infligés en PV pour le lanceur.,40,100,15,
 Yoga,psy,autre,Le lanceur médite pour éveiller son pouvoir latent et augmenter son Attaque.,,,40,statut
+Pied Voltige,combat,physique,"Le lanceur s'élance pour effectuer un coup de genou sauté. S'il échoue, le lanceur se blesse",130,90,10,degat_si_echec_50_pourcent_degat
