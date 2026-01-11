@@ -1,7 +1,19 @@
-# app/api/routes/moves_route.py
+"""
+API routes – Pokémon moves
+==========================
 
-from fastapi import APIRouter, HTTPException
+This module defines the FastAPI routes related to Pokémon moves (abilities).
+
+It exposes read-only endpoints allowing clients to:
+- list all available moves,
+- retrieve detailed information for a specific move.
+
+The routes rely on a service layer (`move_service`) to handle database access
+and business logic, ensuring a clear separation of concerns.
+"""
+## pylint: disable=import-error
 from typing import List
+from fastapi import APIRouter, HTTPException
 
 from app.db.session import SessionLocal
 from app.schemas.move import (
@@ -18,10 +30,22 @@ router = APIRouter()
 
 
 # -------------------------
-# 🔹 Liste des capacités
+# 🔹 List moves
 # -------------------------
 @router.get("/", response_model=List[MoveListItem])
 def get_moves():
+    """
+    Retrieve the list of all Pokémon moves.
+
+    Returns a lightweight representation of each move including:
+    - basic stats (power, accuracy, category),
+    - the associated Pokémon type.
+
+    This endpoint is intended for:
+    - listings,
+    - frontend selectors,
+    - exploratory or analytical use cases.
+    """
     with SessionLocal() as db:
         moves = list_moves(db)
 
@@ -42,10 +66,32 @@ def get_moves():
 
 
 # -------------------------
-# 🔹 Détail capacité
+# 🔹 Move detail
 # -------------------------
 @router.get("/{move_id}", response_model=MoveDetail)
 def get_move(move_id: int):
+    """
+    Retrieve detailed information about a specific Pokémon move.
+
+    Parameters
+    ----------
+    move_id : int
+        Unique identifier of the move.
+
+    Returns
+    -------
+    MoveDetail
+        A detailed representation including:
+        - description,
+        - damage type,
+        - accuracy and power,
+        - associated Pokémon type.
+
+    Raises
+    ------
+    HTTPException
+        404 error if the requested move does not exist.
+    """
     with SessionLocal() as db:
         move = get_move_by_id(db, move_id)
 

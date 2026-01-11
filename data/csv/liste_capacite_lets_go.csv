@@ -153,7 +153,7 @@ Para-Spore,plante,autre,Le lanceur répand sur l'ennemi une poudre qui le paraly
 Patience,normal,physique,Le lanceur encaisse les coups durant deux tours et réplique en infligeant le double des dégâts subis.,,,10,renvoi_degat_double_deux_tours
 Picanon,normal,physique,Envoie une rafale de dards. Peut toucher de deux à cinq fois.,20,100,15,
 Picpic,vol,physique,Frappe l'ennemi d'un bec pointu ou d'une corne pour infliger des dégâts.,35,100,35,
-Pied Sauté,combat,physique,"Le lanceur s'envole pour décocher un coup de pied sauté. S'il échoue, le lanceur se blesse.",100,95,10,
+Pied Sauté,combat,physique,"Le lanceur s'envole pour décocher un coup de pied sauté. S'il échoue, le lanceur se blesse.",100,95,10,degat_si_echec_50_pourcent_degat
 Piège de Roc,roche,autre,"Lance des pierres flottantes autour de l'ennemi, qui blessent tout adversaire entrant au combat.",,,20,statut
 Pika-Fracas,électrik,spécial,Une attaque électrique dont la puissance est proportionnelle à l'amour que Pikachu vous porte. Touche à coup sûr.,1,100,20,
 Pika-Piqué,vol,physique,Pikachu prend de la hauteur avant de fondre sur son adversaire. Peut aussi apeurer l'ennemi.,90,95,15,

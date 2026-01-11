@@ -1,5 +1,24 @@
-from .pokemon_species import PokemonSpecies  # 👈 AJOUTER EN PREMIER
+"""
+SQLAlchemy models package
+=========================
 
+This package aggregates all SQLAlchemy ORM models used by the
+Pokémon Let's Go project.
+
+Importing this module ensures that:
+- All ORM models are registered in SQLAlchemy metadata
+- Table relationships are properly resolved
+- Alembic or schema initialization tools can detect all models
+
+This file does not contain business logic and should only expose
+model classes.
+"""
+
+# Third-party / shared imports
+from app.db.base import Base
+
+# Local model imports (order matters for relationships)
+from .pokemon_species import PokemonSpecies
 from .pokemon import Pokemon
 from .pokemon_stat import PokemonStat
 from .pokemon_type import PokemonType
@@ -9,4 +28,15 @@ from .pokemon_move import PokemonMove
 from .learn_method import LearnMethod
 from .type_effectiveness import TypeEffectiveness
 
-from app.db.base import Base
+__all__ = [
+    "Base",
+    "PokemonSpecies",
+    "Pokemon",
+    "PokemonStat",
+    "PokemonType",
+    "Type",
+    "Move",
+    "PokemonMove",
+    "LearnMethod",
+    "TypeEffectiveness",
+]

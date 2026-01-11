@@ -1,3 +1,4 @@
+#app/tests/api/test_moves_routes.py
 def test_get_moves(client):
     response = client.get("/moves/")
     assert response.status_code == 200
