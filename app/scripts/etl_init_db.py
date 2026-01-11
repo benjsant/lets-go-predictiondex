@@ -1,4 +1,32 @@
 # app/scripts/etl_init_db.py
+"""
+ETL - Database initialization script (Pokémon Let's Go)
+
+This script initializes the relational database used by the ETL pipeline
+and the API layer of the Pokémon Let's Go project.
+
+Its purpose is to guarantee that:
+- All SQLAlchemy models are properly registered
+- The full database schema is created in a consistent and reproducible way
+- Mandatory reference tables contain required initial data
+
+This script represents the foundation of the ETL process and must be
+executed before any data ingestion or transformation steps.
+
+Execution contexts:
+- Local development setup
+- Containerized environments (Docker / Docker Compose)
+- CI/CD pipelines
+- Database reset or re-initialization
+
+ETL phase:
+- Initialization (pre-Load)
+
+Competency block:
+- E1: Relational data modeling, schema initialization, and controlled
+      insertion of reference data
+"""
+
 import os
 
 from sqlalchemy import create_engine
@@ -7,28 +35,51 @@ from sqlalchemy.orm import Session
 from app.db.base import Base
 
 # ======================================================
-# ⚠️ IMPORT OBLIGATOIRE DE TOUS LES MODELS
+# ⚠️ MANDATORY IMPORT OF ALL MODELS
 # ======================================================
+"""
+All SQLAlchemy models must be imported before calling
+Base.metadata.create_all().
 
-# --- Pokémon ---
+This ensures:
+- Proper table registration
+- Correct foreign key resolution
+- Complete schema generation
+
+Failure to import a model here would result in missing tables
+or broken relationships in the database.
+"""
+
+# --- Pokémon domain ---
 from app.models.pokemon_species import PokemonSpecies
 from app.models.pokemon import Pokemon
 from app.models.pokemon_stat import PokemonStat
 from app.models.pokemon_type import PokemonType
 from app.models.pokemon_move import PokemonMove
 
-# --- Moves ---
+# --- Moves domain ---
 from app.models.move import Move
 from app.models.learn_method import LearnMethod
 
-# --- Types ---
+# --- Types domain ---
 from app.models.type import Type
 from app.models.type_effectiveness import TypeEffectiveness
 
 
 # ======================================================
-# Variables d'environnement DB
+# Database environment configuration
 # ======================================================
+"""
+Database connection parameters are resolved from environment variables.
+
+Default values are provided to:
+- Enable local development without manual configuration
+- Ensure compatibility with Docker Compose deployments
+- Maintain portability across environments
+
+The database used is PostgreSQL.
+"""
+
 DB_USER = os.getenv("POSTGRES_USER", "letsgo_user")
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "letsgo_password")
 DB_HOST = os.getenv("POSTGRES_HOST", "letsgo_postgres")
@@ -44,13 +95,24 @@ print(f"🔗 Connecting to database at {DB_HOST}:{DB_PORT} / DB: {DB_NAME}")
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True,   # utile en dev / CI
+    echo=True,   # Enables SQL logging (useful for dev and CI)
     future=True
 )
 
 # ======================================================
-# Création du schéma
+# Database schema creation
 # ======================================================
+"""
+Create all database tables defined in the SQLAlchemy metadata.
+
+Behavior:
+- Idempotent: existing tables are preserved
+- Missing tables are created automatically
+- Constraints and relationships are applied
+
+This step must be executed before any ETL load script.
+"""
+
 print("🛠️ Creating database schema...")
 
 Base.metadata.create_all(bind=engine)
@@ -58,8 +120,20 @@ Base.metadata.create_all(bind=engine)
 print("✅ Tables created")
 
 # ======================================================
-# Insertion des données de référence
+# Reference data initialization
 # ======================================================
+"""
+Insert mandatory reference data required by downstream ETL processes.
+
+The LearnMethod table represents a controlled vocabulary describing
+how a Pokémon can learn a move (e.g. level up, CT, tutor).
+
+Characteristics:
+- Static reference data
+- Required for Pokémon ↔ Move relationships
+- Inserted only if missing to preserve idempotency
+"""
+
 print("📌 Initializing reference data (LearnMethod)...")
 
 methods = ["level_up", "ct", "move_tutor"]

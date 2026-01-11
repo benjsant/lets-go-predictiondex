@@ -1,17 +1,34 @@
 """
-Scrapy settings for pokepedia_scraper
+Scrapy settings module for pokepedia_scraper
+============================================
 
-Projet pédagogique – Pokémon Let's Go (LGPE)
-Objectif :
-- Scraping responsable de Poképédia
-- Données éducatives (mécaniques Pokémon)
-- Conforme E1 (identification, robots.txt, logs, cache)
+This module defines the global Scrapy configuration used for scraping
+Poképédia pages related to Pokémon Let's Go (LGPE).
 
-Auteur : Projet letsgo_predictiondex
+Project context:
+- Educational and non-commercial project
+- Data collection for Pokémon mechanics analysis
+- Part of the letsgo_predictiondex ETL pipeline
+
+Objectives:
+- Responsible and transparent web scraping
+- Strict compliance with robots.txt directives
+- Controlled request rate to avoid server overload
+- Deterministic and reproducible data extraction
+
+E1 compliance highlights:
+- Explicit bot identification (USER_AGENT)
+- robots.txt enforcement
+- Throttling, retry limits, and HTTP caching
+- Structured logging for traceability
+
+Scope:
+This configuration is intentionally conservative and prioritizes
+ethical scraping practices over raw performance.
 """
 
 # ==================================================
-# 🧱 Configuration de base Scrapy
+# 🧱 Core Scrapy configuration
 # ==================================================
 
 BOT_NAME = "pokepedia_scraper"
@@ -21,10 +38,12 @@ NEWSPIDER_MODULE = "pokepedia_scraper.spiders"
 
 
 # ==================================================
-# 🧑‍💻 Identification claire du bot (IMPORTANT E1)
+# 🧑‍💻 Bot identification (E1 – transparency requirement)
 # ==================================================
-# → Transparence totale sur l'usage
-# → Poképédia peut identifier l'intention pédagogique
+# Clear identification of the scraper:
+# - Declares educational intent
+# - Allows site administrators to understand usage context
+# - Avoids ambiguous or misleading user-agent strings
 
 USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) "
@@ -35,19 +54,21 @@ USER_AGENT = (
 
 
 # ==================================================
-# 🤖 Respect strict des règles du site
+# 🤖 Robots.txt compliance
 # ==================================================
+# Mandatory for responsible scraping.
+# Ensures that disallowed paths are never accessed.
 
 ROBOTSTXT_OBEY = True
 
 
 # ==================================================
-# 🐢 Comportement humain / non agressif
+# 🐢 Request rate limiting (human-like behavior)
 # ==================================================
-# Objectif :
-# - Ne pas surcharger Poképédia
-# - Simuler un utilisateur réel
-# - Rester dans des seuils acceptables
+# Goals:
+# - Avoid overloading Poképédia servers
+# - Mimic realistic user navigation patterns
+# - Stay well below aggressive crawling thresholds
 
 CONCURRENT_REQUESTS = 8
 CONCURRENT_REQUESTS_PER_DOMAIN = 2
@@ -59,24 +80,31 @@ DOWNLOAD_TIMEOUT = 15
 
 
 # ==================================================
-# 🔁 Retry contrôlé (erreurs réseau uniquement)
+# 🔁 Retry policy (network resilience only)
 # ==================================================
-# Pas de spam :
-# - Peu de retries
-# - Seulement pour erreurs serveur ou timeout
+# Retries are intentionally limited:
+# - Only transient server or timeout errors
+# - Prevents retry storms and unintended pressure
 
 RETRY_ENABLED = True
 RETRY_TIMES = 2
 
 RETRY_HTTP_CODES = [
-    500, 502, 503, 504, 522, 524, 408
+    500,
+    502,
+    503,
+    504,
+    522,
+    524,
+    408,
 ]
 
 
 # ==================================================
-# 🚦 AutoThrottle (adaptation automatique)
+# 🚦 AutoThrottle extension
 # ==================================================
-# Scrapy adapte la vitesse selon la réponse du site
+# Dynamically adapts crawl speed based on server response times.
+# Helps maintain a respectful load even if conditions change.
 
 AUTOTHROTTLE_ENABLED = True
 AUTOTHROTTLE_START_DELAY = 1.0
@@ -86,12 +114,12 @@ AUTOTHROTTLE_DEBUG = False
 
 
 # ==================================================
-# 🧪 Pipelines (post-traitement des données)
+# 🧪 Item pipelines
 # ==================================================
-# Centralisation :
-# - nettoyage
-# - normalisation
-# - futur stockage BDD
+# Centralized post-processing layer:
+# - Data normalization
+# - Validation and cleaning
+# - Future database persistence
 
 ITEM_PIPELINES = {
     "pokepedia_scraper.pipelines.PokemonMovePipeline": 300,
@@ -99,19 +127,22 @@ ITEM_PIPELINES = {
 
 
 # ==================================================
-# 💾 Cache HTTP (ESSENTIEL pour Poképédia)
+# 💾 HTTP cache (critical for Poképédia)
 # ==================================================
-# Objectifs :
-# - Éviter de re-scraper inutilement
-# - Réduire la charge serveur
-# - Accélérer le dev / debug
+# Benefits:
+# - Avoids repeated requests to the same pages
+# - Reduces server load
+# - Speeds up development and debugging cycles
 
 HTTPCACHE_ENABLED = True
-HTTPCACHE_EXPIRATION_SECS = 3600  # 1 heure
+HTTPCACHE_EXPIRATION_SECS = 3600  # 1 hour
 HTTPCACHE_DIR = "httpcache"
 
 HTTPCACHE_IGNORE_HTTP_CODES = [
-    500, 502, 503, 504
+    500,
+    502,
+    503,
+    504,
 ]
 
 HTTPCACHE_STORAGE = (
@@ -120,22 +151,27 @@ HTTPCACHE_STORAGE = (
 
 
 # ==================================================
-# 📜 Logs propres et exploitables
+# 📜 Logging configuration
 # ==================================================
+# INFO level provides a good balance between visibility
+# and noise for ETL-style scraping tasks.
 
 LOG_LEVEL = "INFO"
 
 
 # ==================================================
-# 📤 Export & encodage
+# 📤 Feed export settings
 # ==================================================
+# Ensures consistent UTF-8 encoding for all exported data.
 
 FEED_EXPORT_ENCODING = "utf-8"
 
 
 # ==================================================
-# ⚙️ Compatibilité Scrapy moderne (>= 2.10)
+# ⚙️ Modern Scrapy compatibility
 # ==================================================
+# Explicit configuration to avoid deprecation warnings
+# and ensure compatibility with recent Scrapy versions.
 
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 

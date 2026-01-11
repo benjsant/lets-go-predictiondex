@@ -1,3 +1,4 @@
+#app/tests/db/test_upsert_pokemon.py
 from app.db.guards.pokemon import upsert_pokemon
 
 def test_upsert_pokemon_idempotent(db_session):
@@ -5,8 +6,8 @@ def test_upsert_pokemon_idempotent(db_session):
         db_session,
         species_id=1,
         form_name="Base",
-        nom_pokeapi="pikachu",
-        nom_pokepedia="Pikachu",
+        name_pokeapi="pikachu",
+        name_pokepedia="Pikachu",
         is_mega=False,
         is_alola=False,
         is_starter=True,
@@ -19,8 +20,8 @@ def test_upsert_pokemon_idempotent(db_session):
         db_session,
         species_id=1,
         form_name="Base",
-        nom_pokeapi="pikachu",
-        nom_pokepedia="Pikachu",
+        name_pokeapi="pikachu",
+        name_pokepedia="Pikachu",
         is_mega=False,
         is_alola=False,
         is_starter=True,

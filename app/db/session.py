@@ -1,9 +1,30 @@
+"""
+Database session configuration
+===============================
+
+This module configures the SQLAlchemy engine and session factory
+used throughout the application.
+
+Responsibilities:
+- Read database connection parameters from environment variables
+  (Docker- and development-friendly)
+- Build the SQLAlchemy database URL
+- Initialize a synchronous SQLAlchemy engine
+- Expose a `SessionLocal` factory for creating database sessions
+
+This module is intentionally lightweight and does not contain
+any business logic. It is consumed by:
+- API routes
+- Service layers
+- ETL / data ingestion scripts
+"""
+
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # --------------------
-# Paramètres DB (Docker / Dev friendly)
+# Database parameters (Docker / Dev friendly)
 # --------------------
 DB_USER = os.getenv("POSTGRES_USER", "letsgo_user")
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "letsgo_password")
@@ -17,7 +38,7 @@ DATABASE_URL = (
 )
 
 # --------------------
-# Engine SQLAlchemy (sync)
+# SQLAlchemy engine (synchronous)
 # --------------------
 engine = create_engine(
     DATABASE_URL,

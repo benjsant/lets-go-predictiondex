@@ -1,5 +1,19 @@
-from fastapi import APIRouter, HTTPException
+"""
+API routes – Pokémon
+===================
+
+This module defines the FastAPI routes related to Pokémon entities.
+
+It provides read-only endpoints to:
+- list all Pokémon with basic information,
+- retrieve detailed data for a specific Pokémon, including stats, types, and moves.
+
+The routes rely on a dedicated service layer (`pokemon_service`) to access
+the database and encapsulate business logic.
+"""
+## pylint: disable=import-error
 from typing import List
+from fastapi import APIRouter, HTTPException
 
 from app.db.session import SessionLocal
 from app.schemas.pokemon import (
@@ -17,10 +31,24 @@ router = APIRouter()
 
 
 # -------------------------
-# 🔹 Liste Pokémon
+# 🔹 Pokémon list
 # -------------------------
 @router.get("/", response_model=List[PokemonListItem])
 def get_pokemon_list():
+    """
+    Retrieve the list of all Pokémon.
+
+    Returns a summarized representation for each Pokémon, including:
+    - form and variant flags (Mega, Alola, starter),
+    - species information,
+    - primary and secondary types,
+    - sprite URL when available.
+
+    This endpoint is designed for:
+    - Pokédex-style listings,
+    - frontend overviews,
+    - analytical or exploratory use cases.
+    """
     with SessionLocal() as db:
         pokemons = list_pokemon(db)
 
@@ -46,10 +74,34 @@ def get_pokemon_list():
 
 
 # -------------------------
-# 🔹 Détail Pokémon
+# 🔹 Pokémon detail
 # -------------------------
 @router.get("/{pokemon_id}", response_model=PokemonDetail)
 def get_pokemon_detail(pokemon_id: int):
+    """
+    Retrieve detailed information about a specific Pokémon.
+
+    Parameters
+    ----------
+    pokemon_id : int
+        Unique identifier of the Pokémon.
+
+    Returns
+    -------
+    PokemonDetail
+        A detailed Pokémon representation including:
+        - base information and form flags,
+        - species data,
+        - base stats,
+        - physical characteristics (height, weight),
+        - types,
+        - learnable moves with learning conditions.
+
+    Raises
+    ------
+    HTTPException
+        404 error if the Pokémon does not exist.
+    """
     with SessionLocal() as db:
         pokemon = get_pokemon_by_id(db, pokemon_id)
 

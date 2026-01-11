@@ -1,5 +1,13 @@
 # app/db/guards/move.py
 
+f"""
+Database guard for Pokémon moves.
+
+This module provides helper functions used during ETL and data ingestion
+to safely insert or retrieve Move records while preserving database
+integrity and avoiding duplicates.
+"""
+
 from sqlalchemy.orm import Session
 from app.models import Move
 from .utils import commit_if_needed
@@ -17,6 +25,26 @@ def upsert_move(
     damage_type=None,
     auto_commit: bool = False,
 ) -> Move:
+    """
+    Insert or retrieve a Pokémon move.
+
+    If a move with the same name already exists (case-insensitive),
+    it is returned as-is. Otherwise, a new Move record is created.
+
+    Args:
+        session (Session): Active SQLAlchemy session.
+        name (str): Move name.
+        type_id (int): Foreign key to the Pokémon type.
+        category (str): Move category (physical, special, status).
+        power (int | None): Base power of the move.
+        accuracy (int | None): Accuracy percentage.
+        description (str | None): Move description.
+        damage_type (str | None): Damage behavior (if applicable).
+        auto_commit (bool): Whether to commit immediately.
+
+    Returns:
+        Move: Existing or newly created Move instance.
+    """
     move = session.query(Move).filter(
         Move.name.ilike(name)
     ).one_or_none()
