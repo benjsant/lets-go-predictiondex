@@ -22,7 +22,6 @@ Each Pokémon:
 """
 
 from sqlalchemy import (
-    Boolean,
     Column,
     Integer,
     String,
@@ -77,19 +76,8 @@ class Pokemon(Base):
     #: Pokémon name as displayed on Poképédia
     name_pokepedia = Column(String(150), nullable=False)
 
-    # --- Form information ---
-
-    #: Human-readable form name (Base, Mega X, Mega Y, Alola, etc.)
-    form_name = Column(String(100), nullable=False)
-
-    #: Indicates whether the Pokémon is a Mega Evolution
-    is_mega = Column(Boolean, nullable=False, default=False)
-
-    #: Indicates whether the Pokémon is an Alolan form
-    is_alola = Column(Boolean, nullable=False, default=False)
-
-    #: Indicates whether the Pokémon is a starter Pokémon
-    is_starter = Column(Boolean, nullable=False, default=False)
+    #: Foreign key to Form
+    form_id = Column(Integer, ForeignKey("form.id", ondelete="CASCADE"), nullable=False)
 
     # --- Physical characteristics ---
 
@@ -139,11 +127,16 @@ class Pokemon(Base):
         cascade="all, delete-orphan",
     )
 
+    form = relationship(
+        "Form",
+        back_populates="pokemons"
+        )
+
     __table_args__ = (
         # Ensure only one given form exists per species
         UniqueConstraint(
             "species_id",
-            "form_name",
+            "form_id",
             name="uq_species_form",
         ),
     )

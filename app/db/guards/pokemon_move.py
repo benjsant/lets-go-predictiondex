@@ -46,7 +46,6 @@ def upsert_pokemon_move(
             PokemonMove.pokemon_id == pokemon_id,
             PokemonMove.move_id == move_id,
             PokemonMove.learn_method_id == learn_method_id,
-            PokemonMove.learn_level == learn_level,
         )
         .one_or_none()
     )
@@ -63,5 +62,4 @@ def upsert_pokemon_move(
 
     session.add(pm)
     commit_if_needed(session, auto_commit)
-
     return pm, True

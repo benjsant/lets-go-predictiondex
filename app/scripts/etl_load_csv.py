@@ -58,7 +58,7 @@ python app/scripts/etl_load_csv.py
 import csv
 from decimal import Decimal
 
-# Ensures all SQLAlchemy models are registered
+# Ensure all SQLAlchemy models are registered
 import app.models  # noqa: F401
 
 from app.db.session import SessionLocal
@@ -66,11 +66,12 @@ from app.models import (
     PokemonSpecies,
     PokemonType,
     TypeEffectiveness,
+    Form,
+    MoveCategory,
 )
 from app.db.guards.type import upsert_type
 from app.db.guards.move import upsert_move
 from app.db.guards.pokemon import upsert_pokemon
-
 
 DATA_PATH = "data/csv"
 
@@ -79,62 +80,17 @@ DATA_PATH = "data/csv"
 # Normalization Helpers
 # ---------------------------------------------------------------------
 def normalize_bool(value):
-    """
-    Normalize boolean-like CSV values.
-
-    Accepted truthy values (case-insensitive):
-    - "1", "true", "yes", "oui"
-
-    Parameters
-    ----------
-    value : Any
-        Raw CSV value.
-
-    Returns
-    -------
-    bool
-        Normalized boolean value.
-    """
+    """Normalize boolean-like CSV values (1, true, yes, oui → True)."""
     return str(value).strip().lower() in ("1", "true", "yes", "oui")
 
 
 def normalize_int(value):
-    """
-    Normalize optional integer CSV values.
-
-    Empty strings and None values are converted to None.
-
-    Parameters
-    ----------
-    value : str | None
-        Raw CSV value.
-
-    Returns
-    -------
-    int | None
-        Normalized integer or None.
-    """
+    """Convert optional integer CSV values, empty string or None → None."""
     return int(value) if value not in ("", None) else None
 
 
 def normalize_key(value: str) -> str:
-    """
-    Normalize string keys for consistent lookups.
-
-    Operations:
-    - trim leading and trailing spaces
-    - convert to lowercase
-
-    Parameters
-    ----------
-    value : str
-        Raw string value.
-
-    Returns
-    -------
-    str
-        Normalized key.
-    """
+    """Normalize string keys: strip spaces and lowercase for consistent lookups."""
     return value.strip().lower()
 
 
@@ -142,21 +98,9 @@ def normalize_key(value: str) -> str:
 # Load TYPES
 # ---------------------------------------------------------------------
 def load_types(session):
-    """
-    Extract and load Pokémon elemental types.
-
-    Types are inferred from Pokémon CSV columns (type_1, type_2)
-    and deduplicated before insertion.
-
-    Parameters
-    ----------
-    session : Session
-        SQLAlchemy database session.
-    """
+    """Extract and load Pokémon elemental types from liste_pokemon.csv."""
     print("➡ Loading types...")
-
     seen = set()
-
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as file:
         reader = csv.DictReader(file)
         for row in reader:
@@ -164,56 +108,64 @@ def load_types(session):
                 name = row.get(col)
                 if not name:
                     continue
-
                 key = normalize_key(name)
                 if key in seen:
                     continue
-
                 upsert_type(session, name=name.strip())
                 seen.add(key)
-
     session.commit()
     print(f"✔ {len(seen)} types inserted")
+
+
+# ---------------------------------------------------------------------
+# Load MOVE CATEGORIES
+# ---------------------------------------------------------------------
+def load_move_categories(session):
+    """Load Pokémon move categories from liste_capacite_lets_go.csv. Categories are assumed initialized."""
+    print("➡ Loading move categories...")
+    seen = set()
+    with open(f"{DATA_PATH}/liste_capacite_lets_go.csv", encoding="utf-8") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            name = row.get("classe")
+            if not name:
+                continue
+            key = normalize_key(name)
+            if key in seen:
+                continue
+            mc = session.query(MoveCategory).filter_by(name=name.strip()).first()
+            if not mc:
+                raise ValueError(f"MoveCategory '{name.strip()}' not found in DB. Ensure init_db created it.")
+            seen.add(key)
+    print(f"✔ {len(seen)} move categories verified")
 
 
 # ---------------------------------------------------------------------
 # Load MOVES
 # ---------------------------------------------------------------------
 def load_moves(session):
-    """
-    Extract and load Pokémon moves.
-
-    Each move is associated with:
-    - a type
-    - a category
-    - optional power and accuracy values
-
-    Parameters
-    ----------
-    session : Session
-        SQLAlchemy database session.
-    """
+    """Extract and load Pokémon moves with type, category, power, accuracy, and description."""
     print("➡ Loading moves...")
-
-    type_map = {
-        normalize_key(t.name): t.id
-        for t in session.query(app.models.Type).all()
-    }
+    type_map = {normalize_key(t.name): t.id for t in session.query(app.models.Type).all()}
+    category_map = {normalize_key(c.name): c.id for c in session.query(app.models.MoveCategory).all()}
 
     with open(f"{DATA_PATH}/liste_capacite_lets_go.csv", encoding="utf-8") as file:
         reader = csv.DictReader(file)
         for row in reader:
+            type_id = type_map.get(normalize_key(row["type"]))
+            category_id = category_map.get(normalize_key(row["classe"]))
+            if not type_id or not category_id:
+                raise ValueError(f"Missing type or category for move {row['nom_français']}")
             upsert_move(
                 session,
                 name=row["nom_français"].strip(),
-                type_id=type_map[normalize_key(row["type"])],
-                category=row["classe"].strip(),
+                type_id=type_id,
+                category_id=category_id,
                 power=normalize_int(row.get("puissance")),
                 accuracy=normalize_int(row.get("précision")),
                 description=row.get("description"),
                 damage_type=row.get("type_degats") or None,
             )
-
     session.commit()
     print("✔ Moves inserted")
 
@@ -222,19 +174,8 @@ def load_moves(session):
 # Load POKÉMON SPECIES
 # ---------------------------------------------------------------------
 def load_pokemon_species(session):
-    """
-    Load Pokémon species reference data.
-
-    Species data represents the canonical Pokédex entity,
-    independent of forms or variants.
-
-    Parameters
-    ----------
-    session : Session
-        SQLAlchemy database session.
-    """
+    """Load canonical Pokémon species reference data (independent of forms)."""
     print("➡ Loading pokemon species...")
-
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as file:
         reader = csv.DictReader(file)
         for row in reader:
@@ -245,7 +186,6 @@ def load_pokemon_species(session):
                 name_en=row.get("nom_eng"),
             )
             session.merge(species)
-
     session.commit()
     print("✔ Pokemon species inserted")
 
@@ -254,53 +194,38 @@ def load_pokemon_species(session):
 # Load POKÉMON FORMS
 # ---------------------------------------------------------------------
 def load_pokemon(session):
-    """
-    Load Pokémon forms and variants.
-
-    Business rules:
-    - A Pokémon species may have multiple forms
-    - Forms include: base, mega, alola, starter
-    - Physical attributes are initialized and enriched later
-
-    Parameters
-    ----------
-    session : Session
-        SQLAlchemy database session.
-    """
+    """Load Pokémon forms and associate each Pokémon with a form. Assumes Forms table pre-initialized."""
     print("➡ Loading pokemon forms...")
+    form_map = {f.name: f.id for f in session.query(Form).all()}
 
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as file:
         reader = csv.DictReader(file)
         for row in reader:
-            pokemon_id = int(row["id"])
-
+            species_id = int(row["id"])
             is_mega = normalize_bool(row.get("mega"))
             is_alola = normalize_bool(row.get("alola"))
             is_starter = normalize_bool(row.get("starter"))
 
-            if is_mega:
-                form_name = "mega"
-            elif is_alola:
-                form_name = "alola"
-            elif is_starter:
-                form_name = "starter"
-            else:
-                form_name = "base"
+            form_name = (
+                "mega" if is_mega
+                else "alola" if is_alola
+                else "starter" if is_starter
+                else "base"
+            )
+            form_id = form_map.get(form_name)
+            if not form_id:
+                raise ValueError(f"Form '{form_name}' not found in DB. Ensure init_db created it.")
 
             upsert_pokemon(
                 session,
-                species_id=pokemon_id,
-                form_name=form_name,
+                species_id=species_id,
+                form_id=form_id,
                 name_pokeapi=row.get("nom_pokeapi"),
                 name_pokepedia=row.get("nom_pokepedia"),
-                is_mega=is_mega,
-                is_alola=is_alola,
-                is_starter=is_starter,
                 height_m=Decimal("0.00"),
                 weight_kg=Decimal("0.00"),
                 sprite_url=None,
             )
-
     session.commit()
     print("✔ Pokemon forms inserted")
 
@@ -309,45 +234,42 @@ def load_pokemon(session):
 # Load POKÉMON ↔ TYPES
 # ---------------------------------------------------------------------
 def load_pokemon_types(session):
-    """
-    Associate Pokémon forms with their elemental types.
-
-    Supports mono-type and dual-type Pokémon with ordered slots.
-
-    Parameters
-    ----------
-    session : Session
-        SQLAlchemy database session.
-    """
+    """Associate Pokémon forms with elemental types (slot 1 and slot 2)."""
     print("➡ Loading pokemon types...")
-
-    type_map = {
-        normalize_key(t.name): t.id
-        for t in session.query(app.models.Type).all()
-    }
+    type_map = {normalize_key(t.name): t.id for t in session.query(app.models.Type).all()}
 
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as file:
         reader = csv.DictReader(file)
         for row in reader:
-            pokemon_id = int(row["id"])
+            species_id = int(row["id"])
+            form_name = (
+                "mega" if normalize_bool(row.get("mega"))
+                else "alola" if normalize_bool(row.get("alola"))
+                else "starter" if normalize_bool(row.get("starter"))
+                else "base"
+            )
+            pokemon = (
+                session.query(app.models.Pokemon)
+                .join(Form)
+                .filter(app.models.Pokemon.species_id == species_id)
+                .filter(Form.name == form_name)
+                .one_or_none()
+            )
+            if not pokemon:
+                continue
+            pokemon_id = pokemon.id
 
+            # Type slot 1
             if row.get("type_1"):
-                session.merge(
-                    PokemonType(
-                        pokemon_id=pokemon_id,
-                        type_id=type_map[normalize_key(row["type_1"])],
-                        slot=1,
-                    )
-                )
+                t_id = type_map.get(normalize_key(row["type_1"]))
+                if t_id:
+                    session.merge(app.models.PokemonType(pokemon_id=pokemon_id, type_id=t_id, slot=1))
 
+            # Type slot 2
             if row.get("type_2"):
-                session.merge(
-                    PokemonType(
-                        pokemon_id=pokemon_id,
-                        type_id=type_map[normalize_key(row["type_2"])],
-                        slot=2,
-                    )
-                )
+                t_id = type_map.get(normalize_key(row["type_2"]))
+                if t_id:
+                    session.merge(app.models.PokemonType(pokemon_id=pokemon_id, type_id=t_id, slot=2))
 
     session.commit()
     print("✔ Pokemon types inserted")
@@ -357,22 +279,9 @@ def load_pokemon_types(session):
 # Load TYPE EFFECTIVENESS
 # ---------------------------------------------------------------------
 def load_type_effectiveness(session):
-    """
-    Load type effectiveness multipliers.
-
-    Defines damage multipliers between attacking and defending types.
-
-    Parameters
-    ----------
-    session : Session
-        SQLAlchemy database session.
-    """
+    """Load type effectiveness multipliers from table_type.csv."""
     print("➡ Loading type effectiveness...")
-
-    type_map = {
-        normalize_key(t.name): t.id
-        for t in session.query(app.models.Type).all()
-    }
+    type_map = {normalize_key(t.name): t.id for t in session.query(app.models.Type).all()}
 
     with open(f"{DATA_PATH}/table_type.csv", encoding="utf-8") as file:
         reader = csv.DictReader(file)
@@ -383,7 +292,6 @@ def load_type_effectiveness(session):
                 multiplier=Decimal(row["multiplicateur"]),
             )
             session.merge(effectiveness)
-
     session.commit()
     print("✔ Type effectiveness inserted")
 
@@ -392,20 +300,11 @@ def load_type_effectiveness(session):
 # Entry Point
 # ---------------------------------------------------------------------
 def main():
-    """
-    Execute the CSV ETL pipeline.
-
-    Loading order is enforced to preserve referential integrity:
-    1. Types
-    2. Moves
-    3. Pokémon species
-    4. Pokémon forms
-    5. Pokémon ↔ Types associations
-    6. Type effectiveness
-    """
+    """Execute the CSV ETL pipeline in the correct loading order."""
     session = SessionLocal()
     try:
         load_types(session)
+        load_move_categories(session)
         load_moves(session)
         load_pokemon_species(session)
         load_pokemon(session)

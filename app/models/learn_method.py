@@ -1,3 +1,4 @@
+#app\models\learn_method.py
 """
 SQLAlchemy Model – LearnMethod
 ==============================

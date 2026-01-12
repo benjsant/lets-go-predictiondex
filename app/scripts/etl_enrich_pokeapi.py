@@ -56,8 +56,6 @@ import requests
 
 from app.db.session import SessionLocal
 from app.models import Pokemon, PokemonStat
-from app.db.guards.pokemon import upsert_pokemon
-
 
 # ---------------------------------------------------------------------
 # Configuration
@@ -113,10 +111,7 @@ def get_pokemon_data(name: str, retries: int = 3, delay: int = 2):
             if resp.status_code == 200:
                 payload = resp.json()
 
-                stats = {
-                    s["stat"]["name"]: s["base_stat"]
-                    for s in payload["stats"]
-                }
+                stats = {s["stat"]["name"]: s["base_stat"] for s in payload["stats"]}
 
                 time.sleep(REQUEST_DELAY)
 
@@ -171,43 +166,32 @@ def process_pokemon(pokemon_id: int):
     session = SessionLocal()
 
     try:
+        # Retrieve existing Pokémon
         pokemon = session.get(Pokemon, pokemon_id)
         if not pokemon or not pokemon.name_pokeapi:
             return None
 
+        # Fetch enrichment data from PokeAPI
         data = get_pokemon_data(pokemon.name_pokeapi)
         if not data:
-            print(f"❌ {pokemon.name_pokeapi} non récupéré")
+            print(f"❌ {pokemon.name_pokeapi} not retrieved")
             return None
 
-        poke = upsert_pokemon(
-            session,
-            species_id=pokemon.species_id,
-            form_name=pokemon.form_name,
-            name_pokeapi=pokemon.name_pokeapi,
-            name_pokepedia=pokemon.name_pokepedia,
-            is_mega=pokemon.is_mega,
-            is_alola=pokemon.is_alola,
-            is_starter=pokemon.is_starter,
-        )
+        # Update physical attributes
+        pokemon.height_m = data["height_m"]
+        pokemon.weight_kg = data["weight_kg"]
 
-        poke.height_m = data["height_m"]
-        poke.weight_kg = data["weight_kg"]
-
-        key = poke.name_pokeapi.lower()
-        if poke.is_starter and key in BASE_SPRITES:
-            poke.sprite_url = BASE_SPRITES[key]
+        # Update sprite, respecting starter override
+        key = pokemon.name_pokeapi.lower()
+        if getattr(pokemon, "is_starter", False) and key in BASE_SPRITES:
+            pokemon.sprite_url = BASE_SPRITES[key]
         else:
-            poke.sprite_url = data["sprite_url"]
+            pokemon.sprite_url = data["sprite_url"]
 
-        stats = (
-            session.query(PokemonStat)
-            .filter(PokemonStat.pokemon_id == poke.id)
-            .one_or_none()
-        )
-
+        # Update or insert Pokémon stats
+        stats = session.query(PokemonStat).filter_by(pokemon_id=pokemon.id).one_or_none()
         if not stats:
-            stats = PokemonStat(pokemon_id=poke.id)
+            stats = PokemonStat(pokemon_id=pokemon.id)
             session.add(stats)
 
         stats.hp = data["hp"]
@@ -218,13 +202,12 @@ def process_pokemon(pokemon_id: int):
         stats.speed = data["speed"]
 
         session.commit()
-        print(f"✔ {poke.name_pokeapi} enrichi")
-
-        return poke.name_pokeapi
+        print(f"✔ {pokemon.name_pokeapi} enriched")
+        return pokemon.name_pokeapi
 
     except Exception as exc:
         session.rollback()
-        print(f"💥 Erreur {pokemon_id}: {exc}")
+        print(f"💥 Error {pokemon_id}: {exc}")
         return None
 
     finally:
@@ -252,20 +235,17 @@ def main():
     finally:
         session.close()
 
-    print(f"➡ {len(pokemon_ids)} Pokémon à enrichir via PokéAPI")
+    print(f"➡ {len(pokemon_ids)} Pokémon to enrich via PokeAPI")
 
     updated = 0
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = [
-            executor.submit(process_pokemon, pid)
-            for pid in pokemon_ids
-        ]
+        futures = [executor.submit(process_pokemon, pid) for pid in pokemon_ids]
 
         for future in as_completed(futures):
             if future.result():
                 updated += 1
 
-    print(f"✅ PokéAPI terminé : {updated} Pokémon enrichis")
+    print(f"✅ PokeAPI enrichment completed: {updated} Pokémon enriched")
 
 
 if __name__ == "__main__":

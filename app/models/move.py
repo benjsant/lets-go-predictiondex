@@ -1,3 +1,4 @@
+# app\models\move.py
 """
 SQLAlchemy Model – Move
 ======================
@@ -43,12 +44,6 @@ class Move(Base):
     - foundation for damage calculation logic,
     - core feature entity for machine learning pipelines.
 
-    Example:
-    ┌────┬──────────────┬────────┬──────────┬───────────┬──────────┐
-    │ id │ name         │ power  │ accuracy │ category  │ type_id  │
-    ├────┼──────────────┼────────┼──────────┼───────────┼──────────┤
-    │ 15 │ Thunderbolt  │ 90     │ 100      │ special   │ 13       │
-    └────┴──────────────┴────────┴──────────┴───────────┴──────────┘
     """
 
     __tablename__ = "move"
@@ -68,15 +63,16 @@ class Move(Base):
     #: Textual description of the move effect
     description = Column(Text)
 
-    #: Move category: physical | special | status
-    category = Column(String(20), nullable=False)
+    #: Foreign key to MoveCategory
+    category_id = Column(Integer, ForeignKey("move_category.id"), nullable=False)
+    category = relationship("MoveCategory", back_populates="moves")
 
     #: Damage subtype or special behavior (optional)
     damage_type = Column(String(50))
 
     #: Foreign key to the elemental type
     type_id = Column(Integer, ForeignKey("type.id"), nullable=False)
-
+    
     #: Relationship to the elemental type
     type = relationship("Type", back_populates="moves")
 
