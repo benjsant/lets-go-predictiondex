@@ -64,12 +64,3 @@ class PokemonType(Base):
 
     #: Relationship to the elemental Type entity
     type = relationship("Type")
-
-    __table_args__ = (
-        # 🔒 Ensures a Pokémon cannot have two types in the same slot
-        UniqueConstraint(
-            "pokemon_id",
-            "slot",
-            name="uq_pokemon_slot",
-        ),
-    )

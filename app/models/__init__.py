@@ -27,6 +27,8 @@ from .move import Move
 from .pokemon_move import PokemonMove
 from .learn_method import LearnMethod
 from .type_effectiveness import TypeEffectiveness
+from .form import Form
+from .move_category import MoveCategory
 
 __all__ = [
     "Base",
@@ -39,4 +41,6 @@ __all__ = [
     "PokemonMove",
     "LearnMethod",
     "TypeEffectiveness",
+    "Form",
+    "MoveCategory"
 ]

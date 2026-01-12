@@ -1,6 +1,6 @@
 # app/db/guards/move.py
 
-f"""
+"""
 Database guard for Pokémon moves.
 
 This module provides helper functions used during ETL and data ingestion
@@ -18,11 +18,11 @@ def upsert_move(
     *,
     name: str,
     type_id: int,
-    category: str,
-    power=None,
-    accuracy=None,
-    description=None,
-    damage_type=None,
+    category_id: int,
+    power: int | None = None,
+    accuracy: int | None = None,
+    description: str | None = None,
+    damage_type: str | None = None,
     auto_commit: bool = False,
 ) -> Move:
     """
@@ -45,9 +45,11 @@ def upsert_move(
     Returns:
         Move: Existing or newly created Move instance.
     """
-    move = session.query(Move).filter(
-        Move.name.ilike(name)
-    ).one_or_none()
+    move = (
+        session.query(Move)
+        .filter(Move.name.ilike(name))
+        .one_or_none()
+    )
 
     if move:
         return move
@@ -55,12 +57,13 @@ def upsert_move(
     move = Move(
         name=name,
         type_id=type_id,
-        category=category,
+        category_id=category_id,
         power=power,
         accuracy=accuracy,
         description=description,
         damage_type=damage_type,
     )
+
     session.add(move)
     commit_if_needed(session, auto_commit)
     return move

@@ -64,6 +64,8 @@ from app.models.learn_method import LearnMethod
 # --- Types domain ---
 from app.models.type import Type
 from app.models.type_effectiveness import TypeEffectiveness
+from app.models.form import Form
+from app.models.move_category import MoveCategory
 
 
 # ======================================================
@@ -146,3 +148,29 @@ with Session(engine) as session:
     session.commit()
 
 print("✅ LearnMethod initialized")
+
+print("📌 Initializing reference data (Forms)...")
+
+standard_forms = ["base", "mega", "alola", "starter"]
+
+with Session(engine) as session:
+    for name in standard_forms:
+        exists = session.query(Form).filter_by(name=name).first()
+        if not exists:
+            session.add(Form(name=name))
+    session.commit()
+
+print("✅ Forms initialized")
+
+print("📌 Initializing reference data (Move Categories)...")
+
+move_categories = ["physique", "spécial", "autre"]
+
+with Session(engine) as session:
+    for name in move_categories:
+        exists = session.query(MoveCategory).filter_by(name=name).first()
+        if not exists:
+            session.add(MoveCategory(name=name))
+    session.commit()
+
+print("✅ Move Categories initialized")
