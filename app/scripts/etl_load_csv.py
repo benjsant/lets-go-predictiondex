@@ -72,6 +72,7 @@ from app.models import (
 from app.db.guards.type import upsert_type
 from app.db.guards.move import upsert_move
 from app.db.guards.pokemon import upsert_pokemon
+from app.db.guards.pokemon_type import upsert_pokemon_type
 
 DATA_PATH = "data/csv"
 
@@ -236,18 +237,25 @@ def load_pokemon(session):
 def load_pokemon_types(session):
     """Associate Pokémon forms with elemental types (slot 1 and slot 2)."""
     print("➡ Loading pokemon types...")
-    type_map = {normalize_key(t.name): t.id for t in session.query(app.models.Type).all()}
+
+    type_map = {
+        normalize_key(t.name): t.id
+        for t in session.query(app.models.Type).all()
+    }
 
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as file:
         reader = csv.DictReader(file)
+
         for row in reader:
             species_id = int(row["id"])
+
             form_name = (
                 "mega" if normalize_bool(row.get("mega"))
                 else "alola" if normalize_bool(row.get("alola"))
                 else "starter" if normalize_bool(row.get("starter"))
                 else "base"
             )
+
             pokemon = (
                 session.query(app.models.Pokemon)
                 .join(Form)
@@ -255,21 +263,31 @@ def load_pokemon_types(session):
                 .filter(Form.name == form_name)
                 .one_or_none()
             )
+
             if not pokemon:
                 continue
-            pokemon_id = pokemon.id
 
-            # Type slot 1
+            # Slot 1
             if row.get("type_1"):
-                t_id = type_map.get(normalize_key(row["type_1"]))
-                if t_id:
-                    session.merge(app.models.PokemonType(pokemon_id=pokemon_id, type_id=t_id, slot=1))
+                type_id = type_map.get(normalize_key(row["type_1"]))
+                if type_id:
+                    upsert_pokemon_type(
+                        session,
+                        pokemon_id=pokemon.id,
+                        type_id=type_id,
+                        slot=1,
+                    )
 
-            # Type slot 2
+            # Slot 2
             if row.get("type_2"):
-                t_id = type_map.get(normalize_key(row["type_2"]))
-                if t_id:
-                    session.merge(app.models.PokemonType(pokemon_id=pokemon_id, type_id=t_id, slot=2))
+                type_id = type_map.get(normalize_key(row["type_2"]))
+                if type_id:
+                    upsert_pokemon_type(
+                        session,
+                        pokemon_id=pokemon.id,
+                        type_id=type_id,
+                        slot=2,
+                    )
 
     session.commit()
     print("✔ Pokemon types inserted")

@@ -1,3 +1,4 @@
+# app/schemas/pokemon.py
 """
 Pydantic schemas – Pokémon
 =========================
@@ -5,12 +6,8 @@ Pydantic schemas – Pokémon
 This module defines the Pydantic schemas used to expose Pokémon-related
 data through the FastAPI API layer.
 
-It covers multiple representation levels:
-- base Pokémon identity and form flags,
-- statistics and physical attributes,
-- elemental types,
-- learnable moves,
-- list and detail API responses.
+A Pokémon represents a concrete playable form of a species
+(Base, Mega, Alola, Starter, etc.).
 
 These schemas are read-only output models, built from SQLAlchemy ORM
 objects and optimized for clean, stable API contracts.
@@ -22,6 +19,7 @@ from pydantic import BaseModel, ConfigDict
 
 from app.schemas.pokemon_species import PokemonSpeciesOut
 from app.schemas.pokemon_type import PokemonTypeOut
+from app.schemas.form import FormOut
 
 
 # -------------------------
@@ -30,9 +28,6 @@ from app.schemas.pokemon_type import PokemonTypeOut
 class PokemonStatsOut(BaseModel):
     """
     Output schema representing a Pokémon's base stats.
-
-    Includes all six standard Pokémon statistics used for
-    battle mechanics and analysis.
     """
     hp: int
     attack: int
@@ -45,21 +40,20 @@ class PokemonStatsOut(BaseModel):
 
 
 # -------------------------
-# 🔹 Moves (Pokémon view)
+# 🔹 Moves (Pokémon-centric view)
 # -------------------------
 class PokemonMoveOut(BaseModel):
     """
     Output schema representing a move learned by a Pokémon.
-
-    This view is Pokémon-centric and focuses on how the move
-    is learned rather than on the move's full technical details.
     """
     name: str
     type: str
+    category: str  # 🔹 nouvelle propriété pour la catégorie du move
     learn_method: str
     learn_level: Optional[int]
 
     model_config = ConfigDict(from_attributes=True)
+
 
 
 # -------------------------
@@ -67,15 +61,12 @@ class PokemonMoveOut(BaseModel):
 # -------------------------
 class PokemonBase(BaseModel):
     """
-    Base Pokémon schema containing identity and form-related flags.
+    Base Pokémon schema.
 
-    Used as a shared parent for list and detail representations.
+    Represents a concrete Pokémon form.
     """
     id: int
-    form_name: str
-    is_mega: bool
-    is_alola: bool
-    is_starter: bool
+    form: FormOut
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -85,7 +76,7 @@ class PokemonBase(BaseModel):
 # -------------------------
 class PokemonListItem(PokemonBase):
     """
-    Lightweight Pokémon representation used in list endpoints.
+    Lightweight Pokémon representation for list endpoints.
     """
     species: PokemonSpeciesOut
     types: List[PokemonTypeOut]
@@ -97,10 +88,7 @@ class PokemonListItem(PokemonBase):
 # -------------------------
 class PokemonDetail(PokemonBase):
     """
-    Full Pokémon representation used in detail endpoints.
-
-    Includes combat statistics, learnable moves, physical attributes,
-    and elemental typing.
+    Full Pokémon representation for detail endpoints.
     """
     species: PokemonSpeciesOut
     stats: PokemonStatsOut

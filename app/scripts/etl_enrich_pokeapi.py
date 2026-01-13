@@ -1,120 +1,69 @@
 """
 ETL – Pokémon Reference Data Enrichment from PokeAPI (Pokémon Let's Go)
 
-Overview
---------
-This script enriches an existing Pokémon reference database using data
-retrieved from the public PokeAPI.
+This script enriches existing Pokémon records with reference data from PokeAPI:
+- Base combat statistics (HP, Attack, Defense, etc.)
+- Physical attributes (height, weight)
+- Sprite URLs (starter-specific overrides)
 
-It complements previously ingested CSV-based reference data by adding:
-- base combat statistics (HP, Attack, Defense, etc.)
-- physical attributes (height, weight)
-- sprite URLs
+Constraints:
+- Never creates new Pokémon entities
+- Only updates existing Pokémon
+- Idempotent and re-runnable
+- Threaded for I/O-bound API calls
 
-Important Constraints
----------------------
-- This script DOES NOT create new Pokémon entities.
-- Only Pokémon records already present in the database are enriched.
-- CSV ingestion remains the authoritative source of Pokémon identity data.
-
-This separation guarantees:
-- deterministic and reproducible ingestion (CSV-based)
-- optional enrichment from external APIs
-- isolation of failures related to third-party services
-
-Competency Scope (E1)
----------------------
-This script is part of competency block E1 and demonstrates:
-- extraction from an external REST API
-- controlled data transformation
-- enrichment of relational database records
-- transactional consistency
-- basic parallelism for I/O-bound tasks
-
-The use of local multithreading is intentional and limited.
-No orchestration framework, message queue, or scheduler is required
-for E1 validation.
-
-Execution Context
------------------
-This script must be executed after:
-- database schema initialization
-- CSV-based data loading
-
-It can be re-executed safely without creating duplicate records.
-
-Usage
------
-python app/scripts/etl_enrich_pokeapi.py
+Execution:
+- Must run after DB initialization and CSV-based ingestion
+- Competency Block: E1
 """
 
 import time
 from decimal import Decimal
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import logging
 
 import requests
+from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
-from app.models import Pokemon, PokemonStat
+from app.models import Pokemon, PokemonStat, Form
+from app.db.guards.pokemon_stats import upsert_pokemon_stats
+
+# ---------------------------------------------------------------------
+# Logging configuration
+# ---------------------------------------------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------
-
 MAX_WORKERS = 10
-REQUEST_DELAY = 0.05
+REQUEST_DELAY = 0.05  # Delay between API requests to avoid rate-limiting
 
 BASE_SPRITES = {
-    "pikachu-starter": (
-        "https://raw.githubusercontent.com/PokeAPI/sprites/master/"
-        "sprites/pokemon/25.png"
-    ),
-    "eevee-starter": (
-        "https://raw.githubusercontent.com/PokeAPI/sprites/master/"
-        "sprites/pokemon/133.png"
-    ),
+    "pikachu-starter": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+    "eevee-starter": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png",
 }
 
 POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon/{}"
 
-
 # ---------------------------------------------------------------------
-# API Extraction
+# PokeAPI Extraction
 # ---------------------------------------------------------------------
-def get_pokemon_data(name: str, retries: int = 3, delay: int = 2):
-    """
-    Retrieve Pokémon data from PokeAPI.
-
-    This function queries the PokeAPI for a given Pokémon name and extracts
-    a subset of useful attributes used for enrichment.
-
-    Parameters
-    ----------
-    name : str
-        Pokémon identifier used by PokeAPI.
-    retries : int, optional
-        Number of retry attempts in case of request failure.
-    delay : int, optional
-        Delay (in seconds) between retry attempts.
-
-    Returns
-    -------
-    dict | None
-        A dictionary containing base stats, physical attributes, and sprite URL,
-        or None if the data could not be retrieved.
-    """
+def get_pokemon_data(name: str, retries: int = 3, delay: int = 2) -> dict | None:
+    """Retrieve Pokémon data from PokeAPI."""
     url = POKEAPI_URL.format(name.lower())
-
     for _ in range(retries):
         try:
             resp = requests.get(url, timeout=10)
             if resp.status_code == 200:
                 payload = resp.json()
-
                 stats = {s["stat"]["name"]: s["base_stat"] for s in payload["stats"]}
-
                 time.sleep(REQUEST_DELAY)
-
                 return {
                     "hp": stats.get("hp"),
                     "attack": stats.get("attack"),
@@ -126,127 +75,87 @@ def get_pokemon_data(name: str, retries: int = 3, delay: int = 2):
                     "weight_kg": Decimal(payload["weight"]) / 10,
                     "sprite_url": payload["sprites"]["front_default"],
                 }
-
-            print(f"⚠ {name}: HTTP {resp.status_code}")
-
+            logger.warning("%s: HTTP %s", name, resp.status_code)
         except requests.RequestException as exc:
-            print(f"⚠ {name}: {exc}")
-
+            logger.warning("%s: %s", name, exc)
         time.sleep(delay)
-
     return None
-
 
 # ---------------------------------------------------------------------
 # Worker
 # ---------------------------------------------------------------------
-def process_pokemon(pokemon_id: int):
-    """
-    Enrich a single Pokémon record using PokeAPI data.
-
-    This function:
-    - retrieves an existing Pokémon entity
-    - fetches enrichment data from PokeAPI
-    - updates physical attributes and sprite
-    - upserts the associated base statistics
-
-    A dedicated database session is created for isolation and
-    transactional safety.
-
-    Parameters
-    ----------
-    pokemon_id : int
-        Primary key of the Pokémon record to enrich.
-
-    Returns
-    -------
-    str | None
-        Pokémon PokeAPI name if enrichment succeeded, otherwise None.
-    """
-    session = SessionLocal()
-
+def process_pokemon(pokemon_id: int, starter_form_id: int) -> str | None:
+    """Enrich a single Pokémon record using PokeAPI data."""
+    session: Session = SessionLocal()
     try:
-        # Retrieve existing Pokémon
         pokemon = session.get(Pokemon, pokemon_id)
         if not pokemon or not pokemon.name_pokeapi:
             return None
 
-        # Fetch enrichment data from PokeAPI
         data = get_pokemon_data(pokemon.name_pokeapi)
         if not data:
-            print(f"❌ {pokemon.name_pokeapi} not retrieved")
+            logger.error("❌ %s not retrieved", pokemon.name_pokeapi)
             return None
 
         # Update physical attributes
         pokemon.height_m = data["height_m"]
         pokemon.weight_kg = data["weight_kg"]
 
-        # Update sprite, respecting starter override
-        key = pokemon.name_pokeapi.lower()
-        if getattr(pokemon, "is_starter", False) and key in BASE_SPRITES:
-            pokemon.sprite_url = BASE_SPRITES[key]
+        # Sprite override for starter forms
+        if pokemon.form_id == starter_form_id:
+            key = pokemon.name_pokeapi.lower()
+            pokemon.sprite_url = BASE_SPRITES.get(key, data["sprite_url"])
         else:
             pokemon.sprite_url = data["sprite_url"]
 
-        # Update or insert Pokémon stats
-        stats = session.query(PokemonStat).filter_by(pokemon_id=pokemon.id).one_or_none()
-        if not stats:
-            stats = PokemonStat(pokemon_id=pokemon.id)
-            session.add(stats)
-
-        stats.hp = data["hp"]
-        stats.attack = data["attack"]
-        stats.defense = data["defense"]
-        stats.sp_attack = data["sp_attack"]
-        stats.sp_defense = data["sp_defense"]
-        stats.speed = data["speed"]
+        # Upsert base stats
+        upsert_pokemon_stats(
+            session,
+            pokemon_id=pokemon.id,
+            hp=data["hp"],
+            attack=data["attack"],
+            defense=data["defense"],
+            sp_attack=data["sp_attack"],
+            sp_defense=data["sp_defense"],
+            speed=data["speed"],
+            auto_commit=False,
+        )
 
         session.commit()
-        print(f"✔ {pokemon.name_pokeapi} enriched")
+        logger.info("✔ %s enriched", pokemon.name_pokeapi)
         return pokemon.name_pokeapi
 
     except Exception as exc:
         session.rollback()
-        print(f"💥 Error {pokemon_id}: {exc}")
+        logger.error("💥 Error %s: %s", pokemon_id, exc)
         return None
-
     finally:
         session.close()
-
 
 # ---------------------------------------------------------------------
 # Entry Point
 # ---------------------------------------------------------------------
 def main():
-    """
-    Execute the PokeAPI enrichment pipeline.
-
-    This function:
-    - retrieves all Pokémon IDs from the database
-    - processes them in parallel using a thread pool
-    - aggregates enrichment results
-
-    Failures affecting individual Pokémon do not interrupt
-    the global execution.
-    """
-    session = SessionLocal()
+    """Execute PokeAPI enrichment for all Pokémon."""
+    session: Session = SessionLocal()
     try:
         pokemon_ids = [p.id for p in session.query(Pokemon.id).all()]
+        starter_form_id = session.query(Form.id).filter_by(name="starter").scalar()
+        if starter_form_id is None:
+            raise RuntimeError("Starter form not found in database")
     finally:
         session.close()
 
-    print(f"➡ {len(pokemon_ids)} Pokémon to enrich via PokeAPI")
-
+    logger.info("➡ %s Pokémon to enrich via PokeAPI", len(pokemon_ids))
     updated = 0
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = [executor.submit(process_pokemon, pid) for pid in pokemon_ids]
-
+        futures = [executor.submit(process_pokemon, pid, starter_form_id) for pid in pokemon_ids]
         for future in as_completed(futures):
             if future.result():
                 updated += 1
 
-    print(f"✅ PokeAPI enrichment completed: {updated} Pokémon enriched")
+    logger.info("✅ PokeAPI enrichment completed: %s Pokémon enriched", updated)
 
-
+# ---------------------------------------------------------------------
 if __name__ == "__main__":
     main()

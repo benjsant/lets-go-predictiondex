@@ -2,29 +2,16 @@
 API routes – Pokémon moves
 ==========================
 
-This module defines the FastAPI routes related to Pokémon moves (abilities).
-
-It exposes read-only endpoints allowing clients to:
-- list all available moves,
-- retrieve detailed information for a specific move.
-
-The routes rely on a service layer (`move_service`) to handle database access
-and business logic, ensuring a clear separation of concerns.
+FastAPI endpoints for moves.
 """
-## pylint: disable=import-error
+
 from typing import List
 from fastapi import APIRouter, HTTPException
 
 from app.db.session import SessionLocal
-from app.schemas.move import (
-    MoveListItem,
-    MoveDetail,
-    TypeOut,
-)
-from app.api.services.move_service import (
-    list_moves,
-    get_move_by_id,
-)
+from app.schemas.move import MoveListItem, MoveDetail
+from app.schemas.type import TypeOut
+from app.api.services.move_service import list_moves, get_move_by_id
 
 router = APIRouter()
 
@@ -35,16 +22,11 @@ router = APIRouter()
 @router.get("/", response_model=List[MoveListItem])
 def get_moves():
     """
-    Retrieve the list of all Pokémon moves.
-
-    Returns a lightweight representation of each move including:
-    - basic stats (power, accuracy, category),
-    - the associated Pokémon type.
-
-    This endpoint is intended for:
-    - listings,
-    - frontend selectors,
-    - exploratory or analytical use cases.
+    List all moves with lightweight information:
+    - name
+    - type
+    - category
+    - power, accuracy
     """
     with SessionLocal() as db:
         moves = list_moves(db)
@@ -53,7 +35,7 @@ def get_moves():
             MoveListItem(
                 id=m.id,
                 name=m.name,
-                category=m.category,
+                category=m.category.name,  # ✅ use name, not object
                 power=m.power,
                 accuracy=m.accuracy,
                 type=TypeOut(
@@ -71,40 +53,18 @@ def get_moves():
 @router.get("/{move_id}", response_model=MoveDetail)
 def get_move(move_id: int):
     """
-    Retrieve detailed information about a specific Pokémon move.
-
-    Parameters
-    ----------
-    move_id : int
-        Unique identifier of the move.
-
-    Returns
-    -------
-    MoveDetail
-        A detailed representation including:
-        - description,
-        - damage type,
-        - accuracy and power,
-        - associated Pokémon type.
-
-    Raises
-    ------
-    HTTPException
-        404 error if the requested move does not exist.
+    Retrieve detailed information for a specific move.
     """
     with SessionLocal() as db:
         move = get_move_by_id(db, move_id)
 
         if not move:
-            raise HTTPException(
-                status_code=404,
-                detail="Move not found",
-            )
+            raise HTTPException(status_code=404, detail="Move not found")
 
         return MoveDetail(
             id=move.id,
             name=move.name,
-            category=move.category,
+            category=move.category.name,  # ✅ use name
             power=move.power,
             accuracy=move.accuracy,
             description=move.description,

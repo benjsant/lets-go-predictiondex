@@ -1,33 +1,23 @@
-"""
-API routes – Pokémon
-===================
+# app/api/routes/pokemon_route.py
 
-This module defines the FastAPI routes related to Pokémon entities.
-
-It provides read-only endpoints to:
-- list all Pokémon with basic information,
-- retrieve detailed data for a specific Pokémon, including stats, types, and moves.
-
-The routes rely on a dedicated service layer (`pokemon_service`) to access
-the database and encapsulate business logic.
-"""
-## pylint: disable=import-error
 from typing import List
 from fastapi import APIRouter, HTTPException
 
 from app.db.session import SessionLocal
+from app.api.services.pokemon_service import (
+    list_pokemon,
+    get_pokemon_by_id,
+)
+
 from app.schemas.pokemon import (
     PokemonListItem,
     PokemonDetail,
     PokemonMoveOut,
 )
 from app.schemas.pokemon_type import PokemonTypeOut
-from app.api.services.pokemon_service import (
-    list_pokemon,
-    get_pokemon_by_id,
-)
+from app.schemas.form import FormOut
 
-router = APIRouter()
+router = APIRouter(prefix="/pokemon", tags=["Pokemon"])
 
 
 # -------------------------
@@ -35,30 +25,16 @@ router = APIRouter()
 # -------------------------
 @router.get("/", response_model=List[PokemonListItem])
 def get_pokemon_list():
-    """
-    Retrieve the list of all Pokémon.
-
-    Returns a summarized representation for each Pokémon, including:
-    - form and variant flags (Mega, Alola, starter),
-    - species information,
-    - primary and secondary types,
-    - sprite URL when available.
-
-    This endpoint is designed for:
-    - Pokédex-style listings,
-    - frontend overviews,
-    - analytical or exploratory use cases.
-    """
     with SessionLocal() as db:
         pokemons = list_pokemon(db)
 
         return [
             PokemonListItem(
                 id=p.id,
-                form_name=p.form_name,
-                is_mega=p.is_mega,
-                is_alola=p.is_alola,
-                is_starter=p.is_starter,
+                form=FormOut(
+                    id=p.form.id,
+                    name=p.form.name,
+                ),
                 species=p.species,
                 sprite_url=p.sprite_url,
                 types=[
@@ -78,30 +54,6 @@ def get_pokemon_list():
 # -------------------------
 @router.get("/{pokemon_id}", response_model=PokemonDetail)
 def get_pokemon_detail(pokemon_id: int):
-    """
-    Retrieve detailed information about a specific Pokémon.
-
-    Parameters
-    ----------
-    pokemon_id : int
-        Unique identifier of the Pokémon.
-
-    Returns
-    -------
-    PokemonDetail
-        A detailed Pokémon representation including:
-        - base information and form flags,
-        - species data,
-        - base stats,
-        - physical characteristics (height, weight),
-        - types,
-        - learnable moves with learning conditions.
-
-    Raises
-    ------
-    HTTPException
-        404 error if the Pokémon does not exist.
-    """
     with SessionLocal() as db:
         pokemon = get_pokemon_by_id(db, pokemon_id)
 
@@ -113,10 +65,10 @@ def get_pokemon_detail(pokemon_id: int):
 
         return PokemonDetail(
             id=pokemon.id,
-            form_name=pokemon.form_name,
-            is_mega=pokemon.is_mega,
-            is_alola=pokemon.is_alola,
-            is_starter=pokemon.is_starter,
+            form=FormOut(
+                id=pokemon.form.id,
+                name=pokemon.form.name,
+            ),
             species=pokemon.species,
             stats=pokemon.stats,
             height_m=pokemon.height_m,
@@ -133,6 +85,7 @@ def get_pokemon_detail(pokemon_id: int):
                 PokemonMoveOut(
                     name=pm.move.name,
                     type=pm.move.type.name,
+                    category=pm.move.category.name,
                     learn_method=pm.learn_method.name,
                     learn_level=pm.learn_level,
                 )
