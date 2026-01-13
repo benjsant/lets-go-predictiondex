@@ -22,6 +22,7 @@ any business logic. It is consumed by:
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 
 # --------------------
 # Database parameters (Docker / Dev friendly)
@@ -54,3 +55,14 @@ SessionLocal = sessionmaker(
     autoflush=False,
     autocommit=False,
 )
+
+def get_db():
+    """
+    FastAPI dependency to get a SQLAlchemy session.
+    Usage: db: Session = Depends(get_db)
+    """
+    db: Session = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

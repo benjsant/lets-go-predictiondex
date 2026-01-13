@@ -2,12 +2,8 @@
 Move service layer
 ==================
 
-This module contains the service functions responsible for accessing and
-retrieving move (attack) data from the database.
-
-The service layer isolates database logic from API routes and returns
-SQLAlchemy model instances, optionally eager-loading related entities
-to avoid N+1 query issues.
+Service functions for accessing and retrieving Pokémon move data.
+Eager-loads related entities to prevent N+1 queries.
 """
 
 from typing import List, Optional
@@ -23,22 +19,27 @@ def list_moves(db: Session) -> List[Move]:
     """
     Retrieve all moves from the database.
 
-    This function returns all move entities and eagerly loads the related
-    Pokémon type to optimize database access and prevent N+1 queries.
+    Eager-loads:
+    - Type
+    - Move category
 
     Parameters
     ----------
     db : Session
-        Active SQLAlchemy database session.
+        Active SQLAlchemy session.
 
     Returns
     -------
     List[Move]
-        List of SQLAlchemy Move objects.
+        List of Move ORM objects.
     """
     return (
         db.query(Move)
-        .options(joinedload(Move.type))
+        .options(
+            joinedload(Move.type),
+            joinedload(Move.category)
+        )
+        .order_by(Move.id)
         .all()
     )
 
@@ -48,26 +49,26 @@ def list_moves(db: Session) -> List[Move]:
 # -------------------------
 def get_move_by_id(db: Session, move_id: int) -> Optional[Move]:
     """
-    Retrieve a move by its unique identifier.
-
-    The related move type is eagerly loaded to provide complete information
-    in a single database query.
+    Retrieve a move by its unique ID, eager-loading type and category.
 
     Parameters
     ----------
     db : Session
-        Active SQLAlchemy database session.
+        Active SQLAlchemy session.
     move_id : int
-        Unique identifier of the move.
+        Move ID.
 
     Returns
     -------
     Optional[Move]
-        The corresponding Move object if found, otherwise ``None``.
+        Move ORM object if found, else None.
     """
     return (
         db.query(Move)
-        .options(joinedload(Move.type))
+        .options(
+            joinedload(Move.type),
+            joinedload(Move.category)
+        )
         .filter(Move.id == move_id)
         .one_or_none()
     )

@@ -1,4 +1,4 @@
-#app/scripts/etl_post_process.py
+# app/scripts/etl_post_process.py
 
 """
 ETL - Post-processing phase for Pokémon data (Pokémon Let's Go)
@@ -30,12 +30,11 @@ Competency block:
 """
 
 from app.db.session import SessionLocal
-from app.models import Pokemon, PokemonSpecies
+from app.models import Pokemon, PokemonSpecies, Form
 from app.db.guards.pokemon_move import upsert_pokemon_move
 
 
 def inherit_mega_moves():
-
     """
     Inherit move learnsets from base Pokémon to Mega Pokémon forms.
 
@@ -45,11 +44,12 @@ def inherit_mega_moves():
     - Only Pokémon with form_name == "mega" are processed
 
     Processing steps:
-    1. Retrieve all Mega Pokémon forms
-    2. Resolve their Pokémon species
-    3. Find the corresponding base Pokémon
-    4. Copy each move association from base to Mega
-    5. Use guarded upsert to avoid duplicates
+    1. Retrieve form IDs dynamically
+    2. Retrieve all Mega Pokémon forms
+    3. Resolve their Pokémon species
+    4. Find the corresponding base Pokémon by pokedex_number
+    5. Copy each move association from base to Mega
+    6. Use guarded upsert to avoid duplicates
 
     Side effects:
     - Inserts rows into pokemon_move table if missing
@@ -60,23 +60,31 @@ def inherit_mega_moves():
     """
     session = SessionLocal()
     try:
-        megas = session.query(Pokemon).filter(
-            Pokemon.form_name == "mega"
-        ).all()
+        # Retrieve form IDs dynamically
+        forms = {f.name: f.id for f in session.query(Form).all()}
+        base_form_id = forms.get("base")
+        mega_form_id = forms.get("mega")
 
+        if base_form_id is None or mega_form_id is None:
+            print("[ERROR] Base or Mega form not found in database")
+            return
+
+        # Get all Mega Pokémon
+        megas = session.query(Pokemon).filter(Pokemon.form_id == mega_form_id).all()
         inherited_count = 0
 
         for mega in megas:
             species = session.get(PokemonSpecies, mega.species_id)
             if not species:
-                print(f"[WARN] Aucun species pour {mega.name_pokepedia}")
+                print(f"[WARN] No species found for {mega.name_pokepedia}")
                 continue
 
+            # Find the base Pokémon by pokedex_number
             base = (
                 session.query(Pokemon)
                 .join(PokemonSpecies)
                 .filter(
-                    Pokemon.form_name == "base",
+                    Pokemon.form_id == base_form_id,
                     PokemonSpecies.pokedex_number == species.pokedex_number,
                 )
                 .one_or_none()
@@ -84,11 +92,12 @@ def inherit_mega_moves():
 
             if not base:
                 print(
-                    f"[WARN] Aucun Pokémon de base pour {mega.name_pokepedia} "
+                    f"[WARN] No base Pokémon found for {mega.name_pokepedia} "
                     f"(pokedex={species.pokedex_number})"
                 )
                 continue
 
+            # Copy moves from base to Mega
             for bm in base.moves:
                 _, created = upsert_pokemon_move(
                     session,
@@ -97,15 +106,11 @@ def inherit_mega_moves():
                     learn_method_id=bm.learn_method_id,
                     learn_level=bm.learn_level,
                 )
-
                 if created:
                     inherited_count += 1
 
         session.commit()
-        print(
-            f"[INFO] Héritage des Méga-Pokémon terminé "
-            f"({inherited_count} moves hérités)"
-        )
+        print(f"[INFO] Mega Pokémon move inheritance completed ({inherited_count} moves inherited)")
 
     finally:
         session.close()

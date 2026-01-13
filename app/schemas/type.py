@@ -1,17 +1,11 @@
+#app/schemas/type.py
 """
-Pydantic schemas – Pokémon types
-================================
+Pydantic schemas – Pokémon types (optimisé)
+===========================================
 
-This module defines the Pydantic schemas used to expose Pokémon elemental
-types through the API.
-
-A Pokémon type (e.g. Fire, Water, Electric) is a core battle mechanic that:
-- determines move effectiveness,
-- influences damage multipliers,
-- drives type-based analytics and simulations.
-
-These schemas are read-only and map directly to the underlying
-SQLAlchemy `Type` model.
+Ce module définit les schemas Pydantic pour exposer les types Pokémon via l'API.
+Il est aligné avec les modèles SQLAlchemy et inclut les relations nécessaires pour
+les moves et les slots dans le contexte Pokémon.
 """
 
 from pydantic import BaseModel, ConfigDict
@@ -19,16 +13,16 @@ from typing import List
 
 
 # -------------------------
-# 🔹 Basic Type
+# 🔹 Type Pokémon de base
 # -------------------------
 class TypeOut(BaseModel):
     """
-    Basic output schema for a Pokémon elemental type.
+    Schema de sortie pour un type Pokémon élémentaire.
 
-    This schema is typically used in:
-    - Pokémon listings,
-    - move descriptions,
-    - lightweight API responses.
+    Ce schema est utilisé dans :
+    - les listes de Pokémon,
+    - les descriptions de moves,
+    - les réponses API légères.
     """
 
     id: int
@@ -38,16 +32,33 @@ class TypeOut(BaseModel):
 
 
 # -------------------------
-# 🔹 Type with moves (optional)
+# 🔹 Type Pokémon avec moves
 # -------------------------
 class TypeWithMoves(TypeOut):
     """
-    Extended type schema including related move identifiers.
+    Schema étendu incluant les moves associés à ce type.
 
-    This schema is useful for:
-    - analytical endpoints,
-    - debugging or data inspection,
-    - future extensions linking types to their moves.
+    Aligné avec le modèle SQLAlchemy `Move.type_id`.
+    Fournit une liste d'identifiants de moves pour les endpoints analytiques ou détaillés.
     """
 
-    move_ids: List[int]
+    move_ids: List[int] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# -------------------------
+# 🔹 Type d'un Pokémon avec slot
+# -------------------------
+class PokemonTypeOut(BaseModel):
+    """
+    Représente le type d'un Pokémon avec son slot (1 ou 2).
+
+    Aligné avec le modèle SQLAlchemy `PokemonType`.
+    """
+
+    id: int  # identifiant du type
+    name: str  # nom du type
+    slot: int  # slot du type pour le Pokémon (1=primaire, 2=secondaire)
+
+    model_config = ConfigDict(from_attributes=True)
