@@ -2,15 +2,21 @@
 API routes – Pokémon moves
 ==========================
 
-FastAPI endpoints for moves.
+FastAPI endpoints for Pokémon moves.
+Designed to be Streamlit-friendly and unambiguous.
 """
 
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Query, Depends
+
+from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.schemas.move import MoveListItem, MoveDetail, MoveSelectableOut
+from app.schemas.move import (
+    MoveListItem,
+    MoveDetail,
+    MoveSelectableOut,
+)
 from app.schemas.type import TypeOut
 from app.api.services.move_service import (
     list_moves,
@@ -22,66 +28,115 @@ from app.api.services.move_service import (
 router = APIRouter(prefix="/moves", tags=["Moves"])
 
 
-# -------------------------
-# 🔹 List all moves
-# -------------------------
+# ============================================================
+# 🔹 LIST ALL MOVES
+# ============================================================
 @router.get("/", response_model=List[MoveListItem])
 def get_moves(db: Session = Depends(get_db)):
     """
-    List all moves with lightweight information:
-    - name
-    - type
-    - category
-    - power, accuracy
+    List all moves with lightweight information.
     """
     moves = list_moves(db)
 
     return [
         MoveListItem(
-            id=m.id,
-            name=m.name,
-            category=m.category.name,
-            power=m.power,
-            accuracy=m.accuracy,
-            type=TypeOut(id=m.type.id, name=m.type.name),
+            id=move.id,
+            name=move.name,
+            category=move.category.name,
+            power=move.power,
+            accuracy=move.accuracy,
+            type=TypeOut(
+                id=move.type.id,
+                name=move.type.name,
+            ),
         )
-        for m in moves
+        for move in moves
     ]
 
 
-# -------------------------
-# 🔹 Search moves by name (French)
-# -------------------------
+# ============================================================
+# 🔹 SEARCH MOVES BY NAME (FR)
+# ============================================================
 @router.get("/search", response_model=List[MoveListItem])
 def search_moves(
-    name: str = Query(..., min_length=1, description="Partial or full move name in French"),
+    name: str = Query(
+        ...,
+        min_length=1,
+        description="Partial or full move name (French, accent-insensitive)",
+    ),
     db: Session = Depends(get_db),
 ):
     """
-    Search moves by name in French (accent- and case-insensitive).
+    Search moves by French name.
+    Always returns a list (empty if no match).
     """
     moves = search_moves_by_name(db, name)
 
-    if not moves:
-        raise HTTPException(status_code=404, detail="No moves found matching this name")
-
     return [
         MoveListItem(
-            id=m.id,
-            name=m.name,
-            category=m.category.name,
-            power=m.power,
-            accuracy=m.accuracy,
-            type=TypeOut(id=m.type.id, name=m.type.name),
+            id=move.id,
+            name=move.name,
+            category=move.category.name,
+            power=move.power,
+            accuracy=move.accuracy,
+            type=TypeOut(
+                id=move.type.id,
+                name=move.type.name,
+            ),
         )
-        for m in moves
+        for move in moves
     ]
 
 
-# -------------------------
-# 🔹 Move detail
-# -------------------------
-@router.get("/{move_id}", response_model=MoveDetail)
+# ============================================================
+# 🔹 LIST MOVES BY TYPE (+ optional Pokémon filter)
+# ============================================================
+@router.get(
+    "/by-type/{type_name}",
+    response_model=List[MoveSelectableOut],
+)
+def get_moves_by_type(
+    type_name: str,
+    pokemon_id: Optional[int] = Query(
+        None,
+        description="Optional Pokémon ID to restrict to learnable moves",
+    ),
+    db: Session = Depends(get_db),
+):
+    """
+    Retrieve moves of a given type.
+
+    If `pokemon_id` is provided, learning information is included.
+    Always returns a stable, flat structure for Streamlit.
+    """
+    items = list_moves_by_type(
+        db=db,
+        type_name=type_name,
+        pokemon_id=pokemon_id,
+    )
+
+    return [
+        MoveSelectableOut(
+            id=item["move"].id,
+            name=item["move"].name,
+            category=item["move"].category.name,
+            power=item["move"].power,
+            accuracy=item["move"].accuracy,
+            type=TypeOut(
+                id=item["move"].type.id,
+                name=item["move"].type.name,
+            ),
+            learn_method=item.get("learn_method"),
+            learn_level=item.get("learn_level"),
+        )
+        for item in items
+    ]
+
+
+# ============================================================
+# 🔹 MOVE DETAIL (ID – NON AMBIGUOUS)
+# ============================================================
+@router.get("/id/{move_id}", response_model=MoveDetail)
 def get_move(
     move_id: int,
     db: Session = Depends(get_db),
@@ -102,59 +157,8 @@ def get_move(
         accuracy=move.accuracy,
         description=move.description,
         damage_type=move.damage_type,
-        type=TypeOut(id=move.type.id, name=move.type.name),
+        type=TypeOut(
+            id=move.type.id,
+            name=move.type.name,
+        ),
     )
-
-
-# -------------------------
-# 🔹 List moves by type
-# -------------------------
-@router.get(
-    "/by-type/{type_name}",
-    response_model=List[MoveSelectableOut],
-)
-def get_moves_by_type(
-    type_name: str,
-    pokemon_id: Optional[int] = Query(
-        None,
-        description="Optional Pokémon ID to filter moves learnable by it",
-    ),
-    db: Session = Depends(get_db),
-):
-    moves = list_moves_by_type(db, type_name, pokemon_id)
-
-    if not moves:
-        raise HTTPException(status_code=404, detail="No moves found")
-
-    results = []
-
-    for item in moves:
-        if pokemon_id:
-            move, pm = item
-            results.append(
-                MoveSelectableOut(
-                    id=move.id,
-                    name=move.name,
-                    category=move.category.name,
-                    power=move.power,
-                    accuracy=move.accuracy,
-                    type=TypeOut(id=move.type.id, name=move.type.name),
-                    learn_method=pm.learn_method.name if pm.learn_method else None,
-                    learn_level=pm.learn_level,
-                )
-            )
-        else:
-            move = item
-            results.append(
-                MoveSelectableOut(
-                    id=move.id,
-                    name=move.name,
-                    category=move.category.name,
-                    power=move.power,
-                    accuracy=move.accuracy,
-                    type=TypeOut(id=move.type.id, name=move.type.name),
-                )
-            )
-
-    return results
-

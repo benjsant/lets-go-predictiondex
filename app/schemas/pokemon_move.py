@@ -23,7 +23,7 @@ from app.schemas.learn_method import LearnMethodOut
 from app.schemas.move import MoveListItem
 
 
-class PokemonMoveOut(BaseModel):
+class PokemonMoveORMOut(BaseModel):
     """
     Output schema representing a move learned by a Pokémon.
 
@@ -37,3 +37,4 @@ class PokemonMoveOut(BaseModel):
     learn_level: Optional[int]
 
     model_config = ConfigDict(from_attributes=True)
+

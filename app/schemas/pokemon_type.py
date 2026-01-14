@@ -1,3 +1,4 @@
+#app/schemas/pokemon_type.py
 """
 Pydantic schemas – Pokémon Type
 ===============================

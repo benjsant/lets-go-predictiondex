@@ -2,25 +2,24 @@
 Move service layer
 ==================
 
-Service functions for accessing and retrieving Pokémon move data.
-Eager-loads related entities to prevent N+1 queries.
+Service functions for accessing Pokémon move data.
 
-New features:
-- Filter moves by type name
-- Optional filtering by Pokémon ID
+Design principles:
+- Stable return types
+- Streamlit-friendly
+- No presentation logic
 """
 
 import unicodedata
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func
 
-from app.models import Move, PokemonMove, Pokemon, Type
+from app.models import Move, PokemonMove, Type
 
 
-# -------------------------
-# 🔹 Utility function
-# -------------------------
+# ============================================================
+# 🔹 Utility
+# ============================================================
 def normalize(text: str) -> str:
     """
     Normalize a string for tolerant comparison:
@@ -28,130 +27,143 @@ def normalize(text: str) -> str:
     - remove accents
     """
     return "".join(
-        c for c in unicodedata.normalize("NFD", text.lower())
+        c
+        for c in unicodedata.normalize("NFD", text.lower())
         if unicodedata.category(c) != "Mn"
     )
 
 
-# -------------------------
+# ============================================================
 # 🔹 List all moves
-# -------------------------
+# ============================================================
 def list_moves(db: Session) -> List[Move]:
-    """
-    Retrieve all moves from the database, eager-loading type and category.
-
-    Parameters
-    ----------
-    db : Session
-        Active SQLAlchemy session.
-
-    Returns
-    -------
-    List[Move]
-        List of Move ORM objects.
-    """
     return (
         db.query(Move)
-        .options(joinedload(Move.type), joinedload(Move.category))
+        .options(
+            joinedload(Move.type),
+            joinedload(Move.category),
+        )
         .order_by(Move.id)
         .all()
     )
 
 
-# -------------------------
-# 🔹 Retrieve move by ID
-# -------------------------
+# ============================================================
+# 🔹 Get move by ID
+# ============================================================
 def get_move_by_id(db: Session, move_id: int) -> Optional[Move]:
-    """
-    Retrieve a move by its unique ID, eager-loading type and category.
-
-    Parameters
-    ----------
-    db : Session
-        Active SQLAlchemy session.
-    move_id : int
-        Move ID.
-
-    Returns
-    -------
-    Optional[Move]
-        Move ORM object if found, else None.
-    """
     return (
         db.query(Move)
-        .options(joinedload(Move.type), joinedload(Move.category))
+        .options(
+            joinedload(Move.type),
+            joinedload(Move.category),
+        )
         .filter(Move.id == move_id)
         .one_or_none()
     )
 
 
-# -------------------------
-# 🔹 Search moves by name (French)
-# -------------------------
+# ============================================================
+# 🔹 Search moves by name (FR)
+# ============================================================
 def search_moves_by_name(db: Session, name: str) -> List[Move]:
-    """
-    Search moves by name in French (partial match, accent-insensitive).
-
-    Parameters
-    ----------
-    db : Session
-        Active SQLAlchemy session.
-    name : str
-        Partial or full name to search.
-
-    Returns
-    -------
-    List[Move]
-        List of matching Move ORM objects.
-    """
     normalized_name = normalize(name)
 
-    moves = db.query(Move).options(joinedload(Move.type), joinedload(Move.category)).all()
-    return [m for m in moves if normalize(m.name).find(normalized_name) != -1]
+    moves = (
+        db.query(Move)
+        .options(
+            joinedload(Move.type),
+            joinedload(Move.category),
+        )
+        .all()
+    )
+
+    return [
+        move
+        for move in moves
+        if normalize(move.name).find(normalized_name) != -1
+    ]
 
 
-# -------------------------
-# 🔹 List moves by type
-# -------------------------
+# ============================================================
+# 🔹 List moves by type (+ optional Pokémon filter)
+# ============================================================
 def list_moves_by_type(
     db: Session,
     type_name: str,
-    pokemon_id: Optional[int] = None
-):
+    pokemon_id: Optional[int] = None,
+) -> List[Dict[str, Any]]:
     """
-    List moves by type.
-    Optionally include Pokémon-specific learning info.
+    Return a list of moves for a given type.
+
+    Always returns a normalized structure:
+    {
+        "move": Move,
+        "learn_method": Optional[str],
+        "learn_level": Optional[int],
+    }
     """
+
+    # 🔹 Resolve type (tolerant)
     type_obj = next(
-        (t for t in db.query(Type).all()
-         if normalize(t.name).startswith(normalize(type_name))),
-        None
+        (
+            t for t in db.query(Type).all()
+            if normalize(t.name).startswith(normalize(type_name))
+        ),
+        None,
     )
+
     if not type_obj:
         return []
 
-    if pokemon_id:
-        return (
-            db.query(Move, PokemonMove)
-            .join(PokemonMove)
-            .filter(
-                Move.type_id == type_obj.id,
-                PokemonMove.pokemon_id == pokemon_id,
-            )
+    # --------------------------------------------------------
+    # 🔹 Base query (no Pokémon context)
+    # --------------------------------------------------------
+    if pokemon_id is None:
+        moves = (
+            db.query(Move)
             .options(
                 joinedload(Move.type),
                 joinedload(Move.category),
-                joinedload(PokemonMove.learn_method),
             )
+            .filter(Move.type_id == type_obj.id)
             .order_by(Move.id)
             .all()
         )
 
-    return (
-        db.query(Move)
-        .options(joinedload(Move.type), joinedload(Move.category))
-        .filter(Move.type_id == type_obj.id)
+        return [
+            {
+                "move": move,
+                "learn_method": None,
+                "learn_level": None,
+            }
+            for move in moves
+        ]
+
+    # --------------------------------------------------------
+    # 🔹 Pokémon-specific learning info
+    # --------------------------------------------------------
+    rows = (
+        db.query(Move, PokemonMove)
+        .join(PokemonMove, PokemonMove.move_id == Move.id)
+        .options(
+            joinedload(Move.type),
+            joinedload(Move.category),
+            joinedload(PokemonMove.learn_method),
+        )
+        .filter(
+            Move.type_id == type_obj.id,
+            PokemonMove.pokemon_id == pokemon_id,
+        )
         .order_by(Move.id)
         .all()
     )
 
+    return [
+        {
+            "move": move,
+            "learn_method": pm.learn_method.name if pm.learn_method else None,
+            "learn_level": pm.learn_level,
+        }
+        for move, pm in rows
+    ]

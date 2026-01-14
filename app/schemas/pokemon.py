@@ -42,17 +42,18 @@ class PokemonStatsOut(BaseModel):
 # -------------------------
 # 🔹 Moves (Pokémon-centric view)
 # -------------------------
-class PokemonMoveOut(BaseModel):
+class PokemonMoveUIOut(BaseModel):
     """
-    Output schema representing a move learned by a Pokémon.
+    Flattened move schema for UI / Streamlit usage.
     """
     name: str
     type: str
-    category: str  # 🔹 nouvelle propriété pour la catégorie du move
+    category: str
     learn_method: str
     learn_level: Optional[int]
 
     model_config = ConfigDict(from_attributes=True)
+
 
 
 
@@ -93,7 +94,7 @@ class PokemonDetail(PokemonBase):
     species: PokemonSpeciesOut
     stats: PokemonStatsOut
     types: List[PokemonTypeOut]
-    moves: List[PokemonMoveOut]
+    moves: List[PokemonMoveUIOut]
 
     height_m: Decimal
     weight_kg: Decimal
