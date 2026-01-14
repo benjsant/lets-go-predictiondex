@@ -101,3 +101,21 @@ class MoveWithPokemons(MoveDetail):
     - GET /moves/{id}
     """
     pokemons: List[MovePokemonOut]
+
+class MoveSelectableOut(BaseModel):
+    """
+    Move formatted for Pokémon move selection (Streamlit / ML input).
+    """
+    id: int
+    name: str
+    category: str
+    power: Optional[int]
+    accuracy: Optional[int]
+
+    type: TypeOut
+
+    # Pokémon-specific fields
+    learn_method: Optional[str] = None
+    learn_level: Optional[int] = None
+
+    model_config = ConfigDict(from_attributes=True)
