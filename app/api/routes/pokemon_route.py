@@ -14,7 +14,7 @@ from app.api.services.pokemon_service import (
 from app.schemas.pokemon import (
     PokemonListItem,
     PokemonDetail,
-    PokemonMoveOut,
+    PokemonMoveUIOut,
 )
 from app.schemas.pokemon_type import PokemonTypeOut
 from app.schemas.form import FormOut
@@ -22,9 +22,9 @@ from app.schemas.form import FormOut
 router = APIRouter(prefix="/pokemon", tags=["Pokemon"])
 
 
-# -------------------------
+# ============================================================
 # 🔹 Pokémon list
-# -------------------------
+# ============================================================
 @router.get("/", response_model=List[PokemonListItem])
 def get_pokemon_list(db: Session = Depends(get_db)):
     pokemons = list_pokemon(db)
@@ -50,10 +50,10 @@ def get_pokemon_list(db: Session = Depends(get_db)):
     ]
 
 
-# -------------------------
+# ============================================================
 # 🔹 Search Pokémon by species name
 # ⚠️ DOIT être avant /{pokemon_id}
-# -------------------------
+# ============================================================
 @router.get("/search", response_model=List[PokemonListItem])
 def search_pokemon(
     name: str = Query(..., min_length=1),
@@ -62,15 +62,13 @@ def search_pokemon(
 ):
     """
     Search Pokémon by species name (partial match).
+
+    Streamlit-friendly:
+    - returns [] if no match
     """
     pokemons = search_pokemon_by_species_name(db, name=name, lang=lang)
 
-    if not pokemons:
-        raise HTTPException(
-            status_code=404,
-            detail="No Pokémon found matching this name",
-        )
-
+    # 🔧 PAS de 404 ici
     return [
         PokemonListItem(
             id=p.id,
@@ -92,9 +90,9 @@ def search_pokemon(
     ]
 
 
-# -------------------------
+# ============================================================
 # 🔹 Pokémon detail
-# -------------------------
+# ============================================================
 @router.get("/{pokemon_id}", response_model=PokemonDetail)
 def get_pokemon_detail(
     pokemon_id: int,
@@ -127,7 +125,7 @@ def get_pokemon_detail(
             for pt in pokemon.types
         ],
         moves=[
-            PokemonMoveOut(
+            PokemonMoveUIOut(
                 name=pm.move.name,
                 type=pm.move.type.name,
                 category=pm.move.category.name,
