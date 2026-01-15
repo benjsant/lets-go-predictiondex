@@ -45,20 +45,3 @@ class TypeWithMoves(TypeOut):
     move_ids: List[int] = []
 
     model_config = ConfigDict(from_attributes=True)
-
-
-# -------------------------
-# 🔹 Type d'un Pokémon avec slot
-# -------------------------
-class PokemonTypeOut(BaseModel):
-    """
-    Représente le type d'un Pokémon avec son slot (1 ou 2).
-
-    Aligné avec le modèle SQLAlchemy `PokemonType`.
-    """
-
-    id: int  # identifiant du type
-    name: str  # nom du type
-    slot: int  # slot du type pour le Pokémon (1=primaire, 2=secondaire)
-
-    model_config = ConfigDict(from_attributes=True)

@@ -1,33 +1,45 @@
+version: "3.9"
+
 services:
   db:
-    image: docker.io/library/postgres:15
+    image: postgres:15
     container_name: letsgo_postgres
     environment:
       POSTGRES_DB: letsgo_db
       POSTGRES_USER: letsgo_user
       POSTGRES_PASSWORD: letsgo_password
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
-  app:
+  api:
     build:
       context: .
-      dockerfile: docker/Dockerfile
-    container_name: letsgo_app
+      dockerfile: docker/Dockerfile.api
+    container_name: letsgo_api
     depends_on:
       - db
-    volumes:
-      - .:/app
     env_file:
       - .env
     environment:
       - PYTHONPATH=/app
-    stdin_open: true
-    tty: true
+    volumes:
+      - .:/app
     ports:
       - "8000:8000"
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.streamlit
+    container_name: letsgo_streamlit
+    depends_on:
+      - api
+    ports:
+      - "8501:8501"
+    environment:
+      API_BASE_URL: http://api:8000
 
 volumes:
   postgres_data:

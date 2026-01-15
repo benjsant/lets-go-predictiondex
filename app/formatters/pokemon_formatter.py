@@ -1,48 +1,29 @@
-"""
-Pokémon formatters
-==================
+# app/formatters/pokemon_formatter.py
 
-Formatting utilities for UI (Streamlit) and ML pipelines.
-Framework-agnostic: no FastAPI, no SQLAlchemy.
-"""
-
-from typing import List, Dict
-
+from typing import List
 from app.schemas.pokemon import PokemonListItem
+from app.formatters.ui.pokemon_ui import PokemonSelectItem
 
 
 def format_pokemon_selector(
     pokemons: List[PokemonListItem],
-) -> List[Dict]:
+) -> List[PokemonSelectItem]:
     """
-    Format Pokémon list for UI selectors.
-
-    Output example:
-    [
-        {
-            "id": 25,
-            "label": "Pikachu (Électrik)",
-            "types": ["Électrik"],
-            "sprite_url": "..."
-        }
-    ]
+    Format Pokémon list for UI selectors (Streamlit).
     """
-    formatted = []
+    formatted: List[PokemonSelectItem] = []
 
     for p in pokemons:
-        type_names = [t.name for t in p.types]
-
-        label = p.species.name
+        name = p.species.name
         if p.form and p.form.name.lower() != "base":
-            label = f"{label} ({p.form.name})"
+            name = f"{name} ({p.form.name})"
 
         formatted.append(
-            {
-                "id": p.id,
-                "label": label,
-                "types": type_names,
-                "sprite_url": p.sprite_url,
-            }
+            PokemonSelectItem(
+                id=p.id,
+                name=name,
+                sprite_url=p.sprite_url,
+            )
         )
 
     return formatted

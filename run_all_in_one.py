@@ -3,103 +3,40 @@
 All-in-one ETL bootstrap script for Pokémon Let's Go
 ===================================================
 
-This script orchestrates the complete ETL pipeline of the Pokémon Let's Go
-project from a single entry point.
-
-It sequentially executes all required ETL steps in a controlled and
-fail-fast manner, ensuring database consistency and reproducibility.
-
-Pipeline steps executed:
-1. Database initialization and reference data setup
-2. CSV-based data extraction and loading (deterministic core dataset)
-3. External API enrichment using PokéAPI
-4. Web scraping of Poképédia for Pokémon Let's Go moves
-5. Post-processing transformations (Mega Pokémon move inheritance)
-
-Design principles:
-- Explicit execution order
-- Clear separation of ETL responsibilities
-- Immediate failure on error (fail-fast)
-- Simplicity over orchestration complexity
-
-This script intentionally avoids heavy orchestration tools (Airflow, Prefect)
-because:
-- The pipeline is linear and deterministic
-- Execution frequency is low (one-shot or batch-based)
-- Operational overhead would outweigh the benefits
-
-Execution contexts:
-- Local development
-- Docker containers
-- CI/CD pipelines
-- Initial project bootstrap
-
-ETL scope:
-- E1: End-to-end ETL orchestration and data lifecycle control
-
-Note:
-This script does not implement parallelism or scheduling.
-Those concerns are deferred to E3 or future production scaling.
+This version:
+- Avoids re-running ETL if already done (.etl_done)
+- Supports --force flag to rerun ETL
+- Pure Python, Windows-friendly
 """
 
 import subprocess
 import sys
+from pathlib import Path
+
+ETL_FLAG_FILE = Path(__file__).parent / ".etl_done"
 
 
 def run(cmd, label, cwd=None):
     """
     Execute a subprocess command as a single ETL step.
-
-    This helper function standardizes:
-    - Logging of the executed step
-    - Error handling
-    - Immediate termination on failure
-
-    Args:
-        cmd (list[str]):
-            Command and arguments to execute (e.g. ["python", "script.py"])
-        label (str):
-            Human-readable label describing the ETL step
-        cwd (str | None):
-            Optional working directory for the command execution
-
-    Behavior:
-        - Prints the step label before execution
-        - Executes the command synchronously
-        - Stops the entire pipeline if the command fails
-
-    Rationale:
-        In an ETL context, partial execution is often worse than failure.
-        A fail-fast strategy prevents silent data corruption or
-        inconsistent intermediate states.
+    Stops immediately if the command fails.
     """
     print(f"\n▶ {label}")
-
-    result = subprocess.run(
-        cmd,
-        cwd=cwd,
-    )
-
+    result = subprocess.run(cmd, cwd=cwd)
     if result.returncode != 0:
         print(f"❌ Failed: {label}")
         sys.exit(1)
 
 
-def main():
+def main(force=False):
     """
-    Entry point for the complete Pokémon Let's Go ETL pipeline.
-
-    This function defines the strict execution order of all ETL phases:
-    - Initialization
-    - Extraction
-    - Loading
-    - Enrichment
-    - Transformation
-
-    Each step depends on the successful completion of the previous one.
+    Run the full ETL pipeline if not already done or if forced.
     """
+    if ETL_FLAG_FILE.exists() and not force:
+        print("ℹ️  ETL already done. Skipping. Use --force to rerun.")
+        return
 
-    print("🚀 ETL Pokémon Let's Go")
+    print("🚀 Running full ETL Pokémon Let's Go pipeline")
 
     # --------------------------------------------------
     # Initialization
@@ -142,8 +79,13 @@ def main():
         "Transform: inherit Mega Pokémon moves"
     )
 
+    # --------------------------------------------------
+    # Mark ETL as done
+    # --------------------------------------------------
+    ETL_FLAG_FILE.touch()
     print("\n✅ ETL COMPLETED")
 
 
 if __name__ == "__main__":
-    main()
+    force_rerun = "--force" in sys.argv
+    main(force=force_rerun)
