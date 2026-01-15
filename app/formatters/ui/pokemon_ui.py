@@ -1,4 +1,4 @@
-# app/schemas/formatters/pokemon_ui.py
+# app/formatters/ui/pokemon_ui.py
 
 from pydantic import BaseModel, ConfigDict
 from typing import Optional

@@ -1,3 +1,4 @@
+#app\api\routes\type_route.py
 """
 API routes – Pokémon types
 =========================
