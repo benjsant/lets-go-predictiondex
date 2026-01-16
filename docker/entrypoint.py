@@ -1,69 +1,74 @@
 import subprocess
 import sys
-from pathlib import Path
-import threading
+import time
 import os
+from pathlib import Path
+import psycopg2
 
 ETL_FLAG = Path("/app/.etl_done")
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
+DB_HOST = os.getenv("POSTGRES_HOST", "db")
+DB_PORT = int(os.getenv("POSTGRES_PORT", 5432))
+DB_USER = os.getenv("POSTGRES_USER", "letsgo_user")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "letsgo_password")
+DB_NAME = os.getenv("POSTGRES_DB", "letsgo_db")
 
-def run(cmd, label, cwd=None):
-    """Run a subprocess command and fail fast."""
-    print(f"\n▶ {label}")
-    result = subprocess.run(cmd, cwd=cwd)
+
+def wait_for_db(timeout=60):
+    start_time = time.time()
+    while True:
+        try:
+            conn = psycopg2.connect(
+                host=DB_HOST,
+                port=DB_PORT,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                dbname=DB_NAME,
+            )
+            conn.close()
+            print(f"✅ Database {DB_NAME} is ready")
+            return
+        except psycopg2.OperationalError:
+            if time.time() - start_time > timeout:
+                print("❌ Timeout waiting for database")
+                sys.exit(1)
+            print("⏳ Waiting for database...")
+            time.sleep(2)
+
+
+def run_etl_once():
+    if ETL_FLAG.exists():
+        print("ℹ️ ETL already done, skipping")
+        return
+
+    print("🚀 Running ETL Pokémon Let's Go")
+    result = subprocess.run(["python", "/app/run_all_in_one.py"])
     if result.returncode != 0:
-        print(f"❌ Failed: {label}")
+        print("❌ ETL failed")
         sys.exit(1)
 
+    ETL_FLAG.touch()
+    print("✅ ETL COMPLETED")
 
-def start_uvicorn():
+
+def start_api():
     cmd = [
         "uvicorn",
         "app.api.main:app",
         "--host", "0.0.0.0",
         "--port", "8000",
     ]
-
     if DEV_MODE:
         cmd.append("--reload")
 
     subprocess.run(cmd)
 
 
-def start_streamlit():
-    cmd = [
-        "streamlit", "run",
-        "app/streamlit/app.py",
-        "--server.port", "8501",
-        "--server.address", "0.0.0.0"
-    ]
-    subprocess.run(cmd)
-
-
 def main():
-    # --------------------------------------------------
-    # ETL (une seule fois)
-    # --------------------------------------------------
-    if not ETL_FLAG.exists():
-        print("🚀 Running ETL Pokémon Let's Go")
-        run(["python", "/app/run_all_in_one.py"], "ETL pipeline")
-        ETL_FLAG.touch()
-        print("✅ ETL COMPLETED")
-    else:
-        print("ℹ️ ETL already done, skipping")
-
-    # --------------------------------------------------
-    # Launch services
-    # --------------------------------------------------
-    t_api = threading.Thread(target=start_uvicorn)
-    t_ui = threading.Thread(target=start_streamlit)
-
-    t_api.start()
-    t_ui.start()
-
-    t_api.join()
-    t_ui.join()
+    wait_for_db()
+    run_etl_once()
+    start_api()
 
 
 if __name__ == "__main__":

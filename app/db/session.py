@@ -29,7 +29,7 @@ from sqlalchemy.orm import Session
 # --------------------
 DB_USER = os.getenv("POSTGRES_USER", "letsgo_user")
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "letsgo_password")
-DB_HOST = os.getenv("POSTGRES_HOST", "letsgo_postgres")
+DB_HOST = os.getenv("POSTGRES_HOST", "db")
 DB_PORT = os.getenv("POSTGRES_PORT", "5432")
 DB_NAME = os.getenv("POSTGRES_DB", "letsgo_db")
 

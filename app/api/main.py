@@ -14,6 +14,10 @@ app = FastAPI(
     version="1.0.0",
 )
 
+@app.get("/health", tags=["health"])
+def healthcheck():
+    return {"status": "ok"}
+
 app.include_router(pokemon_route.router)
 app.include_router(moves_route.router)
 app.include_router(type_route.router)
