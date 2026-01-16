@@ -1,8 +1,9 @@
-import streamlit as st
+#app/interface/pages/3_📜_Credits.py
+import interface as st
 
 st.set_page_config(
-    page_title="Licences",
-    page_icon="🔑",
+    page_title="Credits",
+    page_icon="📜",
     layout="centered",
 )
 
@@ -11,7 +12,6 @@ with st.sidebar:
     "style=for-the-badge&logo=github&logoColor=white)]"
     "(https://github.com/Aurelien-L/AgentIA_TransitionEcologique.git)"
 
-st.markdown("""
-# MIT License
-...
-""")
+st.caption(
+    "*Projet réalisé par Benjamin Santrisse. "
+)

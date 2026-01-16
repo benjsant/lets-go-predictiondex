@@ -5,6 +5,7 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+# Dépendances système (Postgres + Scrapy)
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
@@ -12,9 +13,12 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
+# Dépendances Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Code applicatif
 COPY . .
 
-CMD ["python", "/app/entrypoint.py"]
+# Script d'entrée
+CMD ["python", "docker/entrypoint.py"]
