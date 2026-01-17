@@ -1,4 +1,4 @@
-# app/formatters/ui/pokemon_ui.py
+# formatters/ui/pokemon_ui.py
 
 from pydantic import BaseModel
 from typing import Optional, List
