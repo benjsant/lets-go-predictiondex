@@ -1,4 +1,4 @@
-# docker/Dockerfile.streamlit
+# Base image
 FROM python:3.11-slim
 
 # --------------------------------------------------
@@ -6,27 +6,28 @@ FROM python:3.11-slim
 # --------------------------------------------------
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-
-# --------------------------------------------------
-# Répertoire de travail
-# --------------------------------------------------
 WORKDIR /app
 
 # --------------------------------------------------
-# Upgrade pip
+# Mise à jour de pip et setuptools
 # --------------------------------------------------
 RUN pip install --upgrade pip setuptools wheel
 
 # --------------------------------------------------
 # Installer les dépendances Streamlit
 # --------------------------------------------------
-COPY requirements_streamlit.txt .
+COPY interface/requirements_streamlit.txt .
 RUN pip install --no-cache-dir -r requirements_streamlit.txt
 
 # --------------------------------------------------
-# Copier l’interface Streamlit
+# Copier le code Streamlit
 # --------------------------------------------------
 COPY interface ./interface
+
+# --------------------------------------------------
+# Définir le PYTHONPATH pour pouvoir importer extraction_pokemon
+# --------------------------------------------------
+ENV PYTHONPATH=/app
 
 # --------------------------------------------------
 # Exposer le port

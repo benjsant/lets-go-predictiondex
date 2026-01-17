@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import psycopg2
 
-ETL_FLAG = Path("/app/.etl_done")
+ETL_FLAG = Path("/app/extraction_pokemon/.etl_done")
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
 DB_HOST = os.getenv("POSTGRES_HOST", "db")
@@ -42,9 +42,13 @@ def run_etl_once():
         print("ℹ️ ETL already done, skipping")
         return
 
-    print("🚀 Running ETL Pokémon Let's Go")
-    result = subprocess.run(["python", "/app/run_all_in_one.py"])
-    if result.returncode != 0:
+    print("🚀 Running ETL Pokémon Let's Go pipeline")
+    try:
+        subprocess.run(
+            ["python", "/app/extraction_pokemon/run_all_in_one.py"],
+            check=True
+        )
+    except subprocess.CalledProcessError:
         print("❌ ETL failed")
         sys.exit(1)
 
@@ -55,14 +59,15 @@ def run_etl_once():
 def start_api():
     cmd = [
         "uvicorn",
-        "app.api.main:app",
+        "extraction_pokemon.api.main:app",
         "--host", "0.0.0.0",
         "--port", "8000",
     ]
     if DEV_MODE:
         cmd.append("--reload")
 
-    subprocess.run(cmd)
+    print(f"🚀 Starting API {'(DEV MODE)' if DEV_MODE else ''}")
+    subprocess.run(cmd, check=True)
 
 
 def main():
