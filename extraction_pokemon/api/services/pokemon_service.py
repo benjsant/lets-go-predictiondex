@@ -19,9 +19,12 @@ from extraction_pokemon.models import (
     Pokemon,
     PokemonType,
     Move,
-    PokemonMove
+    PokemonMove,
+    TypeEffectiveness, 
+    Type
 )
-
+from collections import defaultdict
+from decimal import Decimal
 
 # -------------------------
 # 🔹 List Pokémon
@@ -121,3 +124,46 @@ def search_pokemon_by_species_name(db: Session, name: str, lang: str = "fr") -> 
         .order_by(Pokemon.id)
         .all()
     )
+
+def compute_pokemon_weaknesses(
+    db: Session,
+    pokemon_id: int,
+):
+    pokemon = (
+        db.query(Pokemon)
+        .filter(Pokemon.id == pokemon_id)
+        .one_or_none()
+    )
+
+    if not pokemon:
+        return None
+
+    defending_type_ids = [pt.type_id for pt in pokemon.types]
+
+    # Base multiplier = 1
+    multipliers = defaultdict(lambda: Decimal("1.0"))
+
+    # Toutes les relations où le Pokémon est défenseur
+    affinities = (
+        db.query(TypeEffectiveness)
+        .filter(TypeEffectiveness.defending_type_id.in_(defending_type_ids))
+        .all()
+    )
+
+    for eff in affinities:
+        multipliers[eff.attacking_type_id] *= eff.multiplier
+
+    # Mapping ID → nom de type
+    types = {
+        t.id: t.name
+        for t in db.query(Type).all()
+    }
+
+    # On renvoie **tous les types**, même neutralité
+    return [
+        {
+            "attacking_type": types[type_id],
+            "multiplier": float(multiplier),
+        }
+        for type_id, multiplier in multipliers.items()
+    ]

@@ -1,40 +1,20 @@
-# Base image
 FROM python:3.11-slim
 
-# --------------------------------------------------
-# Variables d'environnement
-# --------------------------------------------------
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
-# --------------------------------------------------
-# Mise à jour de pip et setuptools
-# --------------------------------------------------
 RUN pip install --upgrade pip setuptools wheel
 
-# --------------------------------------------------
-# Installer les dépendances Streamlit
-# --------------------------------------------------
+# Dépendances
 COPY interface/requirements_streamlit.txt .
 RUN pip install --no-cache-dir -r requirements_streamlit.txt
 
-# --------------------------------------------------
-# Copier le code Streamlit
-# --------------------------------------------------
+# 👉 COPIE DU CODE STREAMLIT (MANQUAIT)
 COPY interface ./interface
 
-# --------------------------------------------------
-# Définir le PYTHONPATH pour pouvoir importer extraction_pokemon
-# --------------------------------------------------
 ENV PYTHONPATH=/app
 
-# --------------------------------------------------
-# Exposer le port
-# --------------------------------------------------
 EXPOSE 8501
 
-# --------------------------------------------------
-# Lancer Streamlit
-# --------------------------------------------------
-CMD ["streamlit", "run", "interface/app.py", "--server.address=0.0.0.0", "--server.port=8501"]
+CMD ["streamlit","run","interface/app.py","--server.address=0.0.0.0","--server.port=8501","--server.runOnSave=true"]

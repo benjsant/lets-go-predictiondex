@@ -51,6 +51,9 @@ class PokemonMoveUIOut(BaseModel):
     category: str
     learn_method: str
     learn_level: Optional[int]
+    power: Optional[int]
+    accuracy: Optional[int]
+    damage_type: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
 

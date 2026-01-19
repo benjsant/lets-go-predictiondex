@@ -15,6 +15,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.api
+    image: letsgo_api:latest
     container_name: letsgo_api
     depends_on:
       - db
@@ -22,8 +23,9 @@ services:
       - .env
     environment:
       PYTHONPATH: /app
+      DEV_MODE: "true"
     volumes:
-      - .:/app
+      - ./extraction_pokemon:/app/extraction_pokemon
     ports:
       - "8000:8000"
     healthcheck:
@@ -36,12 +38,17 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.streamlit
+    image: letsgo_streamlit:latest
     container_name: letsgo_streamlit
     depends_on:
       api:
         condition: service_healthy
     environment:
       API_BASE_URL: http://api:8000
+      DEV_MODE: "true"
+    volumes:
+      # 🔥 CLÉ DU RELOAD AUTO
+      - ./interface:/app/interface
     ports:
       - "8501:8501"
 

@@ -18,6 +18,8 @@ from extraction_pokemon.schemas.pokemon import (
 )
 from extraction_pokemon.schemas.pokemon_type import PokemonTypeOut
 from extraction_pokemon.schemas.form import FormOut
+from extraction_pokemon.schemas.pokemon_weakness import PokemonWeaknessOut
+from extraction_pokemon.api.services.pokemon_service import compute_pokemon_weaknesses
 
 router = APIRouter(prefix="/pokemon", tags=["Pokemon"])
 
@@ -131,7 +133,28 @@ def get_pokemon_detail(
                 category=pm.move.category.name,
                 learn_method=pm.learn_method.name,
                 learn_level=pm.learn_level,
+                power=pm.move.power,
+                accuracy=pm.move.accuracy,
+                damage_type=pm.move.damage_type if pm.move.damage_type else None,
             )
             for pm in pokemon.moves
         ],
     )
+
+@router.get(
+    "/{pokemon_id}/weaknesses",
+    response_model=list[PokemonWeaknessOut],
+)
+def get_pokemon_weaknesses(
+    pokemon_id: int,
+    db: Session = Depends(get_db),
+):
+    weaknesses = compute_pokemon_weaknesses(db, pokemon_id)
+
+    if weaknesses is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Pokemon not found",
+        )
+
+    return weaknesses
