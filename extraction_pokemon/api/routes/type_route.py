@@ -42,9 +42,7 @@ router = APIRouter(prefix="/types", tags=["Types"])
 # -------------------------------------------------------------------
 @router.get("/", response_model=List[TypeOut])
 def get_types(db: Session = Depends(get_db)):
-    """
-    List all Pokémon elemental types.
-    """
+    """List all Pokémon elemental types."""
     return list_types(db)
 
 
@@ -57,9 +55,6 @@ def get_affinities(
     defending_type_id: Optional[int] = Query(None, ge=1),
     db: Session = Depends(get_db),
 ):
-    """
-    Retrieve type effectiveness using type IDs.
-    """
     affinities = get_type_affinities(
         db,
         attacking_type_id=attacking_type_id,
@@ -84,9 +79,6 @@ def get_affinities_by_name(
     defending: Optional[str] = Query(None, min_length=1),
     db: Session = Depends(get_db),
 ):
-    """
-    Retrieve type effectiveness using type names (tolerant matching).
-    """
     affinities = get_type_affinities_by_name(
         db,
         attacking_type_name=attacking,
@@ -103,22 +95,20 @@ def get_affinities_by_name(
 
 
 # -------------------------------------------------------------------
-# 🔹 Pokémon by type (ID)
+# 🔹 Pokémon by type (name)
+# ⚠️ AVANT /{type_id}
 # -------------------------------------------------------------------
-@router.get("/{type_id}/pokemon", response_model=List[PokemonListItem])
-def get_pokemon_by_type(
-    type_id: int,
+@router.get("/by-name/{type_name}/pokemon", response_model=List[PokemonListItem])
+def get_pokemon_by_type_name(
+    type_name: str,
     db: Session = Depends(get_db),
 ):
-    """
-    List Pokémon by elemental type ID.
-    """
-    pokemons = list_pokemon_by_type(db, type_id)
+    pokemons = list_pokemon_by_type_name(db, type_name)
 
     if not pokemons:
         raise HTTPException(
             status_code=404,
-            detail="No Pokémon found for this type",
+            detail="No Pokémon found for this type name",
         )
 
     return [
@@ -137,22 +127,19 @@ def get_pokemon_by_type(
 
 
 # -------------------------------------------------------------------
-# 🔹 Pokémon by type (name)
+# 🔹 Pokémon by type (ID)
 # -------------------------------------------------------------------
-@router.get("/by-name/{type_name}/pokemon", response_model=List[PokemonListItem])
-def get_pokemon_by_type_name(
-    type_name: str,
+@router.get("/{type_id}/pokemon", response_model=List[PokemonListItem])
+def get_pokemon_by_type(
+    type_id: int,
     db: Session = Depends(get_db),
 ):
-    """
-    List Pokémon by elemental type name (tolerant matching).
-    """
-    pokemons = list_pokemon_by_type_name(db, type_name)
+    pokemons = list_pokemon_by_type(db, type_id)
 
     if not pokemons:
         raise HTTPException(
             status_code=404,
-            detail="No Pokémon found for this type name",
+            detail="No Pokémon found for this type",
         )
 
     return [

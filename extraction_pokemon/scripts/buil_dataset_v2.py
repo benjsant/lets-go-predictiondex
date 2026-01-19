@@ -1,4 +1,4 @@
-# app/scripts/build_dataset.py
+# app/scripts/build_dataset_V2.py
 
 """
 Build ML dataset with Pokémon, offensive moves and simulated damage
