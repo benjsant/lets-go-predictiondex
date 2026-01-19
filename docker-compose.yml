@@ -1,33 +1,56 @@
 services:
   db:
-    image: docker.io/library/postgres:15
+    image: postgres:15
     container_name: letsgo_postgres
     environment:
       POSTGRES_DB: letsgo_db
       POSTGRES_USER: letsgo_user
       POSTGRES_PASSWORD: letsgo_password
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
-  app:
+  api:
     build:
       context: .
-      dockerfile: docker/Dockerfile
-    container_name: letsgo_app
+      dockerfile: docker/Dockerfile.api
+    image: letsgo_api:latest
+    container_name: letsgo_api
     depends_on:
       - db
-    volumes:
-      - .:/app
     env_file:
       - .env
     environment:
-      - PYTHONPATH=/app
-    stdin_open: true
-    tty: true
+      PYTHONPATH: /app
+      DEV_MODE: "true"
+    volumes:
+      - ./extraction_pokemon:/app/extraction_pokemon
     ports:
       - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.streamlit
+    image: letsgo_streamlit:latest
+    container_name: letsgo_streamlit
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      API_BASE_URL: http://api:8000
+      DEV_MODE: "true"
+    volumes:
+      # 🔥 CLÉ DU RELOAD AUTO
+      - ./interface:/app/interface
+    ports:
+      - "8501:8501"
 
 volumes:
   postgres_data:

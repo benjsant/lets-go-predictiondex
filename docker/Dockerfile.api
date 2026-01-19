@@ -1,0 +1,26 @@
+# docker/Dockerfile.api
+FROM python:3.11-slim
+
+# Ne pas écrire de pyc et output non-buffered
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+WORKDIR /app
+
+# Dépendances système (Postgres + Scrapy + compilation)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Dépendances Python
+COPY extraction_pokemon/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copier le code
+COPY extraction_pokemon ./extraction_pokemon
+COPY docker/entrypoint.py ./docker/entrypoint.py
+
+# Entrypoint
+ENTRYPOINT ["python", "docker/entrypoint.py"]
