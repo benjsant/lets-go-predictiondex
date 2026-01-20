@@ -1,0 +1,27 @@
+# --- Core ---
+python-dotenv
+
+# --- API ---
+fastapi
+uvicorn[standard]
+pydantic
+
+# --- Database ---
+sqlalchemy
+psycopg2-binary
+asyncpg
+
+# --- HTTP / Async ---
+requests
+aiohttp
+
+# --- Data ---
+pandas
+
+# --- Scraping ---
+scrapy
+parsel
+lxml
+
+# --- Utils ---
+tqdm
