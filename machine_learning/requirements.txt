@@ -1,0 +1,8 @@
+# Machine Learning dependencies
+python-dotenv
+pandas
+numpy
+scikit-learn
+pyarrow
+sqlalchemy
+psycopg2-binary

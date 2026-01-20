@@ -1,0 +1,16 @@
+# --- Core ---
+python-dotenv
+
+# --- API Framework ---
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+
+# --- Database ---
+sqlalchemy
+psycopg2-binary
+asyncpg
+
+# --- HTTP ---
+requests

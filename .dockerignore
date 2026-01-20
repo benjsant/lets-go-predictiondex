@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Docker
+.dockerignore
+docker-compose.yml
+Dockerfile*
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ETL flags
+.etl_done
+
+# Data (if not needed in container)
+*.parquet
+*.csv
+data/datasets/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+docs/
+LICENSE
