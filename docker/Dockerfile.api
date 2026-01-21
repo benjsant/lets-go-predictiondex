@@ -17,4 +17,7 @@ COPY api_pokemon ./api_pokemon
 COPY core ./core
 COPY docker/api_entrypoint.py ./docker/api_entrypoint.py
 
+# Copy trained ML models
+COPY models ./models
+
 ENTRYPOINT ["python", "docker/api_entrypoint.py"]

@@ -14,3 +14,10 @@ asyncpg
 
 # --- HTTP ---
 requests
+
+# --- ML Dependencies (for prediction service) ---
+pandas
+numpy
+scikit-learn
+xgboost
+pyarrow

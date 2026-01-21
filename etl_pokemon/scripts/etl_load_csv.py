@@ -96,6 +96,56 @@ def normalize_key(value: str) -> str:
 
 
 # ---------------------------------------------------------------------
+# Priority Mapping from damage_type
+# ---------------------------------------------------------------------
+PRIORITY_FROM_DAMAGE_TYPE = {
+    # +2: Extreme priority (protection moves and Ruse)
+    "protection_change_plusieur": 2,  # Abri
+    "prioritaire_deux": 2,            # Ruse (bypasses Abri)
+
+    # +1: High priority (quick attack moves)
+    "prioritaire": 1,                 # Vive-Attaque, Aqua-Jet, Éclats Glace
+    "prioritaire_conditionnel": 1,    # Coup Bas (fails if enemy doesn't attack)
+    "prioritaire_critique": 1,        # Pika-Sprint (priority + guaranteed crit)
+
+    # 0: Normal priority (default)
+    "offensif": 0,
+    "statut": 0,
+    "multi_coups": 0,
+    "double_degats": 0,
+    "fixe_niveau": 0,
+    "fixe_degat_20": 0,
+    "fixe_degat_40": 0,
+    "fixe_moitie_degats": 0,
+    "ko_en_un_coup": 0,
+    "soin": 0,
+    "variable_degats_poids": 0,
+    "sommeil_requis": 0,
+    "attk_adversaire": 0,
+    "degat_aleatoire": 0,
+    "inutile": 0,
+    "critique_100": 0,
+    "absorption": 0,
+    "piege": 0,
+
+    # Two-turn moves: no priority change, but damage is halved in dataset
+    "deux_tours": 0,
+
+    # -5: Counter moves (always move after being hit)
+    "renvoi_degat_double_physique": -5,
+    "renvoi_degat_double_special": -5,
+    "renvoi_degat_double_deux_tours": -5,
+}
+
+
+def get_priority_from_damage_type(damage_type: str | None) -> int:
+    """Get move priority from damage_type field."""
+    if not damage_type:
+        return 0
+    return PRIORITY_FROM_DAMAGE_TYPE.get(damage_type.strip().lower(), 0)
+
+
+# ---------------------------------------------------------------------
 # Load TYPES
 # ---------------------------------------------------------------------
 def load_types(session):
@@ -158,6 +208,8 @@ def load_moves(session):
             category_id = category_map.get(normalize_key(row["classe"]))
             if not type_id or not category_id:
                 raise ValueError(f"Missing type or category for move {row['nom_français']}")
+            damage_type = row.get("type_degats") or None
+            priority = get_priority_from_damage_type(damage_type)
             upsert_move(
                 session,
                 name=row["nom_français"].strip(),
@@ -166,7 +218,8 @@ def load_moves(session):
                 power=normalize_int(row.get("puissance")),
                 accuracy=normalize_int(row.get("précision")),
                 description=row.get("description"),
-                damage_type=row.get("type_degats") or None,
+                damage_type=damage_type,
+                priority=priority,
             )
     session.commit()
     print("✔ Moves inserted")
