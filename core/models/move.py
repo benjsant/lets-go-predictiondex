@@ -70,6 +70,15 @@ class Move(Base):
     #: Damage subtype or special behavior (optional)
     damage_type = Column(String(50))
 
+    #: Move priority (-7 to +2, default 0)
+    #: +2: Protection moves (Abri)
+    #: +1: Priority moves (Vive-Attaque, Aqua-Jet, Éclats Glace)
+    #:  0: Normal moves
+    #: -1: Charge moves (two-turn attacks)
+    #: -5: Counter moves (Riposte, Voile Miroir)
+    #: -7: Last moves (always move last)
+    priority = Column(Integer, default=0, nullable=False)
+
     #: Foreign key to the elemental type
     type_id = Column(Integer, ForeignKey("type.id"), nullable=False)
     

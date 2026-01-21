@@ -23,6 +23,7 @@ def upsert_move(
     accuracy: int | None = None,
     description: str | None = None,
     damage_type: str | None = None,
+    priority: int = 0,
     auto_commit: bool = False,
 ) -> Move:
     """
@@ -40,6 +41,7 @@ def upsert_move(
         accuracy (int | None): Accuracy percentage.
         description (str | None): Move description.
         damage_type (str | None): Damage behavior (if applicable).
+        priority (int): Move priority (-7 to +2, default 0).
         auto_commit (bool): Whether to commit immediately.
 
     Returns:
@@ -52,6 +54,10 @@ def upsert_move(
     )
 
     if move:
+        # Update priority if it changed (allows re-running ETL)
+        if move.priority != priority:
+            move.priority = priority
+            commit_if_needed(session, auto_commit)
         return move
 
     move = Move(
@@ -62,6 +68,7 @@ def upsert_move(
         accuracy=accuracy,
         description=description,
         damage_type=damage_type,
+        priority=priority,
     )
 
     session.add(move)
