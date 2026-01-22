@@ -54,6 +54,7 @@ class MoveListItem(MoveBase):
     """
     power: Optional[int]
     accuracy: Optional[int]
+    description: Optional[str] = None
 
 
 # -------------------------
@@ -111,6 +112,7 @@ class MoveSelectableOut(BaseModel):
     category: str
     power: Optional[int]
     accuracy: Optional[int]
+    description: Optional[str] = None
 
     type: TypeOut
 
