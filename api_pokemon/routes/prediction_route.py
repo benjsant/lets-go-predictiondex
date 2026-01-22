@@ -7,95 +7,19 @@ Prediction routes
 REST endpoints for ML-based battle prediction.
 """
 
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
 
 from core.db.session import get_db
+from core.schemas.prediction import (
+    PredictBestMoveRequest,
+    PredictBestMoveResponse,
+    MoveScore
+)
 from api_pokemon.services import prediction_service
 
 
 router = APIRouter(prefix="/predict", tags=["prediction"])
-
-
-# -------------------------
-# Request/Response Schemas
-# -------------------------
-
-class PredictBestMoveRequest(BaseModel):
-    """Request body for best move prediction."""
-
-    pokemon_a_id: int = Field(..., description="ID of the user's Pokemon")
-    pokemon_b_id: int = Field(..., description="ID of the opponent's Pokemon")
-    available_moves: List[str] = Field(
-        ...,
-        description="List of move names available to Pokemon A",
-        min_items=1,
-        max_items=20
-    )
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "pokemon_a_id": 1,
-                "pokemon_b_id": 4,
-                "available_moves": ["Lance-Soleil", "Charge", "Bomb-Beurk", "Tranch'Herbe"]
-            }
-        }
-
-
-class MoveScore(BaseModel):
-    """Individual move with its prediction score."""
-
-    move_name: str
-    move_type: str
-    move_power: int
-    effective_power: float
-    type_multiplier: float
-    stab: float
-    priority: int
-    score: float
-    win_probability: float
-    predicted_winner: str
-
-
-class PredictBestMoveResponse(BaseModel):
-    """Response with recommended move and all move scores."""
-
-    pokemon_a_id: int
-    pokemon_a_name: str
-    pokemon_b_id: int
-    pokemon_b_name: str
-    recommended_move: str
-    win_probability: float
-    all_moves: List[MoveScore]
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "pokemon_a_id": 1,
-                "pokemon_a_name": "Bulbizarre",
-                "pokemon_b_id": 4,
-                "pokemon_b_name": "Salamèche",
-                "recommended_move": "Bomb-Beurk",
-                "win_probability": 0.85,
-                "all_moves": [
-                    {
-                        "move_name": "Bomb-Beurk",
-                        "move_type": "poison",
-                        "move_power": 90,
-                        "effective_power": 90.0,
-                        "type_multiplier": 1.0,
-                        "stab": 1.0,
-                        "priority": 0,
-                        "score": 90.0,
-                        "win_probability": 0.85,
-                        "predicted_winner": "A"
-                    }
-                ]
-            }
-        }
 
 
 # -------------------------

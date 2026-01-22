@@ -112,6 +112,14 @@ def main(force: bool = False):
     # Post-processing transformations
     # --------------------------------------------------
     run(
+        ["python", str(SCRIPTS_DIR / "etl_previous_evolution.py")],
+        "Transform: inherit Previous Evolution Pokemon moves"
+    )
+
+    # --------------------------------------------------
+    # Post-processing transformations
+    # --------------------------------------------------
+    run(
         ["python", str(SCRIPTS_DIR / "etl_post_process.py")],
         "Transform: inherit Mega Pokémon moves"
     )

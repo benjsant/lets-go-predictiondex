@@ -122,7 +122,7 @@ Jet-Pierres,roche,physique,Le lanceur lâche une pierre sur l'ennemi.,50,90,15,o
 Koud'Korne,normal,physique,Frappe l'ennemi d'un coup de corne pointue pour infliger des dégâts.,65,100,25,offensif
 Lame d'Air,vol,spécial,Le lanceur attaque avec une lame d'air qui fend tout. Peut aussi apeurer l'ennemi.,75,95,20,offensif
 Lance-Flammes,feu,spécial,L'ennemi reçoit un torrent de flammes. Peut aussi le brûler.,90,100,15,offensif
-Lance-Soleil,plante,spécial,Absorbe la lumière au premier tour et envoie un rayon puissant au tour suivant.,200,100,10,offensif
+Lance-Soleil,plante,spécial,Absorbe la lumière au premier tour et envoie un rayon puissant au tour suivant.,200,100,10,deux_tours
 Laser Glace,glace,spécial,Un rayon de glace frappe l'ennemi. Peut aussi le geler.,90,100,10,offensif
 Léchouille,spectre,physique,Un grand coup de langue qui inflige des dégâts à l'ennemi. Peut aussi le paralyser.,30,100,30,offensif
 Ligotage,normal,physique,Le lanceur ligote l'ennemi avec des lianes ou son corps pour l'écraser durant quatre à cinq tours.,15,90,20,offensif

@@ -5,7 +5,13 @@ from interface.utils.ui_helpers import (
     get_moves_for_pokemon,
     get_pokemon_weaknesses,
 )
-from interface.services.prediction_service import predict_battle_stub
+from interface.services.api_client import predict_best_move
+from utils.pokemon_theme import (
+    load_custom_css,
+    page_header,
+    type_badge,
+    POKEMON_COLORS
+)
 
 # ======================================================
 # Page config
@@ -16,7 +22,10 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("⚔️ Comparaison de Pokémon")
+# Load theme
+load_custom_css()
+
+page_header("Comparaison de Pokémon", "Compare deux Pokémon et découvre quelle capacité utiliser !", "⚔️")
 
 # ======================================================
 # Chargement Pokémon
@@ -35,7 +44,7 @@ col_left, col_right = st.columns(2)
 
 with col_left:
     p1_id = st.selectbox(
-        "Pokémon Attaquant",
+        "🥊 Ton Pokémon (Attaquant)",
         options=list(pokemon_lookup.keys()),
         format_func=lambda pid: pokemon_lookup[pid].name,
         key="p1",
@@ -43,7 +52,7 @@ with col_left:
 
 with col_right:
     p2_id = st.selectbox(
-        "Pokémon Défenseur",
+        "🛡️ Pokémon Adverse (Défenseur)",
         options=list(pokemon_lookup.keys()),
         format_func=lambda pid: pokemon_lookup[pid].name,
         key="p2",
@@ -72,6 +81,8 @@ TYPE_COLORS = {
     "glace": "#98D8D8",
     "fée": "#EE99AC",
     "électrik": "#F8D030",
+    "dragon": "#7038F8",
+    "roche": "#B8A038",
 }
 
 # ======================================================
@@ -85,16 +96,8 @@ def display_pokemon_card(pokemon):
 
     # Types
     if pokemon.types:
-        html = "<div style='display:flex;flex-wrap:wrap;gap:6px;'>"
-        for t in pokemon.types:
-            color = TYPE_COLORS.get(t.lower(), "#999")
-            html += (
-                f"<span style='background:{color};color:white;"
-                f"padding:4px 10px;border-radius:8px;font-size:0.85rem;'>"
-                f"{t}</span>"
-            )
-        html += "</div>"
-        st.markdown(html, unsafe_allow_html=True)
+        types_html = " ".join([type_badge(t, "small") for t in pokemon.types])
+        st.markdown(f"<div style='margin:10px 0;'>{types_html}</div>", unsafe_allow_html=True)
 
     # Stats
     if pokemon.stats:
@@ -138,76 +141,185 @@ def color_mult(m):
         return "#ff7f0e"   # faible
     return "#d62728"       # très faible
 
-html = "<div style='overflow-x:auto;'>"
+# Build header row
+header_cells = [f"<div style='width:55px;text-align:center;font-weight:600;color:{POKEMON_COLORS['text_primary']};'>{t}</div>" for t in all_types]
+header_row = f"<div style='display:flex;gap:4px;margin-bottom:6px;'><div style='width:110px;'></div>{''.join(header_cells)}</div>"
 
-# Header
-html += "<div style='display:flex;gap:4px;margin-bottom:6px;'>"
-html += "<div style='width:110px;'></div>"
-for t in all_types:
-    html += f"<div style='width:55px;text-align:center;font-weight:600;'>{t}</div>"
-html += "</div>"
-
-# Rows
+# Build data rows
+data_rows = []
 for name, data in [(p1.name, weak_p1), (p2.name, weak_p2)]:
-    html += "<div style='display:flex;gap:4px;margin-bottom:4px;'>"
-    html += f"<div style='width:110px;font-weight:700;text-align:right;'>{name}</div>"
+    cells = []
     for t in all_types:
         m = data.get(t, 1.0)
-        html += (
-            f"<div style='width:55px;background:{color_mult(m)};"
-            f"color:white;text-align:center;border-radius:6px;"
-            f"padding:4px 0;font-size:0.85rem;'>"
-            f"{format_mult(m)}</div>"
-        )
-    html += "</div>"
+        cell = f"<div style='width:55px;background:{color_mult(m)};color:white;text-align:center;border-radius:6px;padding:4px 0;font-size:0.85rem;'>{format_mult(m)}</div>"
+        cells.append(cell)
+    row = f"<div style='display:flex;gap:4px;margin-bottom:4px;'><div style='width:110px;font-weight:700;text-align:right;color:{POKEMON_COLORS['text_primary']};'>{name}</div>{''.join(cells)}</div>"
+    data_rows.append(row)
 
-html += "</div>"
-st.markdown(html, unsafe_allow_html=True)
+# Complete HTML
+heatmap_html = f"<div style='overflow-x:auto;background:{POKEMON_COLORS['bg_card']};padding:15px;border-radius:8px;'>{header_row}{''.join(data_rows)}</div>"
+st.markdown(heatmap_html, unsafe_allow_html=True)
 
 # ======================================================
-# Moves – ancien modèle (4 selects distincts)
+# Sélection des Moves
 # ======================================================
-st.subheader(f"🎯 Attaques de {p1.name}")
+st.subheader(f"🎯 Choisis les capacités de {p1.name}")
+
+st.info("""
+💡 **Note :** Le modèle sélectionne automatiquement la **meilleure capacité** du Pokémon
+adverse pour chaque scénario. C'est un "worst-case" : tu affrontes un adversaire qui joue
+au mieux ! Tes vraies chances peuvent être meilleures si l'adversaire ne joue pas optimalement.
+
+🚀 **Version 2 en développement :** Possibilité de choisir les capacités spécifiques de l'adversaire.
+""")
 
 moves = get_moves_for_pokemon(p1.id)
 if not moves:
     st.warning("Aucune attaque disponible.")
     st.stop()
 
-types = ["tous"] + sorted({m.type for m in moves})
-cats = ["toutes", "physique", "spécial", "autre"]
+# Filtrer moves offensives uniquement
+offensive_moves = [m for m in moves if m.power and m.power > 0]
 
-t_filter = st.selectbox("Filtrer par type", types)
-c_filter = st.selectbox("Filtrer par catégorie", cats)
+if not offensive_moves:
+    st.error("Aucune capacité offensive disponible pour ce Pokémon.")
+    st.stop()
 
-def filter_moves(moves):
-    out = moves
-    if t_filter != "tous":
-        out = [m for m in out if m.type.lower() == t_filter.lower()]
-    if c_filter != "toutes":
-        out = [m for m in out if m.category.lower() == c_filter.lower()]
-    return out
+move_names = [m.name for m in offensive_moves]
 
-moves_f = filter_moves(moves)
+# Multiselect avec suggestions
+selected_move_names = st.multiselect(
+    "🎯 Sélectionne jusqu'à 4 capacités offensives",
+    options=move_names,
+    default=move_names[:4] if len(move_names) >= 4 else move_names,
+    max_selections=4,
+    help="💡 Sélectionne les capacités que tu veux tester contre l'adversaire"
+)
 
-m1 = st.selectbox("Move 1", moves_f, format_func=lambda m: f"{m.name} ({m.type})")
-m2 = st.selectbox("Move 2", moves_f, format_func=lambda m: f"{m.name} ({m.type})")
-m3 = st.selectbox("Move 3", moves_f, format_func=lambda m: f"{m.name} ({m.type})")
-m4 = st.selectbox("Move 4", moves_f, format_func=lambda m: f"{m.name} ({m.type})")
-
-selected_moves = [m1, m2, m3, m4]
+if len(selected_move_names) < 1:
+    st.warning("⚠️ Sélectionne au moins 1 capacité pour continuer.")
+    st.stop()
 
 # ======================================================
-# Prédiction
+# Prédiction ML
 # ======================================================
 st.divider()
-if st.button("🔮 Prédire le combat"):
-    result = predict_battle_stub(
-        pokemon_1=p1,
-        moves_1=selected_moves,
-        pokemon_2=p2,
-        moves_2=get_moves_for_pokemon(p2.id),
-    )
 
-    st.success(result["message"])
-    st.json(result["probabilities"])
+if st.button("🔮 Prédire la Meilleure Capacité", type="primary", use_container_width=True):
+    with st.spinner("🤖 Le modèle analyse le combat..."):
+        try:
+            result = predict_best_move(
+                pokemon_a_id=p1.id,
+                pokemon_b_id=p2.id,
+                available_moves=selected_move_names
+            )
+
+            # Affichage du résultat principal
+            st.success(f"🏆 **Capacité recommandée : {result['recommended_move']}**")
+
+            col_metric1, col_metric2 = st.columns(2)
+            with col_metric1:
+                st.metric(
+                    "📊 Probabilité de victoire",
+                    f"{result['win_probability']*100:.1f}%",
+                    help="Probabilité que ton Pokémon gagne avec cette capacité"
+                )
+            with col_metric2:
+                best_move_data = result['all_moves'][0]
+                type_icon = {"feu": "🔥", "eau": "💧", "plante": "🌿", "électrik": "⚡", "glace": "🧊", "combat": "🥊"}.get(best_move_data['move_type'].lower(), "💫")
+                st.metric(
+                    "💥 Type de la capacité",
+                    f"{type_icon} {best_move_data['move_type'].capitalize()}"
+                )
+
+            # Classement complet des capacités
+            st.subheader("📊 Classement de tes capacités")
+
+            for i, move_data in enumerate(result['all_moves'], 1):
+                win_prob = move_data['win_probability'] * 100
+
+                # Icône selon probabilité
+                if win_prob >= 80:
+                    icon = "🥇"
+                    color = "success"
+                elif win_prob >= 60:
+                    icon = "🥈"
+                    color = "info"
+                elif win_prob >= 40:
+                    icon = "🥉"
+                    color = "warning"
+                else:
+                    icon = "❌"
+                    color = "error"
+
+                with st.expander(f"{icon} **#{i} - {move_data['move_name']}** — {win_prob:.1f}%", expanded=(i==1)):
+                    col1, col2, col3, col4 = st.columns(4)
+
+                    col1.metric("Type", move_data['move_type'].capitalize())
+                    col2.metric("Puissance", move_data['move_power'])
+                    col3.metric("STAB", f"{move_data['stab']}x")
+                    col4.metric("Type Mult", f"{move_data['type_multiplier']}x")
+
+                    if move_data.get('priority', 0) != 0:
+                        st.caption(f"⚡ Priorité: {move_data['priority']} (attaque {'en premier' if move_data['priority'] > 0 else 'en dernier'})")
+
+                    # Verdict
+                    if move_data['predicted_winner'] == 'A':
+                        st.success(f"✅ Tu devrais gagner avec cette capacité ! ({win_prob:.1f}%)")
+                    else:
+                        st.error(f"⚠️ Attention, tu risques de perdre... ({100-win_prob:.1f}% pour l'adversaire)")
+
+            # Disclaimer important
+            st.info("""
+            💡 **Précision du modèle : 94.24%** sur 34,040 combats analysés.
+
+            ⚠️ **Scénario "worst-case" :** Le modèle suppose que {opponent} utilise **sa meilleure
+            capacité possible** contre toi. Tes vraies chances peuvent être meilleures si ton
+            adversaire ne choisit pas sa meilleure move ou n'y a pas accès !
+
+            🚀 **Version 2 à venir :** Possibilité de spécifier les capacités exactes de l'adversaire
+            pour des simulations encore plus précises.
+            """.format(opponent=p2.name))
+
+            # Fun fact
+            with st.expander("🤓 Comment ça marche ?"):
+                st.markdown("""
+                Le modèle ML (XGBoost) prend en compte :
+
+                **Pour ton Pokémon attaquant :**
+                - 📊 Statistiques de base (HP, Attaque, Défense, Att. Spé, Déf. Spé, Vitesse)
+                - 💥 Puissance et type de chaque capacité testée
+                - ⚡ STAB (bonus ×1.5 si le type de la capacité = type du Pokémon)
+                - 🎯 Multiplicateur de type contre l'adversaire
+                - ⚠️ Priorité de la capacité (attaque en premier)
+
+                **Pour le Pokémon adverse :**
+                - 📊 Statistiques de base (HP, Attaque, Défense, Att. Spé, Déf. Spé, Vitesse)
+                - 🛡️ Types (pour calculer les faiblesses)
+                - 💥 **Meilleure capacité offensive** sélectionnée automatiquement parmi toutes ses moves
+                - ⚡ STAB et multiplicateur de type de cette capacité
+                - ⚠️ Priorité de la capacité
+
+                **Processus de prédiction :**
+                1. Pour chaque capacité de ton Pokémon
+                2. Le modèle sélectionne la meilleure réponse de l'adversaire
+                3. Il simule le combat avec ces deux capacités
+                4. Il prédit le vainqueur et la probabilité de victoire
+
+                **Ce que le modèle ne prend PAS en compte :**
+                - ❌ EV/IV (n'existent pas dans Let's Go)
+                - ❌ Niveau (tous à niveau 50)
+                - ❌ Objets tenus, capacités passives, météo, statuts
+
+                **🚀 Version 2 (en développement) :**
+                - Possibilité de spécifier les 4 capacités exactes de l'adversaire
+                - Simulation de combat plus réaliste avec movesets fixes
+
+                Le modèle a été entraîné sur **34,040 combats simulés** entre tous
+                les Pokémon de Let's Go avec différentes configurations de capacités !
+                """)
+
+        except Exception as e:
+            st.error(f"❌ Erreur lors de la prédiction : {str(e)}")
+            with st.expander("🔍 Détails de l'erreur"):
+                st.exception(e)

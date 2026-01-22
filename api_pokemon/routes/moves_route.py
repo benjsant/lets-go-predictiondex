@@ -46,6 +46,7 @@ def get_moves(db: Session = Depends(get_db)):
             category=move.category.name,
             power=move.power,
             accuracy=move.accuracy,
+            description=move.description,
             type=TypeOut(
                 id=move.type.id,
                 name=move.type.name,
@@ -80,6 +81,7 @@ def search_moves(
             category=move.category.name,
             power=move.power,
             accuracy=move.accuracy,
+            description=move.description,
             type=TypeOut(
                 id=move.type.id,
                 name=move.type.name,
@@ -123,6 +125,7 @@ def get_moves_by_type(
             category=item["move"].category.name,
             power=item["move"].power,
             accuracy=item["move"].accuracy,
+            description=item["move"].description,
             type=TypeOut(
                 id=item["move"].type.id,
                 name=item["move"].type.name,
