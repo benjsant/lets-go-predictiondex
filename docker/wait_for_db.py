@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#docker/wait_for_db.py
 """
 Wait for PostgreSQL to be ready before starting ETL or ML processes.
 """
