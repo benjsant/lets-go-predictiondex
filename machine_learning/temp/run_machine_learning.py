@@ -175,9 +175,49 @@ def run_dataset_preparation(verbose: bool = True) -> bool:
         print(f"\n❌ Dataset preparation failed:")
         print(e.stderr)
         return False
+
+
+def filter_by_scenario(df_train: pd.DataFrame, df_test: pd.DataFrame, scenario_type: str, verbose: bool = True):
+    """
+    Optionally filter datasets by scenario_type column if present.
+    Args:
+        df_train: training dataframe
+        df_test: test dataframe
+        scenario_type: scenario to keep; "all" keeps everything
+    Returns:
+        df_train_filtered, df_test_filtered
+    """
+    if scenario_type == "all":
+        return df_train, df_test
+
+    try:
+        if "scenario_type" not in df_train.columns:
+            if verbose:
+                print(f"⚠️  scenario_type filtering skipped: column missing (requested '{scenario_type}').")
+            return df_train, df_test
+
+        before_train = len(df_train)
+        before_test = len(df_test)
+
+        df_train_filtered = df_train[df_train["scenario_type"] == scenario_type]
+        df_test_filtered = df_test[df_test["scenario_type"] == scenario_type]
+
+        if df_train_filtered.empty or df_test_filtered.empty:
+            if verbose:
+                print(f"⚠️  scenario_type='{scenario_type}' produced empty split; fallback to full dataset.")
+            return df_train, df_test
+
+        if verbose:
+            print(
+                f"Filtering scenario_type='{scenario_type}': "
+                f"train {before_train}→{len(df_train_filtered)}, test {before_test}→{len(df_test_filtered)}"
+            )
+        return df_train_filtered, df_test_filtered
+
     except Exception as e:
-        print(f"\n❌ Error during dataset preparation: {e}")
-        return False
+        print(f"\n❌ Error during scenario filtering: {e}")
+        return df_train, df_test
+
 
 
 # ================================================================
@@ -235,6 +275,8 @@ def engineer_features(df_train: pd.DataFrame, df_test: pd.DataFrame, verbose: bo
     # Remove categorical columns and IDs
     id_features = ['pokemon_a_id', 'pokemon_b_id', 'pokemon_a_name', 'pokemon_b_name', 'a_move_name', 'b_move_name']
     columns_to_drop = categorical_features + id_features
+    if 'scenario_type' in X_train_encoded.columns:
+        columns_to_drop.append('scenario_type')
     columns_to_drop = [col for col in columns_to_drop if col in X_train_encoded.columns]
 
     X_train_encoded.drop(columns=columns_to_drop, inplace=True)
@@ -372,7 +414,8 @@ def train_model(X_train: pd.DataFrame, y_train: pd.Series,
     if verbose:
         print("\nTraining model...")
 
-    model.fit(X_train, y_train, verbose=False)
+    # XGBoost accepte verbose dans fit, RandomForest non. On reste neutre.
+    model.fit(X_train, y_train)
 
     if verbose:
         print("✅ Training complete")
@@ -623,7 +666,7 @@ def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
 
 def export_model(model: Any, scalers: Dict, feature_columns: List[str],
                  metrics: Dict, hyperparams: Optional[Dict] = None,
-                 verbose: bool = True):
+                 version: str = "v1", verbose: bool = True):
     """
     Export trained model, scalers, and metadata.
 
@@ -637,14 +680,14 @@ def export_model(model: Any, scalers: Dict, feature_columns: List[str],
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
     # Export model
-    model_path = MODELS_DIR / "battle_winner_model_v1.pkl"
+    model_path = MODELS_DIR / f"battle_winner_model_{version}.pkl"
     with open(model_path, 'wb') as f:
         pickle.dump(model, f)
     if verbose:
         print(f"\n✅ Model exported: {model_path}")
 
     # Export scalers
-    scalers_path = MODELS_DIR / "battle_winner_scalers_v1.pkl"
+    scalers_path = MODELS_DIR / f"battle_winner_scalers_{version}.pkl"
     with open(scalers_path, 'wb') as f:
         pickle.dump(scalers, f)
     if verbose:
@@ -653,7 +696,7 @@ def export_model(model: Any, scalers: Dict, feature_columns: List[str],
     # Export metadata
     metadata = {
         'model_type': type(model).__name__,
-        'version': 'v1',
+        'version': version,
         'trained_at': datetime.now().isoformat(),
         'feature_columns': feature_columns,
         'n_features': len(feature_columns),
@@ -662,7 +705,7 @@ def export_model(model: Any, scalers: Dict, feature_columns: List[str],
         'random_seed': RANDOM_SEED,
     }
 
-    metadata_path = MODELS_DIR / "battle_winner_metadata.pkl"
+    metadata_path = MODELS_DIR / f"battle_winner_metadata_{version}.pkl"
     with open(metadata_path, 'wb') as f:
         pickle.dump(metadata, f)
     if verbose:
@@ -672,7 +715,7 @@ def export_model(model: Any, scalers: Dict, feature_columns: List[str],
     metadata_json = metadata.copy()
     metadata_json['feature_columns'] = feature_columns[:10] + ['...'] if len(feature_columns) > 10 else feature_columns
 
-    metadata_json_path = MODELS_DIR / "battle_winner_metadata.json"
+    metadata_json_path = MODELS_DIR / f"battle_winner_metadata_{version}.json"
     with open(metadata_json_path, 'w') as f:
         json.dump(metadata_json, f, indent=2)
     if verbose:
@@ -744,6 +787,18 @@ Examples:
         help='Skip exporting feature-engineered datasets'
     )
     parser.add_argument(
+        '--version',
+        type=str,
+        default='v1',
+        help='Suffix for exported artifacts (default: v1)'
+    )
+    parser.add_argument(
+        '--scenario-type',
+        type=str,
+        default='all',
+        help='Filter dataset by scenario_type if column exists (e.g., worst_case, random, custom)'
+    )
+    parser.add_argument(
         '--model',
         type=str,
         choices=['xgboost', 'random_forest'],
@@ -766,6 +821,8 @@ Examples:
         print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"Mode: {args.mode}")
         print(f"Random Seed: {RANDOM_SEED}")
+        print(f"Version: {args.version}")
+        print(f"Scenario filter: {args.scenario_type}")
 
     try:
         # STEP 1: Dataset preparation
@@ -792,6 +849,9 @@ Examples:
         df_train = pd.read_parquet(train_path)
         df_test = pd.read_parquet(test_path)
 
+        # Optional scenario filtering
+        df_train, df_test = filter_by_scenario(df_train, df_test, args.scenario_type, verbose=verbose)
+
         # STEP 2: Feature engineering
         X_train, X_test, y_train, y_test, scalers, feature_columns = engineer_features(
             df_train, df_test, verbose=verbose
@@ -817,7 +877,7 @@ Examples:
             analyze_feature_importance(model, feature_columns, verbose=verbose)
 
             # Export
-            export_model(model, scalers, feature_columns, metrics, hyperparams, verbose=verbose)
+            export_model(model, scalers, feature_columns, metrics, hyperparams, version=args.version, verbose=verbose)
 
             if not args.skip_export_features:
                 export_features(X_train, X_test, y_train, y_test, verbose=verbose)
@@ -835,7 +895,7 @@ Examples:
 
             # Export best model
             best_metrics = next(m for m in all_metrics if m['model_name'] == best_model_name)
-            export_model(best_model, scalers, feature_columns, best_metrics, verbose=verbose)
+            export_model(best_model, scalers, feature_columns, best_metrics, hyperparams=None, version=args.version, verbose=verbose)
 
             if not args.skip_export_features:
                 export_features(X_train, X_test, y_train, y_test, verbose=verbose)
@@ -868,7 +928,7 @@ Examples:
             analyze_feature_importance(best_model, feature_columns, verbose=verbose)
 
             # Export
-            export_model(best_model, scalers, feature_columns, metrics, hyperparams, verbose=verbose)
+            export_model(best_model, scalers, feature_columns, metrics, hyperparams, version=args.version, verbose=verbose)
 
             if not args.skip_export_features:
                 export_features(X_train, X_test, y_train, y_test, verbose=verbose)

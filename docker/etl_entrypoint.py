@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#docker/etl_entrypoint.py
 """
 ETL Entrypoint - Wait for DB and run ETL pipeline
 """
