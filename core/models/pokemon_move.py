@@ -98,7 +98,7 @@ class PokemonMove(Base):
 
         # 🔐 Database-level guard on learning level validity
         CheckConstraint(
-            "learn_level IS NULL OR learn_level >= -1",
+            "learn_level IS NULL OR learn_level >= -2",
             name="ck_pokemon_move_learn_level",
         ),
     )
