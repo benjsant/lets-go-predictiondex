@@ -138,7 +138,7 @@ Characteristics:
 
 print("📌 Initializing reference data (LearnMethod)...")
 
-methods = ["level_up", "ct", "move_tutor"]
+methods = ["level_up", "ct", "move_tutor", "before_evolution"]
 
 with Session(engine) as session:
     for name in methods:
