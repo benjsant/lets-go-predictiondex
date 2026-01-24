@@ -6,24 +6,55 @@ Ce dossier contient tous les scripts pour entraîner et évaluer le modèle de p
 
 ```
 machine_learning/
-├── build_battle_winner_dataset.py   # Génère le dataset de matchups
-├── train_model.py                   # Script de production pour entraîner le modèle
-├── test_model_inference.py          # Test rapide des prédictions
-├── analyze_data_for_ml.py           # Analyse exploratoire (legacy)
-├── build_dataset_ml_v1.py           # Ancien dataset (damage prediction, deprecated)
-└── build_classification_dataset.py  # Ancien dataset (deprecated)
+├── build_battle_winner_dataset_orm.py  # Génère le dataset (SQLAlchemy ORM) en simulant des duels
+├── run_machine_learning.py             # Pipeline ML complet (orchestration)
+├── train_model.py                       # Script de production pour entraîner le modèle
+├── test_model_inference.py              # Test rapide des prédictions
+├── analyze_data_for_ml.py               # Analyse exploratoire (legacy)
+└── temp/                                # Versions alternatives (psycopg2, etc.)
 ```
 
 ## Workflow Complet
 
-### 1. Générer le Dataset
+### Option 1: Pipeline Complet (Recommandé)
 
-Génère 34,040 matchups (188 Pokémon × 188 Pokémon) avec sélection du meilleur move pour chaque Pokémon.
+Exécute toutes les étapes automatiquement avec le nouveau script d'orchestration:
 
 ```bash
 # Depuis la racine du projet
 source .venv/bin/activate
-POSTGRES_HOST=localhost python machine_learning/build_battle_winner_dataset.py
+python machine_learning/run_machine_learning.py --mode=all
+```
+
+**Ce que ça fait:**
+1. Génère le dataset depuis PostgreSQL (ORM) en simulant des duels.
+2. Feature engineering (133 features).
+3. Entraîne le modèle XGBoost pour prédire le gagnant.
+4. Évalue les performances (Accuracy, ROC-AUC).
+5. Exporte les artifacts (modèle, scalers, metadata).
+
+**Modes disponibles:**
+- `--mode=all` - Pipeline complet
+- `--mode=dataset` - Génération dataset uniquement
+- `--mode=train` - Entraînement uniquement
+- `--mode=evaluate` - Évaluation uniquement
+- `--mode=compare` - Compare XGBoost vs RandomForest
+
+**Options avancées:**
+- `--tune-hyperparams` - Active GridSearchCV (plus lent)
+- `--skip-export-features` - Ne pas exporter les features (plus rapide)
+- `--version=v2` - Spécifier version des artifacts
+- `--scenario-type=all` - Filtrer par scénario (future: worst_case, random, etc.)
+
+### Option 2: Étapes Manuelles
+
+#### 1️⃣ Générer le Dataset
+
+Génère 34,040 matchups (188 Pokémon × 188 Pokémon) avec sélection automatique du meilleur move pour **chaque** Pokémon (A et B) afin de simuler des combats réalistes.
+
+```bash
+source .venv/bin/activate
+POSTGRES_HOST=localhost python machine_learning/build_battle_winner_dataset_orm.py
 ```
 
 **Outputs**:
@@ -31,7 +62,9 @@ POSTGRES_HOST=localhost python machine_learning/build_battle_winner_dataset.py
 - `data/ml/battle_winner/processed/train.parquet` (27,232 samples, 80%)
 - `data/ml/battle_winner/processed/test.parquet` (6,808 samples, 20%)
 
-### 2. Entraîner le Modèle
+**Note**: Utilise SQLAlchemy ORM pour la cohérence avec le reste du projet (API, ETL).
+
+#### 2️⃣ Entraîner le Modèle
 
 Entraîne un modèle XGBoost sur le dataset généré.
 
@@ -39,6 +72,12 @@ Entraîne un modèle XGBoost sur le dataset généré.
 source .venv/bin/activate
 python machine_learning/train_model.py
 ```
+
+**Options**:
+- `--use-gridsearch` - Active GridSearchCV pour tuning
+- `--skip-export-features` - Ne pas exporter les features
+- `--version=v2` - Version des artifacts
+- `--scenario-type=all` - Filtrer par scénario
 
 **Opérations effectuées**:
 1. Charge les datasets train/test depuis les fichiers parquet

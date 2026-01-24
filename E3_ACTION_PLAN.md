@@ -14,9 +14,9 @@
 **Statut:** ✅ VALIDÉ
 **Preuves:**
 - FastAPI REST API fonctionnelle (`api_pokemon/main.py`)
-- Endpoint `/predict/battle` expose le modèle XGBoost
+- Endpoint `/predict/best-move` expose le modèle XGBoost pour prédire le gagnant
 - Documentation Swagger disponible à `/docs`
-- Service de prédiction isolé (`api_pokemon/services/prediction_service.py`)
+- Service de prédiction simulant les duels avec contre-capacité adverse (`api_pokemon/services/prediction_service.py`)
 - Standards de qualité: Pydantic validation, error handling, logging
 
 **Fichiers clés:**
@@ -160,15 +160,15 @@ machine_learning/build_classification_dataset.py  # UNUSED: Different target (mo
 
 ### 🔴 PRIORITÉ 1: Script ML Unifié (C12, C13)
 
-**Objectif:** Créer un script `run_machine_learning.py` qui orchestre TOUT le pipeline ML.
+**Objectif:** Utiliser le script `run_machine_learning.py` qui orchestre le pipeline ML complet basé sur la prédiction de gagnant de duel.
 
 **Étapes:**
-1. **Dataset Preparation**
-   - Load data from DB
-   - Generate Pokemon matchups
-   - Feature engineering
-   - Train/test split
-   - Export processed datasets
+1. **Dataset Preparation (ORM)**
+   - Simulation de duels entre tous les Pokémon.
+   - Sélection automatique du meilleur move pour A et B.
+   - Détermination du gagnant réel basé sur les dégâts et la vitesse.
+   - Split train/test équilibré.
+   - Export Parquet.
 
 2. **Model Training**
    - Load preprocessed data

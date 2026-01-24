@@ -1,6 +1,6 @@
 # Let's Go PredictionDex - Documentation Complète du Projet
 
-> **Application Full-Stack de Prédiction de Combats Pokémon**
+> **Application Full-Stack de Prédiction de Gagnant de Combat Pokémon**
 > ETL + Machine Learning + API REST + Interface Streamlit
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
@@ -34,7 +34,7 @@
 
 ### Objectif
 
-**Let's Go PredictionDex** est une application qui aide les enfants à choisir la meilleure capacité Pokémon lors d'un combat dans Pokémon Let's Go Pikachu/Eevee. Elle utilise un modèle de Machine Learning (XGBoost) entraîné sur 34,040 combats simulés pour prédire avec **94.24% d'accuracy** quelle capacité maximisera les chances de victoire.
+**Let's Go PredictionDex** est une application qui aide les enfants à choisir la meilleure capacité Pokémon lors d'un combat dans Pokémon Let's Go Pikachu/Eevee. Elle utilise un modèle de Machine Learning (XGBoost) entraîné sur des milliers de combats simulés pour prédire avec **94.24% d'accuracy** quel Pokémon remportera le duel en fonction des capacités choisies.
 
 ### Cas d'Usage
 
@@ -45,18 +45,18 @@ Situation: Un enfant joue à Pokémon Let's Go et rencontre un Salamèche sauvag
 Action:   L'enfant ouvre l'application et sélectionne:
           - Pokémon A: Carapuce
           - Pokémon B: Salamèche
-          - Capacités disponibles: [Charge, Pistolet à O, Hydrocanon, Surf]
+          - Capacités disponibles pour A: [Charge, Pistolet à O, Hydrocanon, Surf]
 
-Résultat: L'application recommande "Hydrocanon" avec 99.75% de chances de victoire
-          car:
-          • Eau est super efficace contre Feu (2x)
-          • STAB bonus s'applique (1.5x) - Carapuce est type Eau
-          • Puissance élevée (110)
+Résultat: L'application analyse chaque choix de A contre la meilleure riposte possible de B.
+          Elle recommande "Hydrocanon" car il offre 99.75% de chances de victoire contre Salamèche.
+          
+Note:     Si les capacités de l'adversaire (B) ne sont pas connues, le système simule le "pire cas" 
+          pour le joueur en supposant que B utilisera ses capacités les plus puissantes.
 ```
 
 ### Fonctionnalités Principales
 
-- ✅ **Prédiction de Combat**: Recommande la meilleure capacité avec probabilité de victoire
+- ✅ **Prédiction de Gagnant**: Recommande la meilleure capacité en simulant le duel complet (Win Probability)
 - ✅ **Base de Données Complète**: 188 Pokémon Let's Go, 226 capacités, 324 règles de types
 - ✅ **Modèle ML Performant**: 94.24% accuracy, 98.96% ROC-AUC
 - ✅ **API REST**: Endpoints FastAPI avec documentation Swagger
@@ -188,106 +188,227 @@ Dépendances:
 
 ```
 lets-go-predictiondex/
-│
-├── core/                          # Modèles & Database (Partagé)
-│   ├── db/
-│   │   ├── base.py                # SQLAlchemy Base
-│   │   ├── session.py             # Factory de connexion DB
-│   │   └── guards/                # Fonctions upsert (idempotence)
-│   │       ├── pokemon.py
-│   │       ├── move.py
-│   │       └── ...
-│   ├── models/                    # Modèles SQLAlchemy ORM
-│   │   ├── pokemon.py             # Pokémon (form-level)
-│   │   ├── move.py                # Capacités (avec priority)
-│   │   ├── type_effectiveness.py  # Matrice des types
+├── api_pokemon
+│   ├── __init__.py
+│   ├── main.py
+│   ├── README_PREDICTION.md
+│   ├── requirements.txt
+│   ├── routes
+│   │   ├── __init__.py
+│   │   ├── moves_route.py
+│   │   ├── pokemon_route.py
+│   │   ├── prediction_route.py
+│   │   └── type_route.py
+│   ├── services
+│   │   ├── __init__.py
+│   │   ├── move_service.py
+│   │   ├── pokemon_service.py
+│   │   ├── prediction_service.py
+│   │   └── type_service.py
+│   └── test_prediction_endpoint.py
+├── core
+│   ├── db
+│   │   ├── base.py
+│   │   ├── guards
+│   │   │   ├── form.py
+│   │   │   ├── __init__.py
+│   │   │   ├── move_category.py
+│   │   │   ├── move.py
+│   │   │   ├── pokemon_move.py
+│   │   │   ├── pokemon.py
+│   │   │   ├── pokemon_stats.py
+│   │   │   ├── pokemon_type.py
+│   │   │   ├── type.py
+│   │   │   └── utils.py
+│   │   ├── __init__.py
+│   │   └── session.py
+│   ├── __init__.py
+│   ├── models
+│   │   ├── form.py
+│   │   ├── __init__.py
+│   │   ├── learn_method.py
+│   │   ├── move_category.py
+│   │   ├── move.py
+│   │   ├── pokemon_move.py
+│   │   ├── pokemon.py
 │   │   ├── pokemon_species.py
 │   │   ├── pokemon_stat.py
-│   │   └── ...
-│   └── schemas/                   # Schémas Pydantic (validation API)
-│       ├── pokemon.py
+│   │   ├── pokemon_type.py
+│   │   ├── type_effectiveness.py
+│   │   └── type.py
+│   └── schemas
+│       ├── form.py
+│       ├── __init__.py
+│       ├── learn_method.py
+│       ├── move_category.py
 │       ├── move.py
-│       └── ...
-│
-├── etl_pokemon/                   # Pipeline ETL
-│   ├── data/csv/                  # Données sources
-│   │   ├── liste_pokemon.csv
-│   │   ├── liste_capacite_lets_go.csv
-│   │   └── table_type.csv
-│   ├── scripts/
-│   │   ├── etl_load_csv.py       # Script ETL principal
-│   │   ├── etl_enrich_pokeapi.py # Enrichissement PokéAPI
-│   │   └── etl_post_process.py   # Post-traitement
-│   └── pokepedia_scraper/         # Spider Scrapy
-│
-├── machine_learning/              # Pipeline ML
-│   ├── build_battle_winner_dataset.py  # Génère dataset combats
-│   ├── train_model.py                   # Script production training
-│   ├── test_model_inference.py          # Test prédictions
-│   └── README.md                        # Doc ML complète
-│
-├── data/ml/                       # Datasets ML générés
-│   └── battle_winner/
-│       ├── raw/matchups.parquet   # 34,040 matchups bruts
-│       ├── processed/
-│       │   ├── train.parquet      # 27,232 échantillons
-│       │   └── test.parquet       # 6,808 échantillons
-│       └── features/              # (Non utilisé, features en runtime)
-│
-├── models/                        # Modèles ML entraînés
-│   ├── battle_winner_model_v1.pkl      # XGBoost (983 KB)
-│   ├── battle_winner_scalers_v1.pkl    # 2 StandardScalers (1.7 KB)
-│   └── battle_winner_metadata.pkl      # Métadonnées (2.8 KB)
-│
-├── notebooks/                     # Jupyter Notebooks (Expérimentation)
-│   ├── 01_exploration.ipynb       # EDA du dataset
-│   ├── 02_feature_engineering.ipynb  # Pipeline features (133 colonnes)
-│   └── 03_training_evaluation.ipynb  # Training & évaluation
-│
-├── api_pokemon/                   # API FastAPI
-│   ├── main.py                    # Point d'entrée API
-│   ├── routes/
-│   │   ├── pokemon_route.py
-│   │   ├── moves_route.py
-│   │   ├── type_route.py
-│   │   └── prediction_route.py    # Endpoints ML
-│   ├── services/
-│   │   ├── pokemon_service.py
-│   │   ├── move_service.py
-│   │   ├── type_service.py
-│   │   └── prediction_service.py  # Logique ML inference
-│   ├── requirements.txt
-│   └── README_PREDICTION.md       # Doc endpoint /predict
-│
-├── interface/                     # Interface Streamlit
-│   ├── app.py                     # Page d'accueil
-│   ├── pages/
-│   │   ├── 1_Moves.py             # Recherche capacités
-│   │   ├── 2_Compare.py           # Comparaison Pokémon
-│   │   └── 3_Credits.py
-│   ├── services/
-│   │   └── api_client.py          # Client HTTP pour API
-│   └── requirements_streamlit.txt
-│
-├── docker/                        # Configuration Docker
+│       ├── pokemon_move.py
+│       ├── pokemon.py
+│       ├── pokemon_species.py
+│       ├── pokemon_type.py
+│       ├── pokemon_weakness.py
+│       ├── prediction.py
+│       ├── type_effectiveness.py
+│       └── type.py
+├── data
+│   ├── datasets
+│   │   └── pokemon_damage_ml.parquet
+│   ├── ml
+│   │   ├── battle_winner
+│   │   │   ├── features
+│   │   │   │   ├── feature_list.pkl
+│   │   │   │   ├── standard_scaler_new_features.pkl
+│   │   │   │   ├── standard_scaler.pkl
+│   │   │   │   ├── X_test.parquet
+│   │   │   │   ├── X_train.parquet
+│   │   │   │   ├── y_test.parquet
+│   │   │   │   └── y_train.parquet
+│   │   │   ├── processed
+│   │   │   │   ├── test.parquet
+│   │   │   │   └── train.parquet
+│   │   │   └── raw
+│   │   │       └── matchups.parquet
+│   │   ├── features
+│   │   │   ├── label_encoder_category.pkl
+│   │   │   ├── standard_scaler.pkl
+│   │   │   ├── X_test_no_multiplier.parquet
+│   │   │   ├── X_test_with_multiplier.parquet
+│   │   │   ├── X_train_no_multiplier.parquet
+│   │   │   ├── X_train_with_multiplier.parquet
+│   │   │   ├── y_test.parquet
+│   │   │   └── y_train.parquet
+│   │   ├── processed
+│   │   │   ├── test.parquet
+│   │   │   └── train.parquet
+│   │   ├── raw
+│   │   │   └── battle_samples.parquet
+│   │   └── README.md
+├── docker
+│   ├── api_entrypoint.py
 │   ├── Dockerfile.api
 │   ├── Dockerfile.etl
 │   ├── Dockerfile.ml
 │   ├── Dockerfile.streamlit
-│   └── *_entrypoint.py
-│
-├── docs/                          # Documentation
-│   └── sql/                       # Exemples SQL
-│
-├── docker-compose.yml             # Orchestration microservices
-├── .env                           # Variables d'environnement
-├── README.md                      # README principal (sommaire)
-├── E1_DOCUMENTATION.md            # Doc compétence E1 (ETL/DB)
-├── E1_ARCHITECTURE_DIAGRAM.md     # Diagrammes architecture
-├── E3_STRUCTURE.md                # Structure ML pour E3
-├── HANDOFF_CONTEXT.md             # Contexte développement
-├── API_EXAMPLES.md                # Exemples API réels
-└── README_PROJET_COMPLET.md       # ⬅️ CE DOCUMENT
+│   ├── etl_entrypoint.py
+│   ├── ml_entrypoint.py
+│   └── wait_for_db.py
+├── docker-compose.yml
+├── docs
+│   ├── plan_evolution_ml_v2.md
+│   └── sql
+│       ├── dataset_queries.sql
+│       ├── move_queries.sql
+│       ├── pokemon_move_queries.sql
+│       ├── pokemon_type_queries.sql
+│       └── README.md
+├── E1_ARCHITECTURE_DIAGRAM.md
+├── E1_CHOIX_TECHNIQUES.md
+├── E1_DOCUMENTATION.md
+├── E3_ACTION_PLAN.md
+├── E3_COMPETENCES_STATUS.md
+├── etl_pokemon
+│   ├── data
+│   │   └── csv
+│   │       ├── liste_capacite_lets_go.csv
+│   │       ├── liste_pokemon.csv
+│   │       └── table_type.csv
+│   ├── __init__.py
+│   ├── pipeline.py
+│   ├── pokepedia_scraper
+│   │   ├── pokepedia_scraper
+│   │   │   ├── __init__.py
+│   │   │   ├── items.py
+│   │   │   ├── middlewares.py
+│   │   │   ├── pipelines.py
+│   │   │   ├── settings.py
+│   │   │   └── spiders
+│   │   │       ├── __init__.py
+│   │   │       └── lgpe_moves_sql_spider.py
+│   │   └── scrapy.cfg
+│   ├── requirements.txt
+│   └── scripts
+│       ├── etl_enrich_pokeapi.py
+│       ├── etl_init_db.py
+│       ├── etl_load_csv.py
+│       ├── etl_post_process.py
+│       └── etl_previous_evolution.py
+├── interface
+│   ├── app.py
+│   ├── config
+│   │   └── settings.py
+│   ├── formatters
+│   │   ├── __init__.py
+│   │   ├── move_formatter.py
+│   │   ├── pokemon_formatter.py
+│   │   └── ui
+│   │       ├── __init__.py
+│   │       ├── move_ui.py
+│   │       └── pokemon_ui.py
+│   ├── __init__.py
+│   ├── pages
+│   │   ├── 1_Moves.py
+│   │   ├── 2_Compare.py
+│   │   ├── 3_Credits.py
+│   │   ├── 4_Quiz_Types.py
+│   │   ├── 5_Combat_Classique.py
+│   │   ├── 7_Pokemon_Detail.py
+│   │   ├── 8_Types.py
+│   │   ├── 9_Moves_List.py
+│   │   └── __init__.py
+│   ├── requirements_streamlit.txt
+│   ├── services
+│   │   ├── api_client.py
+│   │   ├── __init__.py
+│   │   ├── move_service.py
+│   │   ├── pokemon_service.py
+│   │   └── prediction_service.py
+│   └── utils
+│       ├── __init__.py
+│       ├── pokemon_theme.py
+│       └── ui_helpers.py
+├── LICENSE
+├── machine_learning
+│   ├── build_battle_winner_dataset.py
+│   ├── __init__.py
+│   ├── README.md
+│   ├── requirements.txt
+│   ├── run_machine_learning.py
+│   ├── test_model_inference.py
+│   └── train_model.py
+├── models
+│   ├── battle_winner_metadata.pkl
+│   ├── battle_winner_model_v1.pkl
+│   ├── battle_winner_rf_v1.pkl
+│   ├── battle_winner_scalers_v1.pkl
+│   ├── battle_winner_xgb_v1.pkl
+│   ├── model_metadata.pkl
+│   ├── random_forest_no_multiplier_v1.pkl
+│   ├── random_forest_v1.pkl
+│   └── README.md
+├── notebooks
+│   ├── 01_exploration.ipynb
+│   ├── 02_feature_engineering.ipynb
+│   ├── 03_training_evaluation.ipynb
+│   └── README.md
+├── pytest.ini
+├── README.md
+├── README_PROJET_COMPLET.md
+├── RUN_MACHINE_LEARNING.md
+├── test_all.py
+├── test_api_examples.py
+├── test_prediction_api.py
+└── tests
+    ├── conftest.py
+    ├── __init__.py
+    ├── ml
+    ├── test_move_route.py
+    ├── test_move_service.py
+    ├── test_pokemon_route.py
+    ├── test_pokemon_service.py
+    ├── test_prediction_route.py
+    ├── test_prediction_service.py
+    ├── test_type_route.py
+    └── test_type_service.py
 ```
 
 ---
@@ -391,14 +512,14 @@ docker compose up etl
 
 ### 1. Génération du Dataset
 
-**Script:** `machine_learning/build_battle_winner_dataset.py`
+**Script:** `machine_learning/build_battle_winner_dataset_orm.py`
 
 **Stratégie:**
-1. Créer tous les matchups possibles: 188 × 188 = 35,344 combinaisons
-2. Pour chaque matchup, sélectionner la meilleure capacité offensive pour chaque Pokémon
-3. Calculer les features de combat (stats, types, STAB, efficacité)
-4. Déterminer le gagnant basé sur puissance effective et priorité
-5. Échantillonnage intelligent pour équilibrer le dataset
+1. Créer tous les matchups possibles: 188 × 188 = 35,344 combinaisons.
+2. Pour chaque matchup, sélectionner la meilleure capacité offensive pour chaque Pokémon (A & B).
+3. Simuler le duel complet en tenant compte des priorités et de la vitesse pour déterminer le gagnant.
+4. Échantillonnage intelligent pour équilibrer le dataset (50% de victoires pour A).
+5. Export au format Parquet pour un entraînement performant.
 
 **Output:**
 - `data/ml/battle_winner/raw/matchups.parquet` - 34,040 matchups
@@ -675,25 +796,25 @@ GET /predict/model-info
 
 **Composants:**
 
-1. **PredictionModel Singleton**
-   - Charge le modèle une fois au démarrage
-   - Cache en mémoire pour inférence rapide
+1.  **PredictionModel Singleton**
+    -   Charge le modèle une fois au démarrage
+    -   Cache en mémoire pour inférence rapide
 
-2. **Sélection de Capacité**
-   - `select_best_move_for_matchup()` - Choisit la meilleure capacité
-   - Score = `power × stab × type_mult × (accuracy/100) + priority × 50`
+2.  **Sélection de Capacité**
+    -   `select_best_move_for_matchup()` - Choisit la meilleure capacité
+    -   Score = `power × stab × type_mult × (accuracy/100) + priority × 50`
 
-3. **Préparation de Features**
-   - `prepare_features_for_prediction()` - Construit 38 features brutes
-   - `apply_feature_engineering()` - Transforme en 133 features
+3.  **Préparation de Features**
+    -   `prepare_features_for_prediction()` - Construit 38 features brutes
+    -   `apply_feature_engineering()` - Transforme en 133 features
 
-4. **Prédiction**
-   - `predict_best_move()` - Fonction principale
-   - Pour chaque capacité disponible:
-     - Simule matchup avec meilleure contre-capacité adverse
-     - Calcule features
-     - Prédit probabilité de victoire
-   - Classe par probabilité décroissante
+4.  **Prédiction**
+    -   `predict_best_move()` - Fonction principale
+    -   Pour chaque capacité disponible de A:
+        -   Simule le matchup complet contre la **meilleure contre-capacité adverse** (sélectionnée automatiquement).
+        -   Calcule les features de duel.
+        -   Prédit la probabilité de victoire de A via le modèle XGBoost.
+    -   Classe les capacités par probabilité de victoire décroissante.
 
 ---
 
@@ -708,7 +829,10 @@ GET /predict/model-info
 1. **Home** - Page d'accueil avec navigation
 2. **Moves** - Recherche de Pokémon et affichage de leurs capacités
 3. **Compare** - Comparaison de deux Pokémon (types, stats, faiblesses)
-4. **Credits** - Informations sur le projet
+4. **Quiz Types** - Jeu pédagogique pour apprendre les affinités de types
+5. **Combat Classique** - Simulation de combat avec prédiction ML
+6. **Detailed Views** - Pages de détails Pokémon, Types, et Liste de Capacités
+7. **Credits** - Informations sur le projet
 
 **Features:**
 - Sprites Pokémon

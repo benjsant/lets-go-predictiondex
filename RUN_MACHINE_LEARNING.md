@@ -51,12 +51,11 @@ python machine_learning/run_machine_learning.py --mode=dataset
 ```
 
 **Ce que ça fait:**
-- Connexion à PostgreSQL
-- Génère tous les matchups Pokemon A vs Pokemon B
-- Sélectionne meilleure capacité pour chaque Pokemon
-- Simule résultat du combat (winner = A ou B)
-- Split train/test (80/20)
-- Export en parquet
+- Connexion à PostgreSQL via SQLAlchemy ORM.
+- Génère tous les matchups Pokémon A vs Pokémon B.
+- Sélectionne automatiquement la meilleure capacité offensive pour **chaque** Pokémon.
+- Simule le duel complet (dégâts, priorité, vitesse) pour déterminer le gagnant.
+- Split train/test (80/20) et export en format Parquet.
 
 **Output:**
 - `data/ml/battle_winner/raw/matchups.parquet`
@@ -201,19 +200,19 @@ python machine_learning/run_machine_learning.py --mode=all --quiet
 
 ### Étape 1: Dataset Preparation
 
-**Script appelé:** `machine_learning/build_battle_winner_dataset.py`
+**Script appelé:** `machine_learning/build_battle_winner_dataset_orm.py`
 
 **Processus:**
-1. Connexion PostgreSQL
-2. Fetch Pokemon (stats, types)
-3. Fetch Moves (power, type, category)
+1. Connexion PostgreSQL (SQLAlchemy)
+2. Fetch Pokémon (stats, types)
+3. Fetch Moves (puissance, type, catégorie, priorité)
 4. Fetch Type Effectiveness (multiplicateurs)
-5. Générer matchups (Pokemon A vs Pokemon B)
+5. Générer matchups (Pokémon A vs Pokémon B)
 6. Pour chaque matchup:
-   - Sélectionner meilleure move offensive pour A
-   - Sélectionner meilleure move offensive pour B
-   - Calculer damage potentiel
-   - Déterminer winner (A ou B)
+   - Sélectionner la meilleure capacité offensive pour A
+   - Sélectionner la meilleure capacité offensive pour B
+   - Simuler le duel complet basé sur les dégâts et la vitesse
+   - Déterminer le gagnant (winner = A ou B)
 7. Train/Test Split (80/20, random_state=42)
 8. Export parquet
 
