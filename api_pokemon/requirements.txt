@@ -21,3 +21,8 @@ numpy
 scikit-learn
 xgboost
 pyarrow
+
+# --- Monitoring & Observability ---
+prometheus-client
+psutil
+evidently>=0.7.0,<0.8.0  # Latest stable version

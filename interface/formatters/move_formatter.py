@@ -56,8 +56,12 @@ def format_pokemon_moves(
         if learn_method == "level_up":
             if learn_level == 0:
                 label_parts.append("Départ")
+            elif learn_level == -2:
+                label_parts.append("Hérité")
             elif learn_level is not None:
                 label_parts.append(f"lvl {learn_level}")
+        elif learn_method == "before_evolution":
+            label_parts.append("Hérité")
         else:
             # Affiche CT / Tuteur / Autre pour les méthodes différentes de level_up
             label_parts.append(learn_method.upper() if learn_method else "AUTRE")
@@ -81,7 +85,7 @@ def format_pokemon_moves(
     # -----------------------------
     # Tri logique
     # -----------------------------
-    priority = {"level_up": 0, "ct": 1, "move_tutor": 2}
+    priority = {"level_up": 0, "before_evolution": 1, "ct": 2, "move_tutor": 3}
 
     formatted.sort(
         key=lambda m: (

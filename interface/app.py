@@ -39,7 +39,7 @@ pikachu_eevee_mascots()
 info_box(
     "Bienvenue, Dresseur !",
     """
-    Grâce à l'intelligence artificielle et à <strong>94.24% de précision</strong>, découvre quelle capacité
+    Grâce à l'intelligence artificielle et à <strong>94.46% de précision</strong>, découvre quelle capacité
     te donnera le plus de chances de gagner tes combats !
     <br><br>
     PredictionDex analyse <strong>133 features</strong> pour prédire le résultat de chaque combat en moins de <strong>500ms</strong>.
@@ -189,7 +189,7 @@ with st.expander("🤖 Comment ça marche ?"):
     4. Il prédit le vainqueur et la probabilité de victoire
 
     **Résultat:**
-    - ✅ **94.24% de précision** (prédit le bon gagnant 94 fois sur 100 !)
+    - ✅ **94.46% de précision** (prédit le bon gagnant 94 fois sur 100 !)
     - ⚡ **Temps de réponse < 500ms** (ultra-rapide !)
     - 🎯 **133 features analysées** pour chaque prédiction
 
@@ -213,10 +213,10 @@ with st.expander("🎮 Le savais-tu ?"):
     - 🎯 **324 règles de types** (18 × 18 affinités)
 
     **Notre modèle ML :**
-    - 🤖 Entraîné sur **34,040 combats** simulés
+    - 🤖 Entraîné sur **898,472 combats** simulés
     - 📊 Analyse **133 features** différentes
     - ⚡ Répond en moins de **500ms**
-    - ✅ **94.24% de précision** sur les tests
+    - ✅ **94.46% de précision** sur les tests (v2)
     - 🧠 Algorithme **XGBoost** optimisé pour les combats
 
     💡 **Statistique folle:** Avec toutes les combinaisons Pokémon × Capacités,
@@ -252,7 +252,7 @@ st.markdown(f"""
 <div style='text-align:center;color:{POKEMON_COLORS['text_secondary']};padding:30px 0;'>
     <p style='font-size:1.1rem;'><strong>🤖 Propulsé par XGBoost</strong></p>
     <p style='font-size:0.95rem;'>
-        ⚡ Précision: <strong style='color:{POKEMON_COLORS['primary']};'>94.24%</strong> |
+        ⚡ Précision: <strong style='color:{POKEMON_COLORS['primary']};'>94.46%</strong> |
         Features: <strong style='color:{POKEMON_COLORS['primary']};'>133</strong> |
         Latence: <strong style='color:{POKEMON_COLORS['primary']};">&lt;500ms</strong>
     </p>

@@ -34,9 +34,18 @@ Prédit la meilleure capacité pour le Pokémon A contre le Pokémon B.
 {
   "pokemon_a_id": 7,
   "pokemon_b_id": 4,
-  "available_moves": ["Charge", "Pistolet à O", "Hydrocanon"]
+  "available_moves": ["Charge", "Pistolet à O", "Hydrocanon"],
+  "available_moves_b": null  // Optional: liste des moves connus de l'adversaire
 }
 ```
+
+**Paramètres:**
+- `pokemon_a_id` (int, requis): ID du Pokémon attaquant
+- `pokemon_b_id` (int, requis): ID du Pokémon défenseur
+- `available_moves` (list[str], optionnel): Moves disponibles pour A (si omis, tous les moves appris)
+- `available_moves_b` (list[str], optionnel): **NOUVEAU** - Moves connus de B pour simulation plus précise
+  - Si `null` ou omis: B utilise automatiquement son meilleur move offensif (comportement par défaut)
+  - Si spécifié: B est limité à ces moves lors de la simulation de combat
 
 **Response:**
 ```json
@@ -194,6 +203,8 @@ L'application aide un enfant à choisir la meilleure capacité:
 
 **Moves disponibles**: Charge, Pistolet à O, Hydrocanon
 
+**Scénario 1 - Sans connaître les moves de l'adversaire** (available_moves_b = null):
+
 **Prédiction:**
 1. **Hydrocanon** (Eau, 110 puissance)
    - STAB: 1.5x (Carapuce est type Eau)
@@ -210,6 +221,23 @@ L'application aide un enfant à choisir la meilleure capacité:
    - Win probability: 45%
 
 **Recommandation**: "Utilise Hydrocanon !"
+
+**Scénario 2 - En connaissant les moves de l'adversaire** (available_moves_b = ["Flammèche", "Charge"]):
+
+Si vous savez que Salamèche ne connaît que "Flammèche" et "Charge":
+
+```json
+{
+  "pokemon_a_id": 7,
+  "pokemon_b_id": 4,
+  "available_moves": ["Charge", "Pistolet à O", "Hydrocanon"],
+  "available_moves_b": ["Flammèche", "Charge"]
+}
+```
+
+La prédiction sera plus précise car elle simule le combat avec ces moves spécifiques plutôt que d'assumer que B utilise son meilleur move possible.
+
+**Utilité**: Permet de mieux prédire le résultat quand vous connaissez les capacités de l'adversaire (par observation ou information).
 
 ## Performance
 

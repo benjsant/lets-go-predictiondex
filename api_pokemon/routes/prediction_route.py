@@ -9,6 +9,7 @@ REST endpoints for ML-based battle prediction.
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+import time
 
 from core.db.session import get_db
 from core.schemas.prediction import (
@@ -17,6 +18,8 @@ from core.schemas.prediction import (
     MoveScore
 )
 from api_pokemon.services import prediction_service
+from api_pokemon.monitoring.metrics import track_prediction
+from api_pokemon.monitoring.drift_detection import drift_detector
 
 
 router = APIRouter(prefix="/predict", tags=["prediction"])
@@ -65,12 +68,37 @@ def predict_best_move(
     - 500: Model inference error
     """
     try:
+        start_time = time.time()
+        
         result = prediction_service.predict_best_move(
             db=db,
             pokemon_a_id=request.pokemon_a_id,
             pokemon_b_id=request.pokemon_b_id,
-            available_moves_a=request.available_moves
+            available_moves_a=request.available_moves,
+            available_moves_b=request.available_moves_b
         )
+        
+        # Track prediction metrics
+        prediction_duration = time.time() - start_time
+        track_prediction(
+            model_version="v2",
+            duration=prediction_duration,
+            confidence=result['win_probability'],
+            win_prob=result['win_probability']
+        )
+        
+        # Add prediction to drift detector (using simplified features for now)
+        # In production, you would extract the full feature vector used for prediction
+        drift_detector.add_prediction(
+            features={
+                'pokemon_a_id': request.pokemon_a_id,
+                'pokemon_b_id': request.pokemon_b_id,
+                'recommended_move': result['recommended_move']
+            },
+            prediction=1 if result['win_probability'] > 0.5 else 0,
+            probability=result['win_probability']
+        )
+        
         return result
 
     except ValueError as e:

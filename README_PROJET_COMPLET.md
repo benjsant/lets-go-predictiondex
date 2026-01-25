@@ -46,6 +46,7 @@ Action:   L'enfant ouvre l'application et sélectionne:
           - Pokémon A: Carapuce
           - Pokémon B: Salamèche
           - Capacités disponibles pour A: [Charge, Pistolet à O, Hydrocanon, Surf]
+          - Capacités disponibles pour B: [Griffe, Flammeche, lance_flamme, tranche]
 
 Résultat: L'application analyse chaque choix de A contre la meilleure riposte possible de B.
           Elle recommande "Hydrocanon" car il offre 99.75% de chances de victoire contre Salamèche.

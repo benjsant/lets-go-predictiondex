@@ -6,12 +6,12 @@ Ce dossier contient tous les scripts pour entraîner et évaluer le modèle de p
 
 ```
 machine_learning/
-├── build_battle_winner_dataset_orm.py  # Génère le dataset (SQLAlchemy ORM) en simulant des duels
-├── run_machine_learning.py             # Pipeline ML complet (orchestration)
-├── train_model.py                       # Script de production pour entraîner le modèle
-├── test_model_inference.py              # Test rapide des prédictions
-├── analyze_data_for_ml.py               # Analyse exploratoire (legacy)
-└── temp/                                # Versions alternatives (psycopg2, etc.)
+├── build_battle_winner_dataset.py       # Génère le dataset v1 (best_move uniquement)
+├── build_battle_winner_dataset_v2.py    # **NOUVEAU** Génère le dataset v2 (multi-scénarios)
+├── run_machine_learning.py              # Pipeline ML complet (orchestration v1/v2)
+├── train_model.py                        # Script de production pour entraîner le modèle
+├── test_model_inference.py               # Test rapide des prédictions
+└── README.md                             # Ce fichier
 ```
 
 ## Workflow Complet
@@ -41,14 +41,49 @@ python machine_learning/run_machine_learning.py --mode=all
 - `--mode=compare` - Compare XGBoost vs RandomForest
 
 **Options avancées:**
+- `--dataset-version=v2` - Utiliser le dataset v2 multi-scénarios (v1 par défaut)
+- `--scenario-type=all` - Type de scénario : best_move, random_move, all_combinations, all
 - `--tune-hyperparams` - Active GridSearchCV (plus lent)
+- `--grid-type=extended` - Grille étendue (243 combinaisons) ou fast (8 combinaisons)
 - `--skip-export-features` - Ne pas exporter les features (plus rapide)
 - `--version=v2` - Spécifier version des artifacts
-- `--scenario-type=all` - Filtrer par scénario (future: worst_case, random, etc.)
+- `--num-random-samples=10000` - Nombre d'échantillons pour random_move
+- `--max-combinations=100000` - Limite pour all_combinations
+
+### Dataset v1 vs v2
+
+#### Dataset v1 (best_move) - Original
+- **34,040 échantillons** (188 × 188 matchups)
+- Scénario unique: Les deux Pokémon utilisent leur meilleur move offensif
+- Utilisé pour le modèle initial (94.24% accuracy)
+
+#### Dataset v2 (multi-scénarios) - NOUVEAU
+- **~880,000 échantillons** (3 scénarios combinés)
+- **3 types de scénarios**:
+  1. `best_move` (~34k): Identique à v1, les deux utilisent leur meilleur move
+  2. `random_move` (~10k configurables): B utilise un move aléatoire parmi ses moves offensifs
+  3. `all_combinations` (~836k): Toutes les combinaisons possibles de moves A vs moves B
+- **Avantage**: Modèle plus robuste, capable de prédire dans des situations variées
+- **Inconvénient**: Entraînement plus long (25x plus de données)
+
+**Génération du dataset v2:**
+
+```bash
+source .venv/bin/activate
+POSTGRES_HOST=localhost python machine_learning/build_battle_winner_dataset_v2.py \
+  --scenario-type=all \
+  --num-random-samples=10000 \
+  --max-combinations=100000
+```
+
+**Options:**
+- `--scenario-type`: best_move, random_move, all_combinations, ou all (tous les scénarios)
+- `--num-random-samples`: Nombre d'échantillons pour random_move (défaut: 10000)
+- `--max-combinations`: Limite pour all_combinations (défaut: 100000)
 
 ### Option 2: Étapes Manuelles
 
-#### 1️⃣ Générer le Dataset
+#### 1️⃣ Générer le Dataset (v1)
 
 Génère 34,040 matchups (188 Pokémon × 188 Pokémon) avec sélection automatique du meilleur move pour **chaque** Pokémon (A et B) afin de simuler des combats réalistes.
 

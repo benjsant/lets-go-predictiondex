@@ -54,10 +54,18 @@ services:
       POSTGRES_USER: letsgo_user
       POSTGRES_PASSWORD: letsgo_password
       DEV_MODE: "true"
+      # ML Pipeline v2 Configuration
+      ML_MODE: "all"                    # all, dataset, train, evaluate
+      ML_SCENARIO_TYPE: "all"           # best_move, random_move, all_combinations, all
+      ML_TUNE_HYPERPARAMS: "true"       # Enable GridSearchCV
+      ML_GRID_TYPE: "fast"              # fast (8 combinations) or extended (243 combinations)
+      ML_NUM_RANDOM_SAMPLES: "5"        # Samples per matchup for random_move scenario
+      ML_MAX_COMBINATIONS: "20"         # Max combinations per matchup for all_combinations
     volumes:
       - ./machine_learning:/app/machine_learning
       - ./core:/app/core
       - ./data:/app/data
+      - ./models:/app/models            # Mount models/ to export trained models
       - ./docker:/app/docker
     restart: "no"
 
@@ -85,8 +93,14 @@ services:
       - ./api_pokemon:/app/api_pokemon
       - ./core:/app/core
       - ./docker:/app/docker
+      - ./data:/app/data                # For drift detection reference data
+      - ./models:/app/models            # For model metadata
+      - ./api_pokemon/monitoring:/app/api_pokemon/monitoring  # Persist monitoring data
     ports:
       - "8000:8000"
+    networks:
+      - monitoring
+      - default
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
@@ -114,5 +128,77 @@ services:
       - "8501:8501"
     restart: unless-stopped
 
+  # ====================================================================
+  # Monitoring Stack
+  # ====================================================================
+  
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: letsgo_prometheus
+    volumes:
+      - ./docker/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+      - default
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: letsgo_grafana
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_INSTALL_PLUGINS=
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
+      - default
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:v1.6.1
+    container_name: letsgo_node_exporter
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    ports:
+      - "9100:9100"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+networks:
+  monitoring:
+    driver: bridge
+
 volumes:
   postgres_data:
+  prometheus_data:
+  grafana_data:

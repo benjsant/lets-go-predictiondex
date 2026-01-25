@@ -10,8 +10,11 @@ OBJECTIF
 
 RÈGLES MÉTIER
 ------------
-- ❌ Exclut TOUTES les formes Mega
+- ✅ Traite toutes les formes : Base, Alola, Starter
+- ❌ Exclut UNIQUEMENT les formes Mega
 - ✅ Les Mega sont gérées par un autre script ETL dédié
+- ✅ Gestion spéciale Alola : cherche l'évolution précédente dans les 2 variantes
+  Exemple: Rattatac Alola hérite de Rattata Alola ET Rattata Base
 - ✅ Upsert idempotent dans PokemonMove
 - ✅ Appels PokeAPI threadés
 - ✅ Évite les doublons : ne copie que les moves non possédés
@@ -45,7 +48,12 @@ POKEAPI_SPECIES_URL = "https://pokeapi.co/api/v2/pokemon-species/{}"
 REQUEST_DELAY = 0.05
 MAX_RETRIES = 3
 MAX_WORKERS = 10
+
+# IDs des formes à traiter (exclut Mega uniquement)
 BASE_FORM_ID = 1
+ALOLA_FORM_ID = 3
+STARTER_FORM_ID = 4
+INCLUDED_FORM_IDS = [BASE_FORM_ID, ALOLA_FORM_ID, STARTER_FORM_ID]
 
 # ---------------------------------------------------------------------
 # Helpers – PokeAPI
@@ -99,6 +107,7 @@ def walk_chain_for_previous(
 def process_pokemon_moves(
     pokemon_id: int,
     name_pokeapi: str,
+    form_id: int,
     move_cache: dict[str, int],
     before_evo_lm_id: int,
 ) -> int:
@@ -107,6 +116,7 @@ def process_pokemon_moves(
     - Fetch evolution chain
     - Find previous evolutions
     - Inherit their moves, sans doublons
+    - Gère les formes Alola en cherchant les deux variantes (base et alola)
     """
     session: Session = SessionLocal()
     inherited_count = 0
@@ -119,7 +129,11 @@ def process_pokemon_moves(
         # Cache moves déjà possédés pour éviter doublons
         existing_moves = {pm.move.name.lower() for pm in pokemon.moves}
 
-        species_data = get_species_data(name_pokeapi)
+        # Pour les formes Alola, extraire le nom de base pour PokeAPI
+        # Ex: "rattata-alola" → chercher species "rattata"
+        species_name = name_pokeapi.replace("-alola", "").replace("-starter", "")
+        
+        species_data = get_species_data(species_name)
         if not species_data or not species_data.get("evolution_chain"):
             return 0
 
@@ -131,27 +145,36 @@ def process_pokemon_moves(
         except Exception as exc:
             logger.warning(
                 "Cannot fetch evolution chain for %s: %s",
-                name_pokeapi,
+                species_name,
                 exc
             )
             return 0
 
         previous_names: list[str] = []
-        walk_chain_for_previous(chain_data, name_pokeapi, previous_names)
+        walk_chain_for_previous(chain_data, species_name, previous_names)
         if not previous_names:
             return 0
 
         # Héritage des moves des évolutions précédentes
         for prev_name in previous_names:
-            base_pokemon = (
-                session.query(Pokemon)
-                .filter(Pokemon.name_pokeapi == prev_name)
-                .first()
-            )
-            if not base_pokemon:
-                continue
+            # Pour les formes Alola/Starter, chercher AUSSI la forme correspondante
+            # Ex: Si on traite "rattata-alola", chercher "rattata-alola" ET "rattata"
+            candidates = [prev_name]
+            if form_id == ALOLA_FORM_ID:
+                candidates.append(f"{prev_name}-alola")
+            elif form_id == STARTER_FORM_ID:
+                candidates.append(f"{prev_name}-starter")
+            
+            for candidate_name in candidates:
+                base_pokemon = (
+                    session.query(Pokemon)
+                    .filter(Pokemon.name_pokeapi == candidate_name)
+                    .first()
+                )
+                if not base_pokemon:
+                    continue
 
-            for pm in base_pokemon.moves:
+                for pm in base_pokemon.moves:
                 move_name = pm.move.name.lower()
                 if move_name in existing_moves:
                     continue  # Ignorer les doublons
@@ -202,7 +225,7 @@ def process_pokemon_moves(
 def inherit_previous_evolution_moves_threaded():
     """
     Main ETL entrypoint.
-    Filtre uniquement les formes de base (Pokemon.form_id == 1)
+    Traite toutes les formes sauf Mega (Base, Alola, Starter)
     """
     session: Session = SessionLocal()
     try:
@@ -222,14 +245,17 @@ def inherit_previous_evolution_moves_threaded():
         }
 
         pokemons = (
-            session.query(Pokemon.id, Pokemon.name_pokeapi)
-            .filter(Pokemon.form_id == BASE_FORM_ID)
+            session.query(Pokemon.id, Pokemon.name_pokeapi, Pokemon.form_id)
+            .filter(Pokemon.form_id.in_(INCLUDED_FORM_IDS))
             .all()
         )
     finally:
         session.close()
 
-    logger.info("➡ %d Pokémon to process (formes de base uniquement)", len(pokemons))
+    logger.info(
+        "➡ %d Pokémon to process (formes: Base, Alola, Starter)",
+        len(pokemons)
+    )
 
     total_inherited = 0
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -238,10 +264,11 @@ def inherit_previous_evolution_moves_threaded():
                 process_pokemon_moves,
                 pid,
                 name,
+                form_id,
                 move_cache,
                 before_evo_lm_id
             )
-            for pid, name in pokemons
+            for pid, name, form_id in pokemons
         ]
         for future in as_completed(futures):
             total_inherited += future.result() or 0

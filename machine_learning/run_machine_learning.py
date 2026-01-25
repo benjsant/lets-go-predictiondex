@@ -4,7 +4,7 @@ Unified ML Pipeline - Let's Go PredictionDex
 ==============================================
 
 This script orchestrates the COMPLETE machine learning pipeline:
-1. Dataset Preparation (DB → features → train/test split)
+1. Dataset Preparation (DB → features → train/test split) [v1 or v2 multi-scenarios]
 2. Model Training (XGBoost + optional hyperparameter tuning)
 3. Model Evaluation (metrics, confusion matrix, ROC curve, feature importance)
 4. Model Comparison (compare multiple models)
@@ -12,29 +12,37 @@ This script orchestrates the COMPLETE machine learning pipeline:
 6. Model Export (artifacts + metadata)
 
 Usage:
-    # Run complete pipeline
+    # Run complete pipeline (v1 - original)
     python machine_learning/run_machine_learning.py --mode=all
 
+    # Run complete pipeline (v2 - multi-scenarios)
+    python machine_learning/run_machine_learning.py --mode=all --dataset-version v2
+
+    # Generate v2 dataset with specific scenario
+    python machine_learning/run_machine_learning.py --mode=dataset --dataset-version v2 --scenario-type best_move
+
+    # Generate v2 dataset with all scenarios
+    python machine_learning/run_machine_learning.py --mode=dataset --dataset-version v2 --scenario-type all
+
+    # Train on v2 dataset with GridSearch extended (for notebooks)
+    python machine_learning/run_machine_learning.py --mode=train --dataset-version v2 --scenario-type all --tune-hyperparams --grid-type extended
+
     # Run specific steps
-    python machine_learning/run_machine_learning.py --mode=dataset
     python machine_learning/run_machine_learning.py --mode=train
     python machine_learning/run_machine_learning.py --mode=evaluate
     python machine_learning/run_machine_learning.py --mode=compare
 
-    # With hyperparameter tuning
-    python machine_learning/run_machine_learning.py --mode=all --tune-hyperparams
-
-    # Skip feature export (faster)
-    python machine_learning/run_machine_learning.py --mode=all --skip-export-features
-
-Output:
+Output (v1):
     - data/ml/battle_winner/raw/matchups.parquet
     - data/ml/battle_winner/processed/train.parquet
     - data/ml/battle_winner/processed/test.parquet
-    - data/ml/battle_winner/features/*.parquet
     - models/battle_winner_model_v1.pkl
-    - models/battle_winner_scalers_v1.pkl
-    - models/battle_winner_metadata.pkl
+
+Output (v2):
+    - data/ml/battle_winner_v2/raw/matchups_*.parquet
+    - data/ml/battle_winner_v2/processed/train.parquet (with scenario_type column)
+    - data/ml/battle_winner_v2/processed/test.parquet (with scenario_type column)
+    - models/battle_winner_model_v2.pkl
 
 Validation:
     - Compétence C12: Tests automatisés (dataset validation, preprocessing, training)
@@ -66,13 +74,17 @@ from sklearn.ensemble import RandomForestClassifier
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-# Paths
-DATA_DIR = PROJECT_ROOT / "data" / "ml" / "battle_winner"
-RAW_DIR = DATA_DIR / "raw"
-PROCESSED_DIR = DATA_DIR / "processed"
-FEATURES_DIR = DATA_DIR / "features"
+# Paths (will be set based on --dataset-version)
+DATA_DIR_V1 = PROJECT_ROOT / "data" / "ml" / "battle_winner"
+DATA_DIR_V2 = PROJECT_ROOT / "data" / "ml" / "battle_winner_v2"
 MODELS_DIR = PROJECT_ROOT / "models"
 REPORTS_DIR = PROJECT_ROOT / "reports" / "ml"
+
+# Global paths (set by main based on args)
+DATA_DIR = None
+RAW_DIR = None
+PROCESSED_DIR = None
+FEATURES_DIR = None
 
 # Random seed
 RANDOM_SEED = 42
@@ -112,9 +124,18 @@ XGBOOST_PARAM_GRID = {
 # STEP 1: DATASET PREPARATION
 # ================================================================
 
-def run_dataset_preparation(verbose: bool = True) -> bool:
+def run_dataset_preparation(dataset_version: str = 'v1', scenario_type: str = 'all', 
+                           num_random_samples: int = 5, max_combinations: int = 20,
+                           verbose: bool = True) -> bool:
     """
     Run dataset preparation script to generate train/test datasets from DB.
+
+    Args:
+        dataset_version: 'v1' (original) or 'v2' (multi-scenarios)
+        scenario_type: For v2 - 'best_move', 'random_move', 'all_combinations', or 'all'
+        num_random_samples: For v2 random_move - number of samples per matchup
+        max_combinations: For v2 all_combinations - max combinations per matchup
+        verbose: Print detailed output
 
     Validation: C12 (dataset quality checks)
     """
@@ -122,12 +143,31 @@ def run_dataset_preparation(verbose: bool = True) -> bool:
         print("\n" + "=" * 80)
         print("STEP 1: DATASET PREPARATION")
         print("=" * 80)
-        print("\nGenerating Pokemon battle datasets from database...")
+        print(f"\nGenerating Pokemon battle datasets (version: {dataset_version})...")
+        if dataset_version == 'v2':
+            print(f"Scenario type: {scenario_type}")
 
     try:
-        # Run build_battle_winner_dataset_orm.py (ORM version for consistency)
+        # Select script based on version
+        if dataset_version == 'v2':
+            script_name = "build_battle_winner_dataset_v2.py"
+            cmd = [
+                sys.executable,
+                str(PROJECT_ROOT / "machine_learning" / script_name),
+                "--scenario-type", scenario_type,
+                "--num-random-samples", str(num_random_samples),
+                "--max-combinations", str(max_combinations)
+            ]
+        else:
+            script_name = "build_battle_winner_dataset.py"
+            cmd = [
+                sys.executable,
+                str(PROJECT_ROOT / "machine_learning" / script_name)
+            ]
+
+        # Run dataset generation
         result = subprocess.run(
-            [sys.executable, str(PROJECT_ROOT / "machine_learning" / "build_battle_winner_dataset_orm.py")],
+            cmd,
             check=True,
             capture_output=True,
             text=True,
@@ -155,6 +195,13 @@ def run_dataset_preparation(verbose: bool = True) -> bool:
             print(f"   Train samples: {len(df_train):,}")
             print(f"   Test samples: {len(df_test):,}")
             print(f"   Total features: {df_train.shape[1]}")
+            
+            # Check for scenario_type column (v2)
+            if 'scenario_type' in df_train.columns:
+                print(f"\n   ✅ Multi-scenario dataset (v2) detected:")
+                scenario_counts = df_train['scenario_type'].value_counts()
+                for scenario, count in scenario_counts.items():
+                    print(f"      {scenario}: {count:,} samples")
 
             # Check class balance
             train_balance = df_train['winner'].value_counts(normalize=True)
@@ -796,7 +843,33 @@ Examples:
         '--scenario-type',
         type=str,
         default='all',
-        help='Filter dataset by scenario_type if column exists (e.g., worst_case, random, custom)'
+        help='For v2 datasets: best_move, random_move, all_combinations, or all (default: all)'
+    )
+    parser.add_argument(
+        '--dataset-version',
+        type=str,
+        choices=['v1', 'v2'],
+        default='v1',
+        help='Dataset version: v1 (original) or v2 (multi-scenarios) (default: v1)'
+    )
+    parser.add_argument(
+        '--grid-type',
+        type=str,
+        choices=['fast', 'extended'],
+        default='fast',
+        help='GridSearch parameter grid: fast (for CI) or extended (for notebooks) (default: fast)'
+    )
+    parser.add_argument(
+        '--num-random-samples',
+        type=int,
+        default=5,
+        help='For v2 random_move scenario: number of samples per matchup (default: 5)'
+    )
+    parser.add_argument(
+        '--max-combinations',
+        type=int,
+        default=20,
+        help='For v2 all_combinations scenario: max combinations per matchup (default: 20)'
     )
     parser.add_argument(
         '--model',
@@ -813,6 +886,13 @@ Examples:
 
     args = parser.parse_args()
     verbose = not args.quiet
+    
+    # Set global paths based on dataset version
+    global DATA_DIR, RAW_DIR, PROCESSED_DIR, FEATURES_DIR
+    DATA_DIR = DATA_DIR_V2 if args.dataset_version == 'v2' else DATA_DIR_V1
+    RAW_DIR = DATA_DIR / "raw"
+    PROCESSED_DIR = DATA_DIR / "processed"
+    FEATURES_DIR = DATA_DIR / "features"
 
     if verbose:
         print("\n" + "=" * 80)
@@ -820,14 +900,23 @@ Examples:
         print("=" * 80)
         print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"Mode: {args.mode}")
+        print(f"Dataset Version: {args.dataset_version}")
         print(f"Random Seed: {RANDOM_SEED}")
-        print(f"Version: {args.version}")
-        print(f"Scenario filter: {args.scenario_type}")
+        print(f"Model Version: {args.version}")
+        print(f"Scenario: {args.scenario_type}")
+        if args.tune_hyperparams:
+            print(f"GridSearch Type: {args.grid_type}")
 
     try:
         # STEP 1: Dataset preparation
         if args.mode in ['all', 'dataset']:
-            success = run_dataset_preparation(verbose=verbose)
+            success = run_dataset_preparation(
+                dataset_version=args.dataset_version,
+                scenario_type=args.scenario_type,
+                num_random_samples=args.num_random_samples,
+                max_combinations=args.max_combinations,
+                verbose=verbose
+            )
             if not success:
                 sys.exit(1)
 

@@ -7,18 +7,28 @@ from interface.config.settings import API_BASE_URL
 
 def _get(endpoint: str):
     """Generic GET request."""
-    url = f"{API_BASE_URL}{endpoint}"
-    response = requests.get(url, timeout=10)
-    response.raise_for_status()
-    return response.json()
+    try:
+        url = f"{API_BASE_URL}{endpoint}"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"❌ API GET Error on {endpoint}: {e}")
+        return None
 
 
 def _post(endpoint: str, data: dict):
     """Generic POST request."""
-    url = f"{API_BASE_URL}{endpoint}"
-    response = requests.post(url, json=data, timeout=10)
-    response.raise_for_status()
-    return response.json()
+    try:
+        url = f"{API_BASE_URL}{endpoint}"
+        response = requests.post(url, json=data, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"❌ API POST Error on {endpoint}: {e}")
+        if response.text:
+            print(f"Response: {response.text}")
+        return None
 
 
 # ===== POKEMON ENDPOINTS =====

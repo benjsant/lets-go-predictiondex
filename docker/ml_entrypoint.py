@@ -44,18 +44,46 @@ def wait_for_db(timeout=60):
 
 
 def run_ml_builder():
-    """Run the ML dataset builder."""
-    print("🚀 Starting ML dataset builder...", flush=True)
-    result = subprocess.run(
-        ["python", "machine_learning/build_dataset_ml_v1.py"],
-        check=False
-    )
+    """Run the complete ML pipeline (v2 multi-scenarios with GridSearch)."""
+    print("🚀 Starting ML pipeline v2 (multi-scenarios)...", flush=True)
+    
+    # Get configuration from environment variables
+    mode = os.getenv("ML_MODE", "all")  # all, dataset, train, evaluate
+    scenario_type = os.getenv("ML_SCENARIO_TYPE", "all")  # best_move, random_move, all_combinations, all
+    tune_hyperparams = os.getenv("ML_TUNE_HYPERPARAMS", "true").lower() == "true"
+    grid_type = os.getenv("ML_GRID_TYPE", "fast")  # fast or extended
+    num_random_samples = int(os.getenv("ML_NUM_RANDOM_SAMPLES", "5"))
+    max_combinations = int(os.getenv("ML_MAX_COMBINATIONS", "20"))
+    
+    cmd = [
+        "python", "machine_learning/run_machine_learning.py",
+        "--mode", mode,
+        "--dataset-version", "v2",
+        "--scenario-type", scenario_type,
+        "--version", "v2",
+        "--num-random-samples", str(num_random_samples),
+        "--max-combinations", str(max_combinations),
+        "--grid-type", grid_type
+    ]
+    
+    if tune_hyperparams:
+        cmd.append("--tune-hyperparams")
+    
+    print(f"📋 Configuration:", flush=True)
+    print(f"   Mode: {mode}", flush=True)
+    print(f"   Scenario: {scenario_type}", flush=True)
+    print(f"   Hyperparameter tuning: {tune_hyperparams}", flush=True)
+    print(f"   Grid type: {grid_type}", flush=True)
+    print(f"   Random samples: {num_random_samples}", flush=True)
+    print(f"   Max combinations: {max_combinations}", flush=True)
+    
+    result = subprocess.run(cmd, check=False)
 
     if result.returncode == 0:
-        print("✅ ML dataset built successfully!", flush=True)
+        print("✅ ML pipeline v2 completed successfully!", flush=True)
         return True
     else:
-        print(f"❌ ML builder failed with exit code {result.returncode}", flush=True)
+        print(f"❌ ML pipeline failed with exit code {result.returncode}", flush=True)
         return False
 
 

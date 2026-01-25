@@ -259,6 +259,7 @@ if pokemon_detail and pokemon_detail.get('moves'):
 
     learn_method_map = {
         "Level-up": "level_up",
+        "Hérité": "before_evolution",
         "CT": "ct",
         "Move Tutor": "move_tutor"
     }
@@ -297,7 +298,7 @@ if pokemon_detail and pokemon_detail.get('moves'):
     rows = []
     pokemon_types_normalized = [normalize_type(t) for t in selected.types]
 
-    learn_method_labels = {"level_up": "Level-up", "ct": "CT", "move_tutor": "Move Tutor"}
+    learn_method_labels = {"level_up": "Level-up", "before_evolution": "Hérité", "ct": "CT", "move_tutor": "Move Tutor"}
 
     for m in filtered_moves:
         learn_method = m.get('learn_method', '')
@@ -308,10 +309,14 @@ if pokemon_detail and pokemon_detail.get('moves'):
                 learn_label = "Départ"
             elif learn_level == -1:
                 learn_label = "Évolution"
+            elif learn_level == -2:
+                learn_label = "Hérité 🧬"
             elif learn_level is not None:
                 learn_label = f"Niv. {int(learn_level)}"
             else:
                 learn_label = None
+        elif learn_method == "before_evolution":
+            learn_label = "Hérité 🧬"
         else:
             learn_label = learn_method_labels.get(learn_method)
 

@@ -10,7 +10,7 @@ Used by: api_pokemon/routes/prediction_route.py
 Validates: Battle prediction inputs/outputs, move scores, ML model responses
 """
 
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -38,13 +38,20 @@ class PredictBestMoveRequest(BaseModel):
         max_items=20,
         description="List of move names available to Pokemon A for prediction"
     )
+    available_moves_b: Optional[List[str]] = Field(
+        None,
+        min_items=1,
+        max_items=20,
+        description="Optional list of move names available to Pokemon B. If provided, B will use these moves. If None, B will use its best offensive move."
+    )
 
     class Config:
         json_schema_extra = {
             "example": {
                 "pokemon_a_id": 25,
                 "pokemon_b_id": 6,
-                "available_moves": ["Tonnerre", "Vive-Attaque", "Charge", "Fatal-Foudre"]
+                "available_moves": ["Tonnerre", "Vive-Attaque", "Charge", "Fatal-Foudre"],
+                "available_moves_b": ["Surf", "Hydrocanon"]
             }
         }
 

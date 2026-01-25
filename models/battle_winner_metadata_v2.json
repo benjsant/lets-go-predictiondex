@@ -1,0 +1,33 @@
+{
+  "model_type": "XGBClassifier",
+  "version": "v2",
+  "trained_at": "2026-01-24T20:38:15.843251",
+  "feature_columns": [
+    "a_hp",
+    "a_attack",
+    "a_defense",
+    "a_sp_attack",
+    "a_sp_defense",
+    "a_speed",
+    "b_hp",
+    "b_attack",
+    "b_defense",
+    "b_sp_attack",
+    "..."
+  ],
+  "n_features": 133,
+  "hyperparameters": {},
+  "metrics": {
+    "model_name": "xgboost",
+    "train_accuracy": 0.9497382359201811,
+    "test_accuracy": 0.9445560533125574,
+    "test_precision": 0.9479513871083535,
+    "test_recall": 0.9497729094309377,
+    "test_f1": 0.9488612740795491,
+    "test_roc_auc": 0.9901912558721383,
+    "train_samples": 718777,
+    "test_samples": 179695,
+    "overfitting": 0.005182182607623709
+  },
+  "random_seed": 42
+}

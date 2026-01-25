@@ -1,6 +1,7 @@
 # app/main.py
 
 from fastapi import FastAPI
+from fastapi.responses import Response
 
 from api_pokemon.routes import (
     pokemon_route,
@@ -8,6 +9,7 @@ from api_pokemon.routes import (
     type_route,
     prediction_route,
 )
+from api_pokemon.monitoring.metrics import metrics_middleware, get_metrics
 
 app = FastAPI(
     title="Pokémon Let's Go API",
@@ -15,9 +17,24 @@ app = FastAPI(
     version="1.1.0",
 )
 
+# Add Prometheus metrics middleware
+metrics_middleware(app)
+
 @app.get("/health", tags=["health"])
 def healthcheck():
-    return {"status": "ok"}
+    return {"status": "healthy"}
+
+@app.get("/metrics", tags=["monitoring"])
+def metrics() -> Response:
+    """
+    Prometheus metrics endpoint.
+    
+    Exposes metrics for:
+    - API request count, latency, errors
+    - Model prediction count, latency, confidence
+    - System resource usage
+    """
+    return get_metrics()
 
 app.include_router(pokemon_route.router)
 app.include_router(moves_route.router)

@@ -55,9 +55,9 @@ class PredictionModel:
         if self._model is not None:
             return  # Already loaded
 
-        model_path = MODELS_DIR / "battle_winner_model_v1.pkl"
-        scalers_path = MODELS_DIR / "battle_winner_scalers_v1.pkl"
-        metadata_path = MODELS_DIR / "battle_winner_metadata.pkl"
+        model_path = MODELS_DIR / "battle_winner_model_v2.pkl"
+        scalers_path = MODELS_DIR / "battle_winner_scalers_v2.pkl"
+        metadata_path = MODELS_DIR / "battle_winner_metadata_v2.pkl"
 
         with open(model_path, 'rb') as f:
             self._model = pickle.load(f)
@@ -372,7 +372,8 @@ def apply_feature_engineering(df_raw: pd.DataFrame) -> pd.DataFrame:
     """
     model_instance = prediction_model
     scalers = model_instance.scalers
-    feature_columns = model_instance.metadata['feature_columns']
+    # Utiliser 'features' au lieu de 'feature_columns' (compatibilité metadata v2)
+    feature_columns = model_instance.metadata.get('feature_columns') or model_instance.metadata.get('features')
 
     # Step 1: One-hot encode categorical features
     categorical_features = ['a_type_1', 'a_type_2', 'b_type_1', 'b_type_2', 'a_move_type', 'b_move_type']
@@ -433,7 +434,8 @@ def predict_best_move(
     db: Session,
     pokemon_a_id: int,
     pokemon_b_id: int,
-    available_moves_a: List[str]
+    available_moves_a: List[str],
+    available_moves_b: Optional[List[str]] = None
 ) -> Dict:
     """
     Predict the best move for Pokemon A against Pokemon B.
@@ -443,6 +445,9 @@ def predict_best_move(
         pokemon_a_id: ID of the user's Pokemon
         pokemon_b_id: ID of the opponent's Pokemon
         available_moves_a: List of move names available to Pokemon A
+        available_moves_b: Optional list of move names available to Pokemon B.
+                          If provided, B will use these specific moves.
+                          If None, B will use its best offensive move (default behavior).
 
     Returns:
         Dict with:
@@ -462,12 +467,16 @@ def predict_best_move(
     if not pokemon_b:
         raise ValueError(f"Pokemon B with ID {pokemon_b_id} not found")
 
-    # We need to find the best move for B as well (for fair comparison)
-    # Get all moves for pokemon B
-    all_moves_b = [pm.move.name for pm in pokemon_b.moves if pm.move.power is not None]
+    # Determine which moves B will use
+    if available_moves_b is not None:
+        # Use the specified moves for B
+        all_moves_b = available_moves_b
+    else:
+        # Default behavior: get all offensive moves for B
+        all_moves_b = [pm.move.name for pm in pokemon_b.moves if pm.move.power is not None]
 
     if not all_moves_b:
-        raise ValueError(f"Pokemon B has no offensive moves")
+        raise ValueError(f"Pokemon B has no offensive moves available")
 
     # Try each move for A and predict win probability
     move_results = []

@@ -42,10 +42,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # Paths
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DATA_DIR = PROJECT_ROOT / "data" / "ml" / "battle_winner"
-PROCESSED_DIR = DATA_DIR / "processed"
-FEATURES_DIR = DATA_DIR / "features"
+DATA_DIR_V1 = PROJECT_ROOT / "data" / "ml" / "battle_winner"
+DATA_DIR_V2 = PROJECT_ROOT / "data" / "ml" / "battle_winner_v2"
 MODELS_DIR = PROJECT_ROOT / "models"
+
+# Will be set based on --dataset-version argument
+DATA_DIR = None
+PROCESSED_DIR = None
+FEATURES_DIR = None
 
 # Random seed for reproducibility
 RANDOM_SEED = 42
@@ -62,27 +66,47 @@ XGBOOST_PARAMS = {
     'eval_metric': 'logloss',
 }
 
-# Conservative grid to keep training time reasonable in CI/docker
-XGBOOST_PARAM_GRID = {
-    'n_estimators': [120, 200],
+# GridSearchCV parameter grids
+# Conservative grid for fast training (CI/docker)
+XGBOOST_PARAM_GRID_FAST = {
+    'n_estimators': [100, 150],
     'max_depth': [6, 8],
     'learning_rate': [0.05, 0.1],
-    'subsample': [0.8, 1.0],
-    'colsample_bytree': [0.8, 1.0],
+    'subsample': [0.8],
+    'colsample_bytree': [0.8],
 }
 
+# Extended grid for notebooks (better accuracy)
+XGBOOST_PARAM_GRID_EXTENDED = {
+    'n_estimators': [100, 150, 200],
+    'max_depth': [6, 8, 10],
+    'learning_rate': [0.05, 0.1, 0.15],
+    'subsample': [0.7, 0.8, 0.9],
+    'colsample_bytree': [0.7, 0.8, 0.9],
+}
 
-def load_datasets():
-    """Load train and test datasets from parquet files."""
-    print("Loading datasets...")
+# Default grid
+XGBOOST_PARAM_GRID = XGBOOST_PARAM_GRID_FAST
+
+
+def load_datasets(dataset_version='v1'):
+    """Load train and test datasets from parquet files.
+    
+    Args:
+        dataset_version: 'v1' for original datasets, 'v2' for multi-scenario datasets
+    """
+    print(f"Loading datasets (version: {dataset_version})...")
 
     train_path = PROCESSED_DIR / "train.parquet"
     test_path = PROCESSED_DIR / "test.parquet"
 
     if not train_path.exists():
+        v1_script = "build_battle_winner_dataset.py"
+        v2_script = "build_battle_winner_dataset_v2.py"
+        script = v2_script if dataset_version == 'v2' else v1_script
         raise FileNotFoundError(
             f"Train dataset not found: {train_path}\n"
-            f"Please run: POSTGRES_HOST=localhost python machine_learning/build_battle_winner_dataset.py"
+            f"Please run: POSTGRES_HOST=localhost python machine_learning/{script}"
         )
 
     if not test_path.exists():
@@ -93,6 +117,15 @@ def load_datasets():
 
     print(f"  Train: {len(df_train):,} samples")
     print(f"  Test: {len(df_test):,} samples")
+    
+    # Check for scenario_type column
+    if 'scenario_type' in df_train.columns:
+        print(f"  ✅ Multi-scenario dataset detected")
+        scenario_counts = df_train['scenario_type'].value_counts()
+        for scenario, count in scenario_counts.items():
+            print(f"     {scenario}: {count:,} samples")
+    else:
+        print(f"  ℹ️  Single scenario dataset (v1 format)")
 
     return df_train, df_test
 
@@ -124,9 +157,16 @@ def filter_by_scenario(df_train, df_test, scenario_type: str):
         return df_train, df_test
 
     print(
-        f"Filtering scenario_type='{scenario_type}': "
-        f"train {before_train}→{len(df_train_filtered)}, test {before_test}→{len(df_test_filtered)}"
+        f"✅ Filtering scenario_type='{scenario_type}': "
+        f"train {before_train:,}→{len(df_train_filtered):,}, test {before_test:,}→{len(df_test_filtered):,}"
     )
+    
+    # Show class balance after filtering
+    train_balance = df_train_filtered['winner'].mean()
+    test_balance = df_test_filtered['winner'].mean()
+    print(f"   Class balance - Train: A={train_balance*100:.1f}% / B={100-train_balance*100:.1f}%")
+    print(f"   Class balance - Test:  A={test_balance*100:.1f}% / B={100-test_balance*100:.1f}%")
+    
     return df_train_filtered, df_test_filtered
 
 
@@ -177,6 +217,12 @@ def engineer_features(df_train, df_test):
 
     # === Step 4: Remove categorical columns and IDs ===
     id_features = ['pokemon_a_id', 'pokemon_b_id', 'pokemon_a_name', 'pokemon_b_name', 'a_move_name', 'b_move_name']
+    
+    # Add scenario_type to columns to drop if present (not used as feature)
+    if 'scenario_type' in X_train_encoded.columns:
+        id_features.append('scenario_type')
+        print("  ℹ️  Removing 'scenario_type' column (metadata, not a feature)")
+    
     columns_to_drop = categorical_features + id_features
     if 'scenario_type' in X_train_encoded.columns:
         columns_to_drop.append('scenario_type')
@@ -272,33 +318,56 @@ def engineer_features(df_train, df_test):
     return X_train_encoded, X_test_encoded, y_train, y_test, scalers, X_train_encoded.columns.tolist()
 
 
-def train_xgboost(X_train, y_train, use_gridsearch: bool = False):
-    """Train XGBoost classifier, optionally with GridSearchCV."""
+def train_xgboost(X_train, y_train, use_gridsearch: bool = False, grid_type: str = 'fast'):
+    """
+    Train XGBoost classifier with optional GridSearchCV.
+
+    Args:
+        X_train: Training features
+        y_train: Training labels
+        use_gridsearch: Whether to use GridSearchCV for hyperparameter tuning
+        grid_type: 'fast' or 'extended' - which parameter grid to use
+
+    Returns:
+        (model, best_params): Trained model and best parameters found
+    """
     if use_gridsearch:
-        print("\nTraining XGBoost with GridSearchCV (small grid)...")
+        # Select parameter grid
+        if grid_type == 'extended':
+            param_grid = XGBOOST_PARAM_GRID_EXTENDED
+            num_combinations = (len(param_grid['n_estimators']) * len(param_grid['max_depth']) * 
+                              len(param_grid['learning_rate']) * len(param_grid['subsample']) * 
+                              len(param_grid['colsample_bytree']))
+            print(f"\n🔍 Training XGBoost with GridSearchCV (EXTENDED grid: {num_combinations} combinations)...")
+        else:
+            param_grid = XGBOOST_PARAM_GRID_FAST
+            num_combinations = (len(param_grid['n_estimators']) * len(param_grid['max_depth']) * 
+                              len(param_grid['learning_rate']))
+            print(f"\n🔍 Training XGBoost with GridSearchCV (FAST grid: {num_combinations} combinations)...")
+        
         cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=RANDOM_SEED)
-        base_model = xgb.XGBClassifier(**XGBOOST_PARAMS)
+        base_model = xgb.XGBClassifier(random_state=RANDOM_SEED, n_jobs=-1, eval_metric='logloss')
         grid = GridSearchCV(
             estimator=base_model,
-            param_grid=XGBOOST_PARAM_GRID,
+            param_grid=param_grid,
             scoring="roc_auc",
             cv=cv,
             n_jobs=-1,
             verbose=1,
         )
         grid.fit(X_train, y_train)
-        print(f"  Best params: {grid.best_params_}")
-        print(f"  Best CV ROC-AUC: {grid.best_score_:.4f}")
+        print(f"  ✅ Best params: {grid.best_params_}")
+        print(f"  ✅ Best CV ROC-AUC: {grid.best_score_:.4f}")
         best_model = grid.best_estimator_
         best_params = grid.best_params_
     else:
-        print("\nTraining XGBoost model (fixed params)...")
+        print("\n🚀 Training XGBoost model (fixed params)...")
         print(f"  Hyperparameters: {XGBOOST_PARAMS}")
         best_model = xgb.XGBClassifier(**XGBOOST_PARAMS)
         best_model.fit(X_train, y_train, verbose=False)
         best_params = XGBOOST_PARAMS
 
-    print("  Training complete")
+    print("  ✅ Training complete")
     return best_model, best_params
 
 
@@ -432,22 +501,43 @@ def main():
     parser.add_argument(
         '--scenario-type',
         default='all',
-        help="Filter dataset by scenario_type column if present (e.g., worst_case, random, custom)."
+        help="Filter dataset by scenario_type column if present (e.g., best_move, random_move, all_combinations)."
+    )
+    parser.add_argument(
+        '--dataset-version',
+        choices=['v1', 'v2'],
+        default='v1',
+        help="Dataset version: v1 (original) or v2 (multi-scenario)"
+    )
+    parser.add_argument(
+        '--grid-type',
+        choices=['fast', 'extended'],
+        default='fast',
+        help="GridSearch parameter grid: fast (for CI) or extended (for notebooks)"
     )
     args = parser.parse_args()
+    
+    # Set global paths based on dataset version
+    global DATA_DIR, PROCESSED_DIR, FEATURES_DIR
+    DATA_DIR = DATA_DIR_V2 if args.dataset_version == 'v2' else DATA_DIR_V1
+    PROCESSED_DIR = DATA_DIR / "processed"
+    FEATURES_DIR = DATA_DIR / "features"
 
-    print("=" * 60)
+    print("=" * 70)
     print("BATTLE WINNER PREDICTION MODEL - TRAINING")
-    print("=" * 60)
+    print("=" * 70)
     print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Random Seed: {RANDOM_SEED}")
-    print(f"Version: {args.version}")
-    print(f"Scenario filter: {args.scenario_type}")
+    print(f"Dataset Version: {args.dataset_version}")
+    print(f"Model Version: {args.version}")
+    print(f"Scenario Filter: {args.scenario_type}")
     print(f"GridSearch: {'enabled' if args.use_gridsearch else 'disabled'}")
+    if args.use_gridsearch:
+        print(f"Grid Type: {args.grid_type}")
 
     try:
         # Load data
-        df_train, df_test = load_datasets()
+        df_train, df_test = load_datasets(dataset_version=args.dataset_version)
 
         # Optional scenario filtering
         df_train, df_test = filter_by_scenario(df_train, df_test, args.scenario_type)
@@ -458,7 +548,7 @@ def main():
         )
 
         # Train model
-        model, best_params = train_xgboost(X_train, y_train, use_gridsearch=args.use_gridsearch)
+        model, best_params = train_xgboost(X_train, y_train, use_gridsearch=args.use_gridsearch, grid_type=args.grid_type)
 
         # Evaluate
         metrics = evaluate_model(model, X_train, X_test, y_train, y_test)
@@ -478,11 +568,11 @@ def main():
         if not args.skip_export_features:
             export_features(X_train, X_test, y_train, y_test)
 
-        print("\n" + "=" * 60)
-        print("TRAINING COMPLETE")
-        print("=" * 60)
-        print(f"\n✅ Test Accuracy: {metrics['test_accuracy']*100:.2f}%")
-        print(f"✅ Test ROC-AUC: {metrics['test_roc_auc']:.4f}")
+        print("\n" + "=" * 70)
+        print("✅ TRAINING COMPLETE")
+        print("=" * 70)
+        print(f"\n📊 Test Accuracy: {metrics['test_accuracy']*100:.2f}%")
+        print(f"📊 Test ROC-AUC: {metrics['test_roc_auc']:.4f}")
 
     except FileNotFoundError as e:
         print(f"\n❌ Error: {e}")

@@ -161,43 +161,106 @@ heatmap_html = f"<div style='overflow-x:auto;background:{POKEMON_COLORS['bg_card
 st.markdown(heatmap_html, unsafe_allow_html=True)
 
 # ======================================================
-# Sélection des Moves
+# Sélection des Moves - Interface Versus
 # ======================================================
-st.subheader(f"🎯 Choisis les capacités de {p1.name}")
+st.divider()
+st.markdown(f"""
+<div style='text-align:center;padding:20px;'>
+    <h2 style='color:{POKEMON_COLORS['primary']};font-size:2.5rem;'>⚔️ VERSUS ⚔️</h2>
+    <p style='font-size:1.2rem;'>Configure le moveset de chaque Pokémon</p>
+</div>
+""", unsafe_allow_html=True)
 
-st.info("""
-💡 **Note :** Le modèle sélectionne automatiquement la **meilleure capacité** du Pokémon
-adverse pour chaque scénario. C'est un "worst-case" : tu affrontes un adversaire qui joue
-au mieux ! Tes vraies chances peuvent être meilleures si l'adversaire ne joue pas optimalement.
-
-🚀 **Version 2 en développement :** Possibilité de choisir les capacités spécifiques de l'adversaire.
-""")
-
-moves = get_moves_for_pokemon(p1.id)
-if not moves:
-    st.warning("Aucune attaque disponible.")
-    st.stop()
-
-# Filtrer moves offensives uniquement
-offensive_moves = [m for m in moves if m.power and m.power > 0]
-
-if not offensive_moves:
-    st.error("Aucune capacité offensive disponible pour ce Pokémon.")
-    st.stop()
-
-move_names = [m.name for m in offensive_moves]
-
-# Multiselect avec suggestions
-selected_move_names = st.multiselect(
-    "🎯 Sélectionne jusqu'à 4 capacités offensives",
-    options=move_names,
-    default=move_names[:4] if len(move_names) >= 4 else move_names,
-    max_selections=4,
-    help="💡 Sélectionne les capacités que tu veux tester contre l'adversaire"
+# Choix du mode de sélection
+mode = st.radio(
+    "🎮 Mode de simulation",
+    options=["🤖 Auto (Adversaire optimal)", "🎯 Manuel (Tu choisis les deux movesets)"],
+    help="Mode Auto: L'adversaire utilise toujours sa meilleure capacité (worst-case)\nMode Manuel: Tu choisis les 4 capacités de chaque Pokémon"
 )
 
-if len(selected_move_names) < 1:
-    st.warning("⚠️ Sélectionne au moins 1 capacité pour continuer.")
+manual_mode = "Manuel" in mode
+
+manual_mode = "Manuel" in mode
+
+# Deux colonnes pour les movesets
+col_moves_a, col_moves_b = st.columns(2)
+
+# ======================================================
+# Moves Pokémon A (Ton équipe)
+# ======================================================
+with col_moves_a:
+    st.markdown(f"### 🥊 Moveset de {p1.name}")
+    
+    moves_a = get_moves_for_pokemon(p1.id)
+    if not moves_a:
+        st.warning("Aucune attaque disponible.")
+        st.stop()
+    
+    # Filtrer moves offensives uniquement
+    offensive_moves_a = [m for m in moves_a if m.power and m.power > 0]
+    
+    if not offensive_moves_a:
+        st.error("Aucune capacité offensive disponible.")
+        st.stop()
+    
+    move_names_a = [m.name for m in offensive_moves_a]
+    
+    selected_move_names_a = st.multiselect(
+        "⚔️ Capacités disponibles",
+        options=move_names_a,
+        default=move_names_a[:4] if len(move_names_a) >= 4 else move_names_a,
+        max_selections=4,
+        key="moves_a",
+        help="💡 Sélectionne jusqu'à 4 capacités offensives"
+    )
+    
+    if len(selected_move_names_a) < 1:
+        st.warning("⚠️ Sélectionne au moins 1 capacité.")
+
+# ======================================================
+# Moves Pokémon B (Adversaire)
+# ======================================================
+with col_moves_b:
+    st.markdown(f"### 🛡️ Moveset de {p2.name}")
+    
+    if manual_mode:
+        moves_b = get_moves_for_pokemon(p2.id)
+        if not moves_b:
+            st.warning("Aucune attaque disponible.")
+            st.stop()
+        
+        # Filtrer moves offensives uniquement
+        offensive_moves_b = [m for m in moves_b if m.power and m.power > 0]
+        
+        if not offensive_moves_b:
+            st.error("Aucune capacité offensive disponible.")
+            st.stop()
+        
+        move_names_b = [m.name for m in offensive_moves_b]
+        
+        selected_move_names_b = st.multiselect(
+            "⚔️ Capacités disponibles",
+            options=move_names_b,
+            default=move_names_b[:4] if len(move_names_b) >= 4 else move_names_b,
+            max_selections=4,
+            key="moves_b",
+            help="💡 Sélectionne jusqu'à 4 capacités offensives"
+        )
+        
+        if len(selected_move_names_b) < 1:
+            st.warning("⚠️ Sélectionne au moins 1 capacité.")
+    else:
+        selected_move_names_b = None
+        st.info("""
+        🤖 **Mode automatique**
+        
+        L'adversaire utilisera toujours sa **meilleure capacité possible** pour chaque scénario.
+        
+        C'est un "worst-case" : tu affrontes un adversaire qui joue au mieux !
+        """)
+
+# Validation
+if len(selected_move_names_a) < 1:
     st.stop()
 
 # ======================================================
@@ -205,14 +268,41 @@ if len(selected_move_names) < 1:
 # ======================================================
 st.divider()
 
-if st.button("🔮 Prédire la Meilleure Capacité", type="primary", use_container_width=True):
+# Affichage récapitulatif avant prédiction
+st.markdown(f"""
+<div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:10px;margin:20px 0;'>
+    <div style='display:flex;justify-content:space-around;align-items:center;'>
+        <div style='text-align:center;'>
+            <h3 style='color:{POKEMON_COLORS['primary']};'>🥊 {p1.name}</h3>
+            <p style='font-size:1.1rem;'>{len(selected_move_names_a)} capacité(s)</p>
+        </div>
+        <div style='font-size:3rem;'>⚔️</div>
+        <div style='text-align:center;'>
+            <h3 style='color:{POKEMON_COLORS['secondary']};'>🛡️ {p2.name}</h3>
+            <p style='font-size:1.1rem;'>{len(selected_move_names_b) if selected_move_names_b else "Auto"} capacité(s)</p>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+if st.button("🔮 Lancer la Simulation de Combat", type="primary", use_container_width=True):
     with st.spinner("🤖 Le modèle analyse le combat..."):
         try:
             result = predict_best_move(
                 pokemon_a_id=p1.id,
                 pokemon_b_id=p2.id,
-                available_moves=selected_move_names
+                available_moves=selected_move_names_a,
+                available_moves_b=selected_move_names_b  # None si mode auto
             )
+            
+            # Vérification que l'API a retourné un résultat
+            if result is None:
+                st.error("❌ L'API n'a pas retourné de résultat. Vérifiez les logs de l'API pour plus de détails.")
+                st.stop()
+            
+            if not result.get('recommended_move'):
+                st.error("❌ Résultat invalide de l'API. Aucune capacité recommandée trouvée.")
+                st.stop()
 
             # Affichage du résultat principal
             st.success(f"🏆 **Capacité recommandée : {result['recommended_move']}**")
@@ -270,16 +360,22 @@ if st.button("🔮 Prédire la Meilleure Capacité", type="primary", use_contain
                         st.error(f"⚠️ Attention, tu risques de perdre... ({100-win_prob:.1f}% pour l'adversaire)")
 
             # Disclaimer important
-            st.info("""
-            💡 **Précision du modèle : 94.24%** sur 34,040 combats analysés.
+            if manual_mode:
+                st.success(f"""
+                ✅ **Mode Manuel activé !** Le modèle a simulé tous les combats possibles avec les movesets
+                que tu as choisis. Précision : **94.46%** sur 898,472 combats analysés.
+                """)
+            else:
+                st.info(f"""
+                💡 **Précision du modèle : 94.46%** sur 898,472 combats analysés (modèle v2).
 
-            ⚠️ **Scénario "worst-case" :** Le modèle suppose que {opponent} utilise **sa meilleure
-            capacité possible** contre toi. Tes vraies chances peuvent être meilleures si ton
-            adversaire ne choisit pas sa meilleure move ou n'y a pas accès !
+                ⚠️ **Scénario "worst-case" :** Le modèle suppose que {p2.name} utilise **sa meilleure
+                capacité possible** contre toi. Tes vraies chances peuvent être meilleures si ton
+                adversaire ne choisit pas sa meilleure move ou n'y a pas accès !
 
-            🚀 **Version 2 à venir :** Possibilité de spécifier les capacités exactes de l'adversaire
-            pour des simulations encore plus précises.
-            """.format(opponent=p2.name))
+                🎯 **Astuce :** Passe en mode "Manuel" pour spécifier les capacités exactes de l'adversaire
+                et obtenir une simulation plus réaliste !
+                """)
 
             # Fun fact
             with st.expander("🤓 Comment ça marche ?"):
@@ -296,13 +392,14 @@ if st.button("🔮 Prédire la Meilleure Capacité", type="primary", use_contain
                 **Pour le Pokémon adverse :**
                 - 📊 Statistiques de base (HP, Attaque, Défense, Att. Spé, Déf. Spé, Vitesse)
                 - 🛡️ Types (pour calculer les faiblesses)
-                - 💥 **Meilleure capacité offensive** sélectionnée automatiquement parmi toutes ses moves
+                - 💥 **Mode Auto** : Meilleure capacité offensive sélectionnée automatiquement
+                - 💥 **Mode Manuel** : Capacité choisie parmi ton moveset personnalisé
                 - ⚡ STAB et multiplicateur de type de cette capacité
                 - ⚠️ Priorité de la capacité
 
                 **Processus de prédiction :**
                 1. Pour chaque capacité de ton Pokémon
-                2. Le modèle sélectionne la meilleure réponse de l'adversaire
+                2. Le modèle sélectionne la meilleure réponse de l'adversaire (Auto) ou teste ton moveset (Manuel)
                 3. Il simule le combat avec ces deux capacités
                 4. Il prédit le vainqueur et la probabilité de victoire
 
@@ -311,11 +408,11 @@ if st.button("🔮 Prédire la Meilleure Capacité", type="primary", use_contain
                 - ❌ Niveau (tous à niveau 50)
                 - ❌ Objets tenus, capacités passives, météo, statuts
 
-                **🚀 Version 2 (en développement) :**
-                - Possibilité de spécifier les 4 capacités exactes de l'adversaire
-                - Simulation de combat plus réaliste avec movesets fixes
+                **🎮 Deux modes de simulation :**
+                - 🤖 **Auto** : L'adversaire joue toujours optimalement (worst-case)
+                - 🎯 **Manuel** : Tu contrôles les movesets des deux Pokémon (simulation réaliste)
 
-                Le modèle a été entraîné sur **34,040 combats simulés** entre tous
+                Le modèle v2 a été entraîné sur **898,472 combats simulés** entre tous
                 les Pokémon de Let's Go avec différentes configurations de capacités !
                 """)
 
