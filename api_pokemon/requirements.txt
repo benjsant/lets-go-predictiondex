@@ -26,3 +26,4 @@ pyarrow
 prometheus-client
 psutil
 evidently>=0.7.0,<0.8.0  # Latest stable version
+mlflow==3.8.1  # MLflow tracking (C13 - MLOps)

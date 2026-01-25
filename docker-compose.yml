@@ -95,6 +95,7 @@ services:
       - ./docker:/app/docker
       - ./data:/app/data                # For drift detection reference data
       - ./models:/app/models            # For model metadata
+      - ./machine_learning:/app/machine_learning  # For ML pipeline + MLflow integration
       - ./api_pokemon/monitoring:/app/api_pokemon/monitoring  # Persist monitoring data
     ports:
       - "8000:8000"
@@ -194,6 +195,45 @@ services:
       - monitoring
     restart: unless-stopped
 
+  # ====================================================================
+  # MLflow Tracking Server (MLOps - C13)
+  # ====================================================================
+  
+  mlflow:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mlflow
+    container_name: letsgo_mlflow
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MLFLOW_BACKEND_STORE_URI: postgresql://letsgo_user:letsgo_password@db:5432/letsgo_db
+      MLFLOW_DEFAULT_ARTIFACT_ROOT: /app/mlruns
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    volumes:
+      - mlflow_data:/app/mlruns
+      - ./models:/app/models
+    ports:
+      - "5000:5000"
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri postgresql://letsgo_user:letsgo_password@db:5432/letsgo_db
+      --default-artifact-root /app/mlruns
+      --allowed-hosts *
+    networks:
+      - monitoring
+      - default
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
 networks:
   monitoring:
     driver: bridge
@@ -202,3 +242,4 @@ volumes:
   postgres_data:
   prometheus_data:
   grafana_data:
+  mlflow_data:

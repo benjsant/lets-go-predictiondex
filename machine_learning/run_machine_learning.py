@@ -58,6 +58,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, List, Tuple, Optional
 import pickle
+import joblib  # For RandomForest model compression
 
 import pandas as pd
 import numpy as np
@@ -69,6 +70,14 @@ from sklearn.metrics import (
 from sklearn.model_selection import cross_val_score, GridSearchCV
 import xgboost as xgb
 from sklearn.ensemble import RandomForestClassifier
+
+# MLflow integration (C13 - MLOps)
+try:
+    from machine_learning.mlflow_integration import get_mlflow_tracker
+    MLFLOW_AVAILABLE = True
+except ImportError:
+    MLFLOW_AVAILABLE = False
+    print("⚠️  MLflow not available - tracking disabled")
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -778,6 +787,8 @@ def export_model(model: Any, scalers: Dict, feature_columns: List[str],
         print(f"✅ Metadata (JSON) exported: {metadata_json_path}")
         print(f"\n✅ All artifacts exported to: {MODELS_DIR}")
 
+    return str(model_path)  # Return path for MLflow logging
+
 
 def export_features(X_train: pd.DataFrame, X_test: pd.DataFrame,
                     y_train: pd.Series, y_test: pd.Series,
@@ -903,6 +914,19 @@ Examples:
     PROCESSED_DIR = DATA_DIR / "processed"
     FEATURES_DIR = DATA_DIR / "features"
 
+    # Initialize MLflow tracker (C13 - MLOps)
+    tracker = None
+    if MLFLOW_AVAILABLE:
+        try:
+            experiment_name = f"pokemon_battle_{args.dataset_version}"
+            tracker = get_mlflow_tracker(experiment_name)
+            if verbose:
+                print(f"\n✅ MLflow tracking enabled: {experiment_name}")
+        except Exception as e:
+            if verbose:
+                print(f"\n⚠️  MLflow tracking disabled: {e}")
+            tracker = None
+
     if verbose:
         print("\n" + "=" * 80)
         print("UNIFIED ML PIPELINE - LET'S GO PREDICTIONDEX")
@@ -917,6 +941,22 @@ Examples:
             print(f"GridSearch Type: {args.grid_type}")
 
     try:
+        # Start MLflow run
+        if tracker:
+            run_name = f"{args.mode}_{args.dataset_version}_{args.version}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            tracker.start_run(run_name=run_name)
+            
+            # Log pipeline configuration
+            tracker.log_params({
+                'mode': args.mode,
+                'dataset_version': args.dataset_version,
+                'model_version': args.version,
+                'scenario_type': args.scenario_type,
+                'random_seed': RANDOM_SEED,
+                'tune_hyperparams': args.tune_hyperparams,
+                'model_type': args.model,
+            })
+
         # STEP 1: Dataset preparation
         if args.mode in ['all', 'dataset']:
             success = run_dataset_preparation(
@@ -955,6 +995,14 @@ Examples:
             df_train, df_test, verbose=verbose
         )
 
+        # Log dataset info to MLflow
+        if tracker:
+            tracker.log_dataset_info(
+                train_samples=len(X_train),
+                test_samples=len(X_test),
+                num_features=len(feature_columns)
+            )
+
         # STEP 3 & 4: Train and evaluate (single model)
         if args.mode == 'train' or args.mode == 'evaluate':
             # Optional: Hyperparameter tuning
@@ -971,11 +1019,29 @@ Examples:
             metrics = evaluate_model(model, X_train, X_test, y_train, y_test,
                                    model_name=args.model, verbose=verbose)
 
+            # Log to MLflow
+            if tracker:
+                tracker.log_params(hyperparams)
+                tracker.log_metrics({
+                    'train_accuracy': metrics['train_accuracy'],
+                    'test_accuracy': metrics['test_accuracy'],
+                    'test_precision': metrics['test_precision'],
+                    'test_recall': metrics['test_recall'],
+                    'test_f1': metrics['test_f1'],
+                    'test_roc_auc': metrics['test_roc_auc'],
+                    'overfitting': metrics['overfitting'],
+                })
+
             # Feature importance
             analyze_feature_importance(model, feature_columns, verbose=verbose)
 
             # Export
-            export_model(model, scalers, feature_columns, metrics, hyperparams, version=args.version, verbose=verbose)
+            model_path = export_model(model, scalers, feature_columns, metrics, hyperparams, version=args.version, verbose=verbose)
+            
+            # Log model to MLflow
+            if tracker and model_path:
+                tracker.log_model(model, artifact_path=f"model_{args.version}", 
+                                model_type=args.model)
 
             if not args.skip_export_features:
                 export_features(X_train, X_test, y_train, y_test, verbose=verbose)
@@ -993,7 +1059,18 @@ Examples:
 
             # Export best model
             best_metrics = next(m for m in all_metrics if m['model_name'] == best_model_name)
-            export_model(best_model, scalers, feature_columns, best_metrics, hyperparams=None, version=args.version, verbose=verbose)
+            model_path = export_model(best_model, scalers, feature_columns, best_metrics, hyperparams=None, version=args.version, verbose=verbose)
+
+            # Log to MLflow
+            if tracker:
+                for m in all_metrics:
+                    tracker.log_metrics({
+                        f"{m['model_name']}_test_accuracy": m['test_accuracy'],
+                        f"{m['model_name']}_test_f1": m['test_f1'],
+                    })
+                if model_path:
+                    tracker.log_model(best_model, artifact_path=f"model_{args.version}", 
+                                    model_type=best_model_name)
 
             if not args.skip_export_features:
                 export_features(X_train, X_test, y_train, y_test, verbose=verbose)
@@ -1026,7 +1103,24 @@ Examples:
             analyze_feature_importance(best_model, feature_columns, verbose=verbose)
 
             # Export
-            export_model(best_model, scalers, feature_columns, metrics, hyperparams, version=args.version, verbose=verbose)
+            model_path = export_model(best_model, scalers, feature_columns, metrics, hyperparams, version=args.version, verbose=verbose)
+
+            # Log to MLflow
+            if tracker:
+                if hyperparams:
+                    tracker.log_params(hyperparams)
+                tracker.log_metrics({
+                    'train_accuracy': metrics['train_accuracy'],
+                    'test_accuracy': metrics['test_accuracy'],
+                    'test_precision': metrics['test_precision'],
+                    'test_recall': metrics['test_recall'],
+                    'test_f1': metrics['test_f1'],
+                    'test_roc_auc': metrics['test_roc_auc'],
+                    'overfitting': metrics['overfitting'],
+                })
+                if model_path:
+                    tracker.log_model(best_model, artifact_path=f"model_{args.version}", 
+                                    model_type=best_model_name)
 
             if not args.skip_export_features:
                 export_features(X_train, X_test, y_train, y_test, verbose=verbose)
