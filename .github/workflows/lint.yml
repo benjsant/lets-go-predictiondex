@@ -1,0 +1,97 @@
+name: Lint and Format
+
+on:
+  push:
+    branches: [ main, monitoring_grafana_evidently, develop ]
+  pull_request:
+    branches: [ main, monitoring_grafana_evidently ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-lint-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-lint-
+      
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install black flake8 isort mypy pylint
+          pip install -r api_pokemon/requirements.txt
+      
+      - name: Run black (check only)
+        run: |
+          black --check --diff api_pokemon core machine_learning interface
+      
+      - name: Run isort (check only)
+        run: |
+          isort --check-only --diff api_pokemon core machine_learning interface
+      
+      - name: Run flake8
+        run: |
+          flake8 api_pokemon core machine_learning interface \
+            --max-line-length=120 \
+            --exclude=__pycache__,.venv,.git,migrations \
+            --ignore=E203,W503,E501
+      
+      - name: Run pylint
+        continue-on-error: true
+        run: |
+          pylint api_pokemon core machine_learning \
+            --disable=C0111,C0103,R0913,R0914,W0511 \
+            --max-line-length=120
+      
+      - name: Run mypy
+        continue-on-error: true
+        run: |
+          mypy api_pokemon core --ignore-missing-imports
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety
+      
+      - name: Run bandit (security linter)
+        run: |
+          bandit -r api_pokemon core machine_learning -f json -o bandit-report.json
+      
+      - name: Run safety (dependency check)
+        continue-on-error: true
+        run: |
+          safety check --json --output safety-report.json
+      
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+          retention-days: 30

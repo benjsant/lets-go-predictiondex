@@ -1,0 +1,105 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [ main, monitoring_grafana_evidently, develop ]
+  pull_request:
+    branches: [ main, monitoring_grafana_evidently ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        service: [api, etl, ml, streamlit, mlflow]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ matrix.service }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.service }}-
+      
+      - name: Build ${{ matrix.service }} image
+        run: |
+          docker compose build ${{ matrix.service }}
+      
+      - name: Save image
+        run: |
+          docker save lets-go-predictiondex-${{ matrix.service }} | gzip > ${{ matrix.service }}.tar.gz
+      
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-${{ matrix.service }}
+          path: ${{ matrix.service }}.tar.gz
+          retention-days: 1
+
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+      
+      - name: Load Docker images
+        run: |
+          for service in api etl ml streamlit mlflow; do
+            if [ -f docker-$service/$service.tar.gz ]; then
+              gunzip -c docker-$service/$service.tar.gz | docker load
+            fi
+          done
+      
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          POSTGRES_HOST=db
+          POSTGRES_PORT=5432
+          POSTGRES_DB=letsgo_db
+          POSTGRES_USER=letsgo_user
+          POSTGRES_PASSWORD=letsgo_password
+          DEV_MODE=true
+          EOF
+      
+      - name: Start services
+        run: |
+          docker compose up -d
+          sleep 60  # Wait for services to be ready
+      
+      - name: Check service health
+        run: |
+          echo "Checking API health..."
+          curl -f http://localhost:8000/health || exit 1
+          
+          echo "Checking MLflow health..."
+          curl -f http://localhost:5000/health || exit 1
+          
+          echo "Checking Prometheus health..."
+          curl -f http://localhost:9090/-/healthy || exit 1
+      
+      - name: Run integration tests
+        run: |
+          docker compose exec -T api pytest tests/ -v -m integration
+      
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          docker compose logs
+      
+      - name: Stop services
+        if: always()
+        run: |
+          docker compose down -v
