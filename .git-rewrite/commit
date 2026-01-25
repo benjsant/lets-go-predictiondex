@@ -1,0 +1,6 @@
+tree 3a87acf34c5e6df42d2516cd1045e1d792b7921e
+parent e4e0a2afd4499fcd949d57f47bd24d3c734a77c5
+author benjsant <santrisseb@gmail.com> 1769362474 +0100
+committer benjsant <santrisseb@gmail.com> 1769362474 +0100
+
+chore: ignore large ML models (>100MB) - keep metadata and scalers only
