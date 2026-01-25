@@ -102,10 +102,10 @@ DEFAULT_XGBOOST_PARAMS = {
 }
 
 DEFAULT_RF_PARAMS = {
-    'n_estimators': 100,
-    'max_depth': 15,
-    'min_samples_split': 5,
-    'min_samples_leaf': 2,
+    'n_estimators': 50,  # Reduced from 100 (less trees = smaller model)
+    'max_depth': 12,     # Reduced from 15 (shallower trees = smaller model)
+    'min_samples_split': 10,  # Increased from 5 (prevents overfitting + smaller)
+    'min_samples_leaf': 4,    # Increased from 2 (fewer leaf nodes)
     'random_state': RANDOM_SEED,
     'n_jobs': -1,
 }
@@ -726,12 +726,21 @@ def export_model(model: Any, scalers: Dict, feature_columns: List[str],
 
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Export model
+    # Export model (use joblib compression for RandomForest, pickle for others)
     model_path = MODELS_DIR / f"battle_winner_model_{version}.pkl"
-    with open(model_path, 'wb') as f:
-        pickle.dump(model, f)
-    if verbose:
-        print(f"\n✅ Model exported: {model_path}")
+    model_type_name = type(model).__name__
+    
+    if model_type_name == 'RandomForestClassifier':
+        # Use joblib with aggressive compression for RandomForest (5-10x smaller)
+        joblib.dump(model, model_path, compress=('zlib', 9))
+        if verbose:
+            print(f"\n✅ Model exported (joblib compressed): {model_path}")
+    else:
+        # XGBoost and others use standard pickle
+        with open(model_path, 'wb') as f:
+            pickle.dump(model, f)
+        if verbose:
+            print(f"\n✅ Model exported: {model_path}")
 
     # Export scalers
     scalers_path = MODELS_DIR / f"battle_winner_scalers_{version}.pkl"

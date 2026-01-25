@@ -14,6 +14,7 @@ This service is responsible for:
 """
 
 import pickle
+import joblib
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 from collections import defaultdict
@@ -51,7 +52,7 @@ class PredictionModel:
         return cls._instance
 
     def load(self):
-        """Load model artifacts from disk."""
+        """Load model artifacts from disk (supports both pickle and joblib)."""
         if self._model is not None:
             return  # Already loaded
 
@@ -59,8 +60,12 @@ class PredictionModel:
         scalers_path = MODELS_DIR / "battle_winner_scalers_v2.pkl"
         metadata_path = MODELS_DIR / "battle_winner_metadata_v2.pkl"
 
-        with open(model_path, 'rb') as f:
-            self._model = pickle.load(f)
+        # Try joblib first (compressed models), fallback to pickle
+        try:
+            self._model = joblib.load(model_path)
+        except Exception:
+            with open(model_path, 'rb') as f:
+                self._model = pickle.load(f)
 
         with open(scalers_path, 'rb') as f:
             self._scalers = pickle.load(f)
