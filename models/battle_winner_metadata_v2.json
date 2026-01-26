@@ -1,7 +1,7 @@
 {
   "model_type": "XGBClassifier",
   "version": "v2",
-  "trained_at": "2026-01-24T20:38:15.843251",
+  "trained_at": "2026-01-26T10:19:22.545713",
   "feature_columns": [
     "a_hp",
     "a_attack",
@@ -16,18 +16,24 @@
     "..."
   ],
   "n_features": 133,
-  "hyperparameters": {},
+  "hyperparameters": {
+    "colsample_bytree": 0.9,
+    "learning_rate": 0.2,
+    "max_depth": 10,
+    "n_estimators": 200,
+    "subsample": 0.9
+  },
   "metrics": {
-    "model_name": "xgboost",
-    "train_accuracy": 0.9497382359201811,
-    "test_accuracy": 0.9445560533125574,
-    "test_precision": 0.9479513871083535,
-    "test_recall": 0.9497729094309377,
-    "test_f1": 0.9488612740795491,
-    "test_roc_auc": 0.9901912558721383,
-    "train_samples": 718777,
-    "test_samples": 179695,
-    "overfitting": 0.005182182607623709
+    "model_name": "xgboost_tuned",
+    "train_accuracy": 0.9934885636030041,
+    "test_accuracy": 0.9687240920750265,
+    "test_precision": 0.9708221176567284,
+    "test_recall": 0.9714109483423284,
+    "test_f1": 0.9711164437410398,
+    "test_roc_auc": 0.9964772314391145,
+    "train_samples": 718889,
+    "test_samples": 179723,
+    "overfitting": 0.02476447152797756
   },
   "random_seed": 42
 }

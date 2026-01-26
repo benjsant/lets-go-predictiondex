@@ -3,6 +3,7 @@ python-dotenv
 pandas
 numpy
 scikit-learn
+xgboost
 pyarrow
 sqlalchemy
 psycopg2-binary

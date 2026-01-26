@@ -175,32 +175,32 @@ def process_pokemon_moves(
                     continue
 
                 for pm in base_pokemon.moves:
-                move_name = pm.move.name.lower()
-                if move_name in existing_moves:
-                    continue  # Ignorer les doublons
-                move_id = move_cache.get(move_name)
-                if not move_id:
-                    continue
+                    move_name = pm.move.name.lower()
+                    if move_name in existing_moves:
+                        continue  # Ignorer les doublons
+                    move_id = move_cache.get(move_name)
+                    if not move_id:
+                        continue
 
-                stmt = (
-                    insert(PokemonMove)
-                    .values(
-                        pokemon_id=pokemon.id,
-                        move_id=move_id,
-                        learn_method_id=before_evo_lm_id,
-                        learn_level=-2,
+                    stmt = (
+                        insert(PokemonMove)
+                        .values(
+                            pokemon_id=pokemon.id,
+                            move_id=move_id,
+                            learn_method_id=before_evo_lm_id,
+                            learn_level=-2,
+                        )
+                        .on_conflict_do_nothing(
+                            index_elements=[
+                                "pokemon_id",
+                                "move_id",
+                                "learn_method_id",
+                            ]
+                        )
                     )
-                    .on_conflict_do_nothing(
-                        index_elements=[
-                            "pokemon_id",
-                            "move_id",
-                            "learn_method_id",
-                        ]
-                    )
-                )
-                session.execute(stmt)
-                inherited_count += 1
-                existing_moves.add(move_name)
+                    session.execute(stmt)
+                    inherited_count += 1
+                    existing_moves.add(move_name)
 
         session.commit()
         if inherited_count:

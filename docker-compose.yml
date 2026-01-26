@@ -54,6 +54,10 @@ services:
       POSTGRES_USER: letsgo_user
       POSTGRES_PASSWORD: letsgo_password
       DEV_MODE: "true"
+      # Disable MLflow tracking for initial model creation (simplifies deployment)
+      DISABLE_MLFLOW_TRACKING: "true"
+      # Skip ML training if model already exists (set to false to force retrain)
+      ML_SKIP_IF_EXISTS: "true"
       # ML Pipeline v2 Configuration
       ML_MODE: "all"                    # all, dataset, train, evaluate
       ML_SCENARIO_TYPE: "all"           # best_move, random_move, all_combinations, all
@@ -78,6 +82,8 @@ services:
       db:
         condition: service_healthy
       etl:
+        condition: service_completed_successfully
+      ml_builder:
         condition: service_completed_successfully
     env_file:
       - .env
@@ -156,7 +162,10 @@ services:
     image: grafana/grafana:10.1.0
     container_name: letsgo_grafana
     depends_on:
-      - prometheus
+      prometheus:
+        condition: service_started
+      api:
+        condition: service_healthy
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin

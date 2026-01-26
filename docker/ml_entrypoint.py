@@ -45,6 +45,17 @@ def wait_for_db(timeout=60):
 
 def run_ml_builder():
     """Run the complete ML pipeline (v2 multi-scenarios with GridSearch)."""
+    
+    # Check if model already exists (skip re-training)
+    model_path = "/app/models/battle_winner_model_v2.pkl"
+    if os.path.exists(model_path):
+        skip_training = os.getenv("ML_SKIP_IF_EXISTS", "true").lower() == "true"
+        if skip_training:
+            print("ℹ️  Model already exists, skipping training (set ML_SKIP_IF_EXISTS=false to force retrain)", flush=True)
+            return True
+        else:
+            print("ℹ️  Model exists but ML_SKIP_IF_EXISTS=false, retraining...", flush=True)
+    
     print("🚀 Starting ML pipeline v2 (multi-scenarios)...", flush=True)
     
     # Get configuration from environment variables
