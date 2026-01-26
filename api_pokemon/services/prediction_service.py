@@ -15,6 +15,7 @@ This service is responsible for:
 
 import pickle
 import joblib
+import os
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 from collections import defaultdict
@@ -31,6 +32,16 @@ from core.models import (
     Type,
     TypeEffectiveness,
 )
+
+# MLflow Model Registry (optional)
+try:
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+    from machine_learning.mlflow_integration import load_model_from_registry
+    MLFLOW_AVAILABLE = True
+except ImportError:
+    MLFLOW_AVAILABLE = False
+    load_model_from_registry = None
 
 
 # Paths to model artifacts
@@ -52,13 +63,67 @@ class PredictionModel:
         return cls._instance
 
     def load(self):
-        """Load model artifacts from disk (supports both pickle and joblib)."""
+        """
+        Load model artifacts.
+        
+        Priority:
+        1. Try MLflow Model Registry (Production stage)
+        2. Fallback to local files (joblib compressed or pickle)
+        
+        Environment variables:
+        - USE_MLFLOW_REGISTRY: Enable/disable registry loading (default: true)
+        - MLFLOW_MODEL_NAME: Model name in registry (default: battle_winner_predictor)
+        - MLFLOW_MODEL_STAGE: Model stage (default: Production)
+        """
         if self._model is not None:
             return  # Already loaded
 
+        use_mlflow = os.getenv('USE_MLFLOW_REGISTRY', 'true').lower() == 'true'
+        model_name = os.getenv('MLFLOW_MODEL_NAME', 'battle_winner_predictor')
+        model_stage = os.getenv('MLFLOW_MODEL_STAGE', 'Production')
+        
+        print(f"🔍 Loading ML model...")
+        
+        # Try MLflow Model Registry first
+        if use_mlflow and MLFLOW_AVAILABLE:
+            try:
+                print(f"   Trying MLflow Model Registry ({model_name} @ {model_stage})...")
+                model_uri = f"models:/{model_name}/{model_stage}"
+                
+                # Load model bundle from registry
+                model_bundle = load_model_from_registry(model_name, stage=model_stage)
+                
+                if model_bundle:
+                    self._model = model_bundle.get('model')
+                    self._scalers = model_bundle.get('scalers')
+                    self._metadata = model_bundle.get('metadata')
+                    
+                    if self._model:
+                        print(f"✅ Model loaded from MLflow Registry")
+                        version_info = model_bundle.get('version', 'unknown')
+                        print(f"   Version: {version_info}")
+                        return
+                    else:
+                        print(f"⚠️  Model bundle incomplete, falling back to local files")
+                else:
+                    print(f"⚠️  No model in registry, falling back to local files")
+            except Exception as e:
+                print(f"⚠️  MLflow Registry error: {e}")
+                print(f"   Falling back to local files...")
+        elif use_mlflow and not MLFLOW_AVAILABLE:
+            print(f"⚠️  MLflow not available, using local files")
+        
+        # Fallback: Load from local files
+        print(f"   Loading from local files...")
         model_path = MODELS_DIR / "battle_winner_model_v2.pkl"
         scalers_path = MODELS_DIR / "battle_winner_scalers_v2.pkl"
         metadata_path = MODELS_DIR / "battle_winner_metadata_v2.pkl"
+
+        if not model_path.exists():
+            raise FileNotFoundError(
+                f"Model file not found: {model_path}\n"
+                f"Please train a model first using: python machine_learning/train_model.py"
+            )
 
         # Try joblib first (compressed models), fallback to pickle
         try:
@@ -72,6 +137,8 @@ class PredictionModel:
 
         with open(metadata_path, 'rb') as f:
             self._metadata = pickle.load(f)
+        
+        print(f"✅ Model loaded from local files")
 
     @property
     def model(self):
@@ -425,9 +492,11 @@ def apply_feature_engineering(df_raw: pd.DataFrame) -> pd.DataFrame:
     X_encoded[new_features] = scaler_new.transform(X_encoded[new_features])
 
     # Ensure all expected features are present (add missing columns with 0)
-    for col in feature_columns:
-        if col not in X_encoded.columns:
-            X_encoded[col] = 0
+    missing_cols = [col for col in feature_columns if col not in X_encoded.columns]
+    if missing_cols:
+        # Create a DataFrame with missing columns filled with 0
+        missing_df = pd.DataFrame(0, index=X_encoded.index, columns=missing_cols)
+        X_encoded = pd.concat([X_encoded, missing_df], axis=1)
 
     # Reorder columns to match training
     X_encoded = X_encoded[feature_columns]

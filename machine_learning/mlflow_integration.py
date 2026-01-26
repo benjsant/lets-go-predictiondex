@@ -29,9 +29,11 @@ import os
 import mlflow
 import mlflow.sklearn
 import mlflow.xgboost
+from mlflow.tracking import MlflowClient
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import datetime
+import pandas as pd
 
 
 class MLflowTracker:
@@ -174,15 +176,19 @@ class MLflowTracker:
         self, 
         model: Any, 
         artifact_path: str = "model",
-        model_type: str = "sklearn"
+        model_type: str = "sklearn",
+        scalers: Optional[Any] = None,
+        metadata: Optional[Any] = None
     ):
         """
-        Log model artifact.
+        Log model artifact along with optional scalers and metadata.
         
         Args:
             model: Trained model object
             artifact_path: Path within MLflow artifacts
             model_type: Type of model ('sklearn', 'xgboost')
+            scalers: Optional scalers dict to log as artifact
+            metadata: Optional metadata dict to log as artifact
         """
         if self.experiment_name is None:
             return
@@ -194,6 +200,31 @@ class MLflowTracker:
                 mlflow.sklearn.log_model(model, artifact_path)
             
             print(f"✅ Logged {model_type} model to: {artifact_path}")
+            
+            # Log scalers as artifact
+            if scalers is not None:
+                import pickle
+                import tempfile
+                with tempfile.NamedTemporaryFile(mode='wb', suffix='.pkl', delete=False) as f:
+                    pickle.dump(scalers, f)
+                    scalers_path = f.name
+                mlflow.log_artifact(scalers_path, ".")
+                print(f"✅ Logged scalers artifact")
+                import os
+                os.remove(scalers_path)
+            
+            # Log metadata as artifact
+            if metadata is not None:
+                import pickle
+                import tempfile
+                with tempfile.NamedTemporaryFile(mode='wb', suffix='.pkl', delete=False) as f:
+                    pickle.dump(metadata, f)
+                    metadata_path = f.name
+                mlflow.log_artifact(metadata_path, ".")
+                print(f"✅ Logged metadata artifact")
+                import os
+                os.remove(metadata_path)
+                
         except Exception as e:
             print(f"⚠️ Error logging model: {e}")
     
@@ -249,6 +280,219 @@ class MLflowTracker:
             print(f"✅ Set {len(tags)} tags")
         except Exception as e:
             print(f"⚠️ Error setting tags: {e}")
+    
+    def register_model(
+        self,
+        model_name: str = "battle_winner_predictor",
+        description: Optional[str] = None
+    ) -> Optional[str]:
+        """
+        Register the current run's model in MLflow Model Registry.
+        
+        Args:
+            model_name: Name for the registered model
+            description: Optional description
+        
+        Returns:
+            Model version string (e.g., "1", "2") or None if failed
+        """
+        if self.experiment_name is None:
+            print("⚠️ MLflow not available, skipping model registration")
+            return None
+        
+        try:
+            # Get current run
+            run = mlflow.active_run()
+            if run is None:
+                print("⚠️ No active run, cannot register model")
+                return None
+            
+            run_id = run.info.run_id
+            model_uri = f"runs:/{run_id}/model"
+            
+            # Register model
+            result = mlflow.register_model(model_uri, model_name)
+            version = result.version
+            
+            # Add description if provided
+            if description:
+                client = MlflowClient()
+                client.update_model_version(
+                    name=model_name,
+                    version=version,
+                    description=description
+                )
+            
+            print(f"✅ Registered model '{model_name}' version {version}")
+            return version
+            
+        except Exception as e:
+            print(f"⚠️ Error registering model: {e}")
+            return None
+    
+    def promote_to_production(
+        self,
+        model_name: str,
+        version: str,
+        archive_existing: bool = True
+    ) -> bool:
+        """
+        Promote a model version to Production stage.
+        
+        Args:
+            model_name: Name of the registered model
+            version: Version to promote
+            archive_existing: Whether to archive existing Production models
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        if self.experiment_name is None:
+            print("⚠️ MLflow not available, skipping promotion")
+            return False
+        
+        try:
+            client = MlflowClient()
+            
+            # Archive existing production models if requested
+            if archive_existing:
+                try:
+                    prod_models = client.get_latest_versions(model_name, stages=["Production"])
+                    for model in prod_models:
+                        client.transition_model_version_stage(
+                            name=model_name,
+                            version=model.version,
+                            stage="Archived"
+                        )
+                        print(f"📦 Archived previous Production version {model.version}")
+                except Exception as e:
+                    print(f"⚠️ Could not archive existing models: {e}")
+            
+            # Promote new version to Production
+            client.transition_model_version_stage(
+                name=model_name,
+                version=version,
+                stage="Production"
+            )
+            
+            print(f"🚀 Promoted '{model_name}' version {version} to Production")
+            return True
+            
+        except Exception as e:
+            print(f"⚠️ Error promoting model: {e}")
+            return False
+    
+    def promote_best_model(
+        self,
+        model_name: str,
+        metric: str = "test_accuracy",
+        minimum_metric_value: float = 0.80
+    ) -> bool:
+        """
+        Automatically promote the best model based on a metric.
+        
+        Args:
+            model_name: Name of the registered model
+            metric: Metric to compare (e.g., 'test_accuracy', 'test_roc_auc')
+            minimum_metric_value: Minimum threshold to promote
+        
+        Returns:
+            True if a model was promoted, False otherwise
+        """
+        if self.experiment_name is None:
+            print("⚠️ MLflow not available")
+            return False
+        
+        try:
+            client = MlflowClient()
+            
+            # Get all versions of the model
+            versions = client.search_model_versions(f"name='{model_name}'")
+            
+            if not versions:
+                print(f"⚠️ No versions found for model '{model_name}'")
+                return False
+            
+            # Find best version based on metric
+            best_version = None
+            best_metric_value = minimum_metric_value
+            
+            for version in versions:
+                run = client.get_run(version.run_id)
+                metric_value = run.data.metrics.get(metric)
+                
+                if metric_value and metric_value > best_metric_value:
+                    best_metric_value = metric_value
+                    best_version = version.version
+            
+            if best_version:
+                print(f"🎯 Best model: version {best_version} with {metric}={best_metric_value:.4f}")
+                return self.promote_to_production(model_name, best_version)
+            else:
+                print(f"⚠️ No model meets threshold ({metric} > {minimum_metric_value})")
+                return False
+                
+        except Exception as e:
+            print(f"⚠️ Error promoting best model: {e}")
+            return False
+    
+    def compare_models(
+        self,
+        model_name: str,
+        metrics: Optional[List[str]] = None
+    ) -> pd.DataFrame:
+        """
+        Compare all versions of a registered model.
+        
+        Args:
+            model_name: Name of the registered model
+            metrics: List of metrics to compare (default: accuracy, f1, roc_auc)
+        
+        Returns:
+            DataFrame with model versions and their metrics
+        """
+        if self.experiment_name is None:
+            print("⚠️ MLflow not available")
+            return pd.DataFrame()
+        
+        if metrics is None:
+            metrics = ["test_accuracy", "test_f1", "test_roc_auc"]
+        
+        try:
+            import pandas as pd
+            client = MlflowClient()
+            
+            # Get all versions
+            versions = client.search_model_versions(f"name='{model_name}'")
+            
+            if not versions:
+                print(f"⚠️ No versions found for model '{model_name}'")
+                return pd.DataFrame()
+            
+            # Build comparison table
+            data = []
+            for version in versions:
+                run = client.get_run(version.run_id)
+                row = {
+                    "version": version.version,
+                    "stage": version.current_stage,
+                    "created_at": pd.to_datetime(version.creation_timestamp, unit='ms')
+                }
+                
+                # Add metrics
+                for metric in metrics:
+                    row[metric] = run.data.metrics.get(metric, None)
+                
+                data.append(row)
+            
+            df = pd.DataFrame(data).sort_values("version", ascending=False)
+            print(f"\n📊 Model Comparison: {model_name}")
+            print(df.to_string(index=False))
+            return df
+            
+        except Exception as e:
+            print(f"⚠️ Error comparing models: {e}")
+            return pd.DataFrame()
 
 
 def get_mlflow_tracker(
@@ -266,3 +510,110 @@ def get_mlflow_tracker(
         MLflowTracker instance
     """
     return MLflowTracker(experiment_name, tracking_uri)
+
+
+def load_model_from_registry(
+    model_name: str = "battle_winner_predictor",
+    stage: str = "Production",
+    version: Optional[str] = None,
+    tracking_uri: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
+    """
+    Load a model bundle from MLflow Model Registry.
+    
+    Args:
+        model_name: Name of the registered model
+        stage: Stage to load from ('Production', 'Staging', 'Archived')
+        version: Specific version to load (overrides stage)
+        tracking_uri: MLflow tracking server URI
+    
+    Returns:
+        Dict with keys: 'model', 'scalers', 'metadata', 'version'
+        or None if not found
+    """
+    try:
+        import pickle
+        import tempfile
+        from mlflow.tracking import MlflowClient
+        
+        # Set tracking URI
+        if tracking_uri is None:
+            tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
+        
+        mlflow.set_tracking_uri(tracking_uri)
+        client = MlflowClient(tracking_uri=tracking_uri)
+        
+        # Get model version details
+        if version:
+            model_version = client.get_model_version(model_name, version)
+        else:
+            # Get latest version in specified stage
+            versions = client.get_latest_versions(model_name, stages=[stage])
+            if not versions:
+                print(f"⚠️ No model found in stage '{stage}'")
+                return None
+            model_version = versions[0]
+        
+        print(f"📥 Loading model from registry: {model_name} v{model_version.version} ({model_version.current_stage})")
+        
+        # Load the model itself
+        model_uri = f"models:/{model_name}/{model_version.version}"
+        
+        # Try to load as sklearn model (not pyfunc wrapper)
+        try:
+            model = mlflow.sklearn.load_model(model_uri)
+        except Exception:
+            # Fallback to pyfunc
+            model = mlflow.pyfunc.load_model(model_uri)
+            # Extract underlying model if it's a wrapper
+            if hasattr(model, '_model_impl'):
+                model = model._model_impl
+        
+        # Try to download artifacts (scalers, metadata)
+        scalers = None
+        metadata = None
+        
+        try:
+            # Get run_id from model version
+            run_id = model_version.run_id
+            
+            # Download artifacts to temp directory
+            with tempfile.TemporaryDirectory() as tmpdir:
+                # Try to download scalers
+                try:
+                    scalers_path = client.download_artifacts(run_id, "scalers.pkl", tmpdir)
+                    with open(scalers_path, 'rb') as f:
+                        scalers = pickle.load(f)
+                    print(f"✅ Scalers loaded from artifacts")
+                except Exception:
+                    print(f"⚠️ Scalers not found in artifacts")
+                
+                # Try to download metadata
+                try:
+                    metadata_path = client.download_artifacts(run_id, "metadata.pkl", tmpdir)
+                    with open(metadata_path, 'rb') as f:
+                        metadata = pickle.load(f)
+                    print(f"✅ Metadata loaded from artifacts")
+                except Exception:
+                    print(f"⚠️ Metadata not found in artifacts")
+        
+        except Exception as e:
+            print(f"⚠️ Could not load artifacts: {e}")
+        
+        bundle = {
+            'model': model,
+            'scalers': scalers,
+            'metadata': metadata,
+            'version': model_version.version,
+            'stage': model_version.current_stage,
+            'run_id': model_version.run_id
+        }
+        
+        print(f"✅ Model bundle loaded successfully")
+        return bundle
+        
+    except Exception as e:
+        print(f"⚠️ Error loading model from registry: {e}")
+        import traceback
+        traceback.print_exc()
+        return None

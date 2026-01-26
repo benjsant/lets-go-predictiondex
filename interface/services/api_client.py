@@ -2,14 +2,22 @@
 
 import requests
 from typing import List, Dict, Optional
-from interface.config.settings import API_BASE_URL
+from interface.config.settings import API_BASE_URL, API_KEY
 
 
-def _get(endpoint: str):
+def _get_headers() -> dict:
+    """Get headers with API Key if configured."""
+    headers = {}
+    if API_KEY:
+        headers["X-API-Key"] = API_KEY
+    return headers
+
+
+def _get(endpoint: str, timeout: int = 30):
     """Generic GET request."""
     try:
         url = f"{API_BASE_URL}{endpoint}"
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, headers=_get_headers(), timeout=timeout)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
@@ -17,11 +25,11 @@ def _get(endpoint: str):
         return None
 
 
-def _post(endpoint: str, data: dict):
-    """Generic POST request."""
+def _post(endpoint: str, data: dict, timeout: int = 60):
+    """Generic POST request (higher timeout for ML predictions)."""
     try:
         url = f"{API_BASE_URL}{endpoint}"
-        response = requests.post(url, json=data, timeout=10)
+        response = requests.post(url, json=data, headers=_get_headers(), timeout=timeout)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:

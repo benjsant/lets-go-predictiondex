@@ -40,7 +40,7 @@ def start_api():
         "uvicorn",
         "api_pokemon.main:app",
         "--host", "0.0.0.0",
-        "--port", "8000",
+        "--port", "8080",  # Port modifié : 8080 au lieu de 8000
     ]
     if DEV_MODE:
         cmd.append("--reload")

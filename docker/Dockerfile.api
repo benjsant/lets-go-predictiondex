@@ -21,4 +21,7 @@ COPY docker/api_entrypoint.py ./docker/api_entrypoint.py
 # Copy trained ML models
 COPY models ./models
 
+# Port modifié : 8080 au lieu de 8000
+EXPOSE 8080
+
 ENTRYPOINT ["python", "docker/api_entrypoint.py"]

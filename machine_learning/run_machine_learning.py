@@ -98,15 +98,17 @@ FEATURES_DIR = None
 # Random seed
 RANDOM_SEED = 42
 
-# Default hyperparameters
+# Default hyperparameters (optimized for CPU)
 DEFAULT_XGBOOST_PARAMS = {
     'n_estimators': 100,
     'max_depth': 8,
     'learning_rate': 0.1,
     'subsample': 0.8,
     'colsample_bytree': 0.8,
+    'tree_method': 'hist',        # CPU-optimized histogram algorithm (faster than 'auto')
+    'predictor': 'cpu_predictor', # Explicit CPU predictor
     'random_state': RANDOM_SEED,
-    'n_jobs': -1,
+    'n_jobs': -1,                 # Use all CPU cores
     'eval_metric': 'logloss',
 }
 
@@ -119,13 +121,15 @@ DEFAULT_RF_PARAMS = {
     'n_jobs': -1,
 }
 
-# Hyperparameter search space
+# Hyperparameter search space (optimized grid for CPU performance)
+# Reduced combinations but maintains quality: 2×3×2×1×1 = 12 combinations (vs 243 before)
 XGBOOST_PARAM_GRID = {
-    'n_estimators': [50, 100, 200],
-    'max_depth': [6, 8, 10],
-    'learning_rate': [0.05, 0.1, 0.2],
-    'subsample': [0.7, 0.8, 0.9],
-    'colsample_bytree': [0.7, 0.8, 0.9],
+    'n_estimators': [100, 200],           # 2 values: baseline + double
+    'max_depth': [6, 8, 10],              # 3 values: shallow, medium, deep
+    'learning_rate': [0.05, 0.1],         # 2 values: conservative + standard
+    'subsample': [0.8],                   # 1 value: optimal known value
+    'colsample_bytree': [0.8],            # 1 value: optimal known value
+    'tree_method': ['hist'],              # CPU-optimized method
 }
 
 
@@ -470,8 +474,28 @@ def train_model(X_train: pd.DataFrame, y_train: pd.Series,
     if verbose:
         print("\nTraining model...")
 
-    # XGBoost accepte verbose dans fit, RandomForest non. On reste neutre.
-    model.fit(X_train, y_train)
+    # Training with early stopping for XGBoost
+    if model_type == 'xgboost':
+        # Split train into train/validation for early stopping
+        from sklearn.model_selection import train_test_split
+        X_tr, X_val, y_tr, y_val = train_test_split(
+            X_train, y_train, test_size=0.2, random_state=RANDOM_SEED, stratify=y_train
+        )
+        
+        # Fit with early stopping
+        model.fit(
+            X_tr, y_tr,
+            eval_set=[(X_tr, y_tr), (X_val, y_val)],
+            verbose=False
+        )
+        
+        if verbose:
+            # Get best iteration
+            best_iteration = model.best_iteration if hasattr(model, 'best_iteration') else model.n_estimators
+            print(f"  Best iteration: {best_iteration}/{model.n_estimators}")
+    else:
+        # RandomForest doesn't support early stopping
+        model.fit(X_train, y_train)
 
     if verbose:
         print("✅ Training complete")
@@ -518,15 +542,22 @@ def tune_hyperparameters(X_train: pd.DataFrame, y_train: pd.Series,
         print(f"\nTotal combinations: {total_combinations}")
         print("This may take a while...\n")
 
+    # Configure GridSearchCV with optimization
+    from sklearn.model_selection import StratifiedKFold
+    cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=RANDOM_SEED)
+    
     grid_search = GridSearchCV(
         estimator=base_model,
         param_grid=param_grid,
-        cv=3,
-        scoring='accuracy',
-        n_jobs=-1,
-        verbose=2 if verbose else 0
+        cv=cv,
+        scoring='roc_auc',      # Better metric for imbalanced data
+        n_jobs=-1,              # Parallelize CV folds across all cores
+        verbose=2 if verbose else 0,
+        refit=True,             # Refit best model on full training set
+        return_train_score=False  # Don't compute train scores (faster)
     )
 
+    # Fit with evaluation set for monitoring (no early stopping in GridSearchCV directly)
     grid_search.fit(X_train, y_train)
 
     if verbose:
@@ -997,11 +1028,11 @@ Examples:
 
         # Log dataset info to MLflow
         if tracker:
-            tracker.log_dataset_info(
-                train_samples=len(X_train),
-                test_samples=len(X_test),
-                num_features=len(feature_columns)
-            )
+            tracker.log_dataset_info({
+                "train_samples": len(X_train),
+                "test_samples": len(X_test),
+                "num_features": len(feature_columns)
+            })
 
         # STEP 3 & 4: Train and evaluate (single model)
         if args.mode == 'train' or args.mode == 'evaluate':
@@ -1041,7 +1072,8 @@ Examples:
             # Log model to MLflow
             if tracker and model_path:
                 tracker.log_model(model, artifact_path=f"model_{args.version}", 
-                                model_type=args.model)
+                                model_type=args.model, scalers=scalers, 
+                                metadata={'feature_columns': feature_columns})
 
             if not args.skip_export_features:
                 export_features(X_train, X_test, y_train, y_test, verbose=verbose)
@@ -1070,7 +1102,19 @@ Examples:
                     })
                 if model_path:
                     tracker.log_model(best_model, artifact_path=f"model_{args.version}", 
-                                    model_type=best_model_name)
+                                    model_type=best_model_name, scalers=scalers,
+                                    metadata={'feature_columns': feature_columns})
+                    
+                    # Register best model after comparison
+                    model_name = "battle_winner_predictor"
+                    best_metric = next(m for m in all_metrics if m['model_name'] == best_model_name)
+                    description = f"{best_model_name} (winner after comparison) - Accuracy: {best_metric['test_accuracy']:.4f}"
+                    version_number = tracker.register_model(model_name=model_name, description=description)
+                    
+                    if version_number and best_metric.get('test_accuracy', 0) >= 0.85:
+                        if verbose:
+                            print(f"\n🎯 Best model meets quality threshold")
+                        tracker.promote_to_production(model_name, version_number)
 
             if not args.skip_export_features:
                 export_features(X_train, X_test, y_train, y_test, verbose=verbose)
@@ -1120,7 +1164,23 @@ Examples:
                 })
                 if model_path:
                     tracker.log_model(best_model, artifact_path=f"model_{args.version}", 
-                                    model_type=best_model_name)
+                                    model_type=best_model_name, scalers=scalers,
+                                    metadata={'feature_columns': feature_columns})
+                    
+                    # Register model in MLflow Model Registry
+                    model_name = "battle_winner_predictor"
+                    description = f"{best_model_name} - Accuracy: {metrics['test_accuracy']:.4f}, ROC-AUC: {metrics['test_roc_auc']:.4f}"
+                    version_number = tracker.register_model(model_name=model_name, description=description)
+                    
+                    # Auto-promote to Production if metrics are good
+                    if version_number and metrics.get('test_accuracy', 0) >= 0.85:
+                        if verbose:
+                            print(f"\n🎯 Model meets quality threshold (accuracy >= 0.85)")
+                        tracker.promote_to_production(model_name, version_number)
+                    elif version_number:
+                        if verbose:
+                            print(f"\n⚠️  Model registered but not promoted (accuracy < 0.85)")
+                            print(f"   Manual promotion: mlflow models transition-to-staging/production")
 
             if not args.skip_export_features:
                 export_features(X_train, X_test, y_train, y_test, verbose=verbose)

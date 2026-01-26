@@ -20,7 +20,7 @@ unsafe-load-any-extension=no
 ignore=CVS,.git,__pycache__,.venv,venv,migrations,tests,notebooks
 
 # Files or directories matching patterns are skipped
-ignore-patterns=test_.*?.py,conftest.py,setup.py
+ignore-patterns=test_.*?.py,conftest.py,setup.py,.venv/*
 
 [MESSAGES CONTROL]
 # Disable the message, report, category or checker with the given id(s)

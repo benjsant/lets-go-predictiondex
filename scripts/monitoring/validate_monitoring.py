@@ -9,7 +9,10 @@ Ce script exécute une validation complète de la stack de monitoring :
 4. Force la génération d'un rapport de drift
 5. Analyse les résultats et génère un rapport
 
-Output: monitoring_validation_report.json + monitoring_validation_report.html
+Output: reports/monitoring/validation_report.json + validation_report.html
+
+Usage:
+    python scripts/monitoring/validate_monitoring.py
 """
 
 import requests
@@ -20,9 +23,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-API_URL = "http://localhost:8000"
-PROMETHEUS_URL = "http://localhost:9090"
-GRAFANA_URL = "http://localhost:3000"
+API_URL = "http://localhost:8080"
+PROMETHEUS_URL = "http://localhost:9091"
+GRAFANA_URL = "http://localhost:3001"
 
 # Cache des Pokémon
 pokemon_cache = {}
@@ -495,14 +498,16 @@ class MonitoringValidator:
         
         return self.results
     
-    def export_json(self, filename: str = "monitoring_validation_report.json"):
+    def export_json(self, filename: str = "reports/monitoring/validation_report.json"):
         """Exporte le rapport en JSON."""
+        # Créer le dossier si nécessaire
+        Path(filename).parent.mkdir(parents=True, exist_ok=True)
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(self.results, f, indent=2, ensure_ascii=False)
         self.log(f"\n📄 Rapport JSON: {filename}", "OK")
         return filename
     
-    def export_html(self, filename: str = "monitoring_validation_report.html"):
+    def export_html(self, filename: str = "reports/monitoring/validation_report.html"):
         """Génère un rapport HTML."""
         score = self.results["validation_score"]
         verdict = self.generate_verdict()
@@ -826,10 +831,10 @@ def main():
     print("✅ Validation terminée!")
     print("="*70)
     print("\n📦 Fichiers générés:")
-    print("   • monitoring_validation_report.json")
-    print("   • monitoring_validation_report.html")
+    print("   • reports/monitoring/validation_report.json")
+    print("   • reports/monitoring/validation_report.html")
     print("\n💡 Ouvrez le rapport HTML dans votre navigateur:")
-    print("   firefox monitoring_validation_report.html")
+    print("   firefox reports/monitoring/validation_report.html")
 
 
 if __name__ == "__main__":

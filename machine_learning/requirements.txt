@@ -7,3 +7,4 @@ xgboost
 pyarrow
 sqlalchemy
 psycopg2-binary
+mlflow>=2.10.0

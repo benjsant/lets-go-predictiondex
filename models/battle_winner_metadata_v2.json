@@ -1,7 +1,7 @@
 {
   "model_type": "XGBClassifier",
   "version": "v2",
-  "trained_at": "2026-01-26T10:19:22.545713",
+  "trained_at": "2026-01-26T17:58:23.882961",
   "feature_columns": [
     "a_hp",
     "a_attack",
@@ -17,23 +17,24 @@
   ],
   "n_features": 133,
   "hyperparameters": {
-    "colsample_bytree": 0.9,
-    "learning_rate": 0.2,
+    "colsample_bytree": 0.8,
+    "learning_rate": 0.1,
     "max_depth": 10,
     "n_estimators": 200,
-    "subsample": 0.9
+    "subsample": 0.8,
+    "tree_method": "hist"
   },
   "metrics": {
     "model_name": "xgboost_tuned",
-    "train_accuracy": 0.9934885636030041,
-    "test_accuracy": 0.9687240920750265,
-    "test_precision": 0.9708221176567284,
-    "test_recall": 0.9714109483423284,
-    "test_f1": 0.9711164437410398,
-    "test_roc_auc": 0.9964772314391145,
+    "train_accuracy": 0.9820904200787605,
+    "test_accuracy": 0.9623754333056982,
+    "test_precision": 0.9650611942905881,
+    "test_recall": 0.9654381906964791,
+    "test_f1": 0.9652496556827759,
+    "test_roc_auc": 0.9953283879142496,
     "train_samples": 718889,
     "test_samples": 179723,
-    "overfitting": 0.02476447152797756
+    "overfitting": 0.01971498677306227
   },
   "random_seed": 42
 }

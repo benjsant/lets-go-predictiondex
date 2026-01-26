@@ -8,8 +8,11 @@ services:
       POSTGRES_PASSWORD: letsgo_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # Port 5432 non exposé sur l'hôte (accès uniquement via réseau backend)
+    expose:
+      - "5432"
+    networks:
+      - backend
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U letsgo_user -d letsgo_db"]
       interval: 5s
@@ -36,6 +39,8 @@ services:
       - ./etl_pokemon:/app/etl_pokemon
       - ./core:/app/core
       - ./docker:/app/docker
+    networks:
+      - backend
     restart: "no"
 
   ml_builder:
@@ -71,6 +76,8 @@ services:
       - ./data:/app/data
       - ./models:/app/models            # Mount models/ to export trained models
       - ./docker:/app/docker
+    networks:
+      - backend
     restart: "no"
 
   api:
@@ -95,6 +102,8 @@ services:
       POSTGRES_DB: letsgo_db
       POSTGRES_USER: letsgo_user
       POSTGRES_PASSWORD: letsgo_password
+      # Sécurité API
+      API_KEY_REQUIRED: "true"
     volumes:
       - ./api_pokemon:/app/api_pokemon
       - ./core:/app/core
@@ -103,13 +112,14 @@ services:
       - ./models:/app/models            # For model metadata
       - ./machine_learning:/app/machine_learning  # For ML pipeline + MLflow integration
       - ./api_pokemon/monitoring:/app/api_pokemon/monitoring  # Persist monitoring data
-    ports:
-      - "8000:8000"
+    # Port 8080 exposé uniquement pour le monitoring (Prometheus) et Streamlit
+    expose:
+      - "8080"
     networks:
+      - backend
       - monitoring
-      - default
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -124,15 +134,18 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    env_file:
+      - ./interface/.env
     environment:
       PYTHONPATH: /app
-      API_BASE_URL: http://api:8000
-      DEV_MODE: "true"
     volumes:
       - ./interface:/app/interface
       - ./core:/app/core
     ports:
-      - "8501:8501"
+      - "8502:8501"  # Port modifié : 8502 sur l'hôte → 8501 dans le container
+    networks:
+      - backend
+      - monitoring
     restart: unless-stopped
 
   # ====================================================================
@@ -152,10 +165,9 @@ services:
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
     ports:
-      - "9090:9090"
+      - "9091:9090"  # Port modifié : 9091 sur l'hôte → 9090 dans le container
     networks:
       - monitoring
-      - default
     restart: unless-stopped
 
   grafana:
@@ -170,7 +182,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_SERVER_ROOT_URL=http://localhost:3001
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
@@ -180,10 +192,9 @@ services:
       - ./docker/grafana/provisioning:/etc/grafana/provisioning
       - ./docker/grafana/dashboards:/var/lib/grafana/dashboards
     ports:
-      - "3000:3000"
+      - "3001:3000"  # Port modifié : 3001 sur l'hôte → 3000 dans le container
     networks:
       - monitoring
-      - default
     restart: unless-stopped
 
   node-exporter:
@@ -199,7 +210,7 @@ services:
       - /sys:/host/sys:ro
       - /:/rootfs:ro
     ports:
-      - "9100:9100"
+      - "9101:9100"  # Port modifié : 9101 sur l'hôte → 9100 dans le container
     networks:
       - monitoring
     restart: unless-stopped
@@ -219,24 +230,24 @@ services:
     environment:
       MLFLOW_BACKEND_STORE_URI: postgresql://letsgo_user:letsgo_password@db:5432/letsgo_db
       MLFLOW_DEFAULT_ARTIFACT_ROOT: /app/mlruns
-      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_TRACKING_URI: http://mlflow:5001
     volumes:
       - mlflow_data:/app/mlruns
       - ./models:/app/models
     ports:
-      - "5000:5000"
+      - "5001:5001"  # Port modifié : 5001 sur l'hôte → 5001 dans le container
     command: >
       mlflow server
       --host 0.0.0.0
-      --port 5000
+      --port 5001
       --backend-store-uri postgresql://letsgo_user:letsgo_password@db:5432/letsgo_db
       --default-artifact-root /app/mlruns
       --allowed-hosts *
     networks:
+      - backend
       - monitoring
-      - default
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -244,8 +255,11 @@ services:
     restart: unless-stopped
 
 networks:
-  monitoring:
+  backend:
     driver: bridge
+    internal: false  # Réseau privé pour db, api, etl, ml, mlflow
+  monitoring:
+    driver: bridge   # Réseau pour Prometheus, Grafana, node-exporter
 
 volumes:
   postgres_data:

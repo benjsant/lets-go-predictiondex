@@ -28,6 +28,7 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 import pickle
+import joblib  # For RandomForest compression
 
 import pandas as pd
 import numpy as np
@@ -36,6 +37,14 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 import xgboost as xgb
+
+# MLflow Model Registry
+try:
+    from machine_learning.mlflow_integration import MLflowTracker
+    MLFLOW_AVAILABLE = True
+except ImportError:
+    MLFLOW_AVAILABLE = False
+    print("⚠️  MLflow not available, Model Registry disabled")
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -54,35 +63,41 @@ FEATURES_DIR = None
 # Random seed for reproducibility
 RANDOM_SEED = 42
 
-# XGBoost hyperparameters (defaults, can be tuned via grid search)
+# XGBoost hyperparameters (optimized for CPU)
 XGBOOST_PARAMS = {
     'n_estimators': 100,
     'max_depth': 8,
     'learning_rate': 0.1,
     'subsample': 0.8,
     'colsample_bytree': 0.8,
+    'tree_method': 'hist',        # CPU-optimized histogram algorithm
+    'predictor': 'cpu_predictor', # Explicit CPU predictor
     'random_state': RANDOM_SEED,
-    'n_jobs': -1,
+    'n_jobs': -1,                 # Use all CPU cores
     'eval_metric': 'logloss',
 }
 
-# GridSearchCV parameter grids
+# GridSearchCV parameter grids (CPU-optimized)
 # Conservative grid for fast training (CI/docker)
+# 2×2×2×1×1 = 8 combinations (~5-10 min)
 XGBOOST_PARAM_GRID_FAST = {
     'n_estimators': [100, 150],
     'max_depth': [6, 8],
     'learning_rate': [0.05, 0.1],
     'subsample': [0.8],
     'colsample_bytree': [0.8],
+    'tree_method': ['hist'],  # CPU-optimized
 }
 
 # Extended grid for notebooks (better accuracy)
+# 3×3×2×1×1 = 18 combinations (~15-30 min)
 XGBOOST_PARAM_GRID_EXTENDED = {
     'n_estimators': [100, 150, 200],
     'max_depth': [6, 8, 10],
-    'learning_rate': [0.05, 0.1, 0.15],
-    'subsample': [0.7, 0.8, 0.9],
-    'colsample_bytree': [0.7, 0.8, 0.9],
+    'learning_rate': [0.05, 0.1],      # Reduced from 3 to 2 values
+    'subsample': [0.8],                # Fixed to optimal
+    'colsample_bytree': [0.8],         # Fixed to optimal
+    'tree_method': ['hist'],           # CPU-optimized
 }
 
 # Default grid
@@ -346,14 +361,21 @@ def train_xgboost(X_train, y_train, use_gridsearch: bool = False, grid_type: str
             print(f"\n🔍 Training XGBoost with GridSearchCV (FAST grid: {num_combinations} combinations)...")
         
         cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=RANDOM_SEED)
-        base_model = xgb.XGBClassifier(random_state=RANDOM_SEED, n_jobs=-1, eval_metric='logloss')
+        base_model = xgb.XGBClassifier(
+            random_state=RANDOM_SEED, 
+            n_jobs=-1, 
+            eval_metric='logloss',
+            tree_method='hist',          # CPU-optimized
+            predictor='cpu_predictor'    # Explicit CPU
+        )
         grid = GridSearchCV(
             estimator=base_model,
             param_grid=param_grid,
             scoring="roc_auc",
             cv=cv,
-            n_jobs=-1,
+            n_jobs=-1,                   # Parallelize across all cores
             verbose=1,
+            return_train_score=False,    # Don't compute train scores (faster)
         )
         grid.fit(X_train, y_train)
         print(f"  ✅ Best params: {grid.best_params_}")
@@ -363,9 +385,24 @@ def train_xgboost(X_train, y_train, use_gridsearch: bool = False, grid_type: str
     else:
         print("\n🚀 Training XGBoost model (fixed params)...")
         print(f"  Hyperparameters: {XGBOOST_PARAMS}")
+        
+        # Split for early stopping
+        from sklearn.model_selection import train_test_split
+        X_tr, X_val, y_tr, y_val = train_test_split(
+            X_train, y_train, test_size=0.2, random_state=RANDOM_SEED, stratify=y_train
+        )
+        
         best_model = xgb.XGBClassifier(**XGBOOST_PARAMS)
-        best_model.fit(X_train, y_train, verbose=False)
+        best_model.fit(
+            X_tr, y_tr,
+            eval_set=[(X_tr, y_tr), (X_val, y_val)],
+            verbose=False
+        )
         best_params = XGBOOST_PARAMS
+        
+        # Report best iteration
+        if hasattr(best_model, 'best_iteration'):
+            print(f"  ✅ Best iteration: {best_model.best_iteration}/{best_model.n_estimators}")
 
     print("  ✅ Training complete")
     return best_model, best_params
@@ -423,16 +460,24 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
 
 
 def export_model(model, scalers, feature_columns, metrics, version: str, best_params: dict, grid_used: bool):
-    """Export trained model, scalers, and metadata."""
+    """Export trained model, scalers, and metadata with optimal compression."""
     print("\nExporting model artifacts...")
 
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Export model
+    # Export model with compression based on model type
     model_path = MODELS_DIR / f"battle_winner_model_{version}.pkl"
-    with open(model_path, 'wb') as f:
-        pickle.dump(model, f)
-    print(f"  Model: {model_path}")
+    model_type = type(model).__name__
+    
+    if model_type == 'RandomForestClassifier':
+        # Use joblib with aggressive compression for RandomForest (5-10x smaller)
+        joblib.dump(model, model_path, compress=('zlib', 9))
+        print(f"  Model (joblib compressed): {model_path}")
+    else:
+        # XGBoost and others: use pickle (already compressed internally)
+        with open(model_path, 'wb') as f:
+            pickle.dump(model, f)
+        print(f"  Model: {model_path}")
 
     # Export scalers (dictionary with both scalers)
     scalers_path = MODELS_DIR / f"battle_winner_scalers_{version}.pkl"
@@ -515,6 +560,11 @@ def main():
         default='fast',
         help="GridSearch parameter grid: fast (for CI) or extended (for notebooks)"
     )
+    parser.add_argument(
+        '--no-mlflow',
+        action='store_true',
+        help="Disable MLflow Model Registry registration"
+    )
     args = parser.parse_args()
     
     # Set global paths based on dataset version
@@ -554,7 +604,7 @@ def main():
         metrics = evaluate_model(model, X_train, X_test, y_train, y_test)
 
         # Export model artifacts
-        export_model(
+        model_path = export_model(
             model,
             scalers,
             feature_columns,
@@ -563,6 +613,52 @@ def main():
             best_params=best_params,
             grid_used=args.use_gridsearch,
         )
+
+        # Register in MLflow Model Registry
+        if MLFLOW_AVAILABLE and model_path and not args.no_mlflow:
+            try:
+                tracker = MLflowTracker(experiment_name=f"battle_winner_{args.version}")
+                tracker.start_run(run_name=f"train_model_{args.version}_{datetime.now().strftime('%Y%m%d_%H%M')}")
+                
+                # Log parameters
+                tracker.log_params({
+                    'dataset_version': args.dataset_version,
+                    'model_version': args.version,
+                    'scenario_type': args.scenario_type or 'all',
+                    'use_gridsearch': args.use_gridsearch,
+                    'grid_type': args.grid_type if args.use_gridsearch else 'none',
+                    **(best_params if best_params else {})
+                })
+                
+                # Log metrics
+                tracker.log_metrics(metrics)
+                
+                # Log model with scalers and metadata
+                tracker.log_model(model, artifact_path=f"model_{args.version}", 
+                                model_type='xgboost', scalers=scalers,
+                                metadata={'feature_columns': feature_columns})
+                
+                # Register in Model Registry
+                model_name = "battle_winner_predictor"
+                description = f"XGBoost model v{args.version} - Accuracy: {metrics['test_accuracy']:.4f}"
+                if args.use_gridsearch:
+                    description += f" (GridSearch {args.grid_type})"
+                
+                version_number = tracker.register_model(model_name=model_name, description=description)
+                
+                # Auto-promote to Production if quality threshold met
+                if version_number and metrics.get('test_accuracy', 0) >= 0.85:
+                    print(f"\n🎯 Model meets quality threshold (accuracy >= 0.85)")
+                    tracker.promote_to_production(model_name, version_number)
+                    print(f"✅ Model promoted to Production stage in MLflow Registry")
+                elif version_number:
+                    print(f"\n⚠️  Model registered as version {version_number} but not promoted (accuracy < 0.85)")
+                    print(f"   Manual promotion: MLflow UI or CLI")
+                
+                tracker.end_run()
+                print(f"\n✅ Model registered in MLflow Model Registry")
+            except Exception as e:
+                print(f"\n⚠️  MLflow registration failed: {e}")
 
         # Export features (optional)
         if not args.skip_export_features:
