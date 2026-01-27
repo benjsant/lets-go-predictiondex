@@ -29,9 +29,6 @@ def format_pokemon_selector(pokemons: List[Dict]) -> List[PokemonSelectItem]:
 
         # Nom FR + forme
         name = species.get("name_fr", "Inconnu")
-        form_name = form.get("name")
-        if form_name and form_name.lower() != "base":
-            name = f"{name} ({form_name})"
 
         # Types
         types = [t["name"] for t in p.get("types", []) if "name" in t]

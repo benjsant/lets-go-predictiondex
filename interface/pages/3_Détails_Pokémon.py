@@ -1,12 +1,12 @@
-# interface/pages/7_Pokemon_Detail.py
-from interface.services.pokemon_service import get_pokemon_detail
+# interface/pages/3_Pokemon_Detail.py
 from typing import Optional
 
 import pandas as pd
 import streamlit as st
-from utils.pokemon_theme import TYPE_COLORS, load_custom_css, page_header
 
+from interface.services.pokemon_service import get_pokemon_detail
 from interface.formatters.ui.pokemon_ui import PokemonSelectItem
+from interface.utils.pokemon_theme import TYPE_COLORS, load_custom_css, page_header, type_badge
 from interface.utils.ui_helpers import (
     get_pokemon_by_id,
     get_pokemon_options,
@@ -22,14 +22,13 @@ st.set_page_config(
     layout="wide",
 )
 
-# Load theme
+# Load custom CSS
 load_custom_css()
+
 
 # ======================================================
 # Helper Functions
 # ======================================================
-
-
 def clean_text(t: Optional[str]) -> str:
     if not t:
         return ""
@@ -39,25 +38,6 @@ def clean_text(t: Optional[str]) -> str:
 def normalize_type(t: str) -> str:
     """Normalize type name for consistent matching."""
     return clean_text(t).lower().replace("é", "e").replace("è", "e")
-
-
-def format_type_badge(type_name: str) -> str:
-    """Format a type as a colored badge."""
-    color = TYPE_COLORS.get(normalize_type(type_name), "#999")
-    return f"""
-    <span style='
-        background:{color};
-        color:white;
-        padding:4px 10px;
-        border-radius:8px;
-        font-size:0.8rem;
-        font-weight:600;
-        margin:2px;
-        display:inline-block;
-    '>
-        {type_name.capitalize()}
-    </span>
-    """
 
 
 def format_multiplier(m: float) -> str:
@@ -89,16 +69,16 @@ if not pokemon_options:
 
 pokemon_lookup = {p.id: p for p in pokemon_options}
 
+
 # ======================================================
 # Pokemon Selector
 # ======================================================
 page_header("Fiche Pokémon Détaillée", "Découvre tous les détails de tes Pokémon favoris !", "📋")
 
-# Check if coming from another page with pokemon_id in query params
 query_params = st.query_params
 pokemon_id_from_query = query_params.get('id', None)
 
-# Default selection - use query param if available
+# Default selection
 if pokemon_id_from_query:
     try:
         default_id = int(pokemon_id_from_query)
@@ -109,7 +89,7 @@ if pokemon_id_from_query:
 else:
     default_id = list(pokemon_lookup.keys())[0]
 
-# Use session state to track selection changes
+# Session state for last selection
 if 'last_selected_pokemon_id' not in st.session_state:
     st.session_state.last_selected_pokemon_id = default_id
 
@@ -121,12 +101,13 @@ selected_pokemon_id = st.selectbox(
     key="pokemon_selector"
 )
 
-# Update query params when selection changes
+# Update query params
 if selected_pokemon_id != st.session_state.last_selected_pokemon_id:
     st.query_params.update({"id": selected_pokemon_id})
     st.session_state.last_selected_pokemon_id = selected_pokemon_id
 
 st.divider()
+
 
 # ======================================================
 # Load Pokemon Details
@@ -135,6 +116,7 @@ selected: PokemonSelectItem = get_pokemon_by_id(selected_pokemon_id)
 if not selected:
     st.error("Impossible de récupérer ce Pokémon.")
     st.stop()
+
 
 # ======================================================
 # Display Pokemon Header
@@ -148,15 +130,10 @@ with col_img:
         st.image(selected.sprite_url, width=140)
 
 with col_info:
-    # Types - Using badges like in Moves.py
+    # Types
     if selected.types:
-        types_badges = " ".join([
-            f'<span style="background:{TYPE_COLORS.get(normalize_type(t), "#999")};'
-            f'color:white;padding:4px 12px;border-radius:8px;font-size:0.9rem;'
-            f'font-weight:600;margin:2px 4px;display:inline-block;">{t.capitalize()}</span>'
-            for t in selected.types
-        ])
-        st.markdown(f"🧬 **Types :** {types_badges}", unsafe_allow_html=True)
+        badges_html = " ".join([type_badge(t) for t in selected.types])
+        st.markdown(f"🧬 **Types :** {badges_html}", unsafe_allow_html=True)
 
     # Physical characteristics
     col_a, col_b = st.columns(2)
@@ -168,6 +145,7 @@ with col_info:
             st.write(f"⚖️ **Poids :** {selected.weight_kg} kg")
 
 st.divider()
+
 
 # ======================================================
 # Stats with Progress Bars
@@ -188,7 +166,6 @@ if selected.stats:
 
     for key, label, color in stats_order:
         stat_value = int(selected.stats.get(key, 0))
-
         col_stat, col_bar = st.columns([1, 3])
         with col_stat:
             st.metric(label, stat_value)
@@ -205,40 +182,34 @@ if selected.stats:
 
     if selected.total_stats:
         st.caption(f"🔢 Total des stats : **{int(selected.total_stats)}**")
-
-        # Ranking
         all_totals = [p.total_stats for p in pokemon_options if p.total_stats]
         all_totals_sorted = sorted(all_totals, reverse=True)
-        rank = all_totals_sorted.index(selected.total_stats) + \
-            1 if selected.total_stats in all_totals_sorted else len(pokemon_options)
+        rank = all_totals_sorted.index(selected.total_stats) + 1 if selected.total_stats in all_totals_sorted else len(pokemon_options)
         st.caption(f"🏆 Classement: #{rank}/{len(pokemon_options)}")
 
 st.divider()
 
+
 # ======================================================
-# Weaknesses / Affinités – Responsive Badges
+# Weaknesses / Affinités
 # ======================================================
 st.subheader("⚠️ Faiblesses / Multiplicateurs")
 weaknesses = get_pokemon_weaknesses_ui(selected.id)
 
 if weaknesses:
-    # Start parent flex wrap div
     badges_html = "<div style='display:flex;flex-wrap:wrap;justify-content:center;gap:6px;'>"
-
     for w in weaknesses:
         multiplier = float(w["multiplier"])
-        type_name = w["attacking_type"].capitalize()
+        type_name = w["attacking_type"]
         color = affinity_color(multiplier)
 
-        # Badge inline-flex
         badges_html += (
             f"<div style='display:inline-flex;align-items:center;justify-content:space-between;"
             f"padding:6px 12px;border-radius:14px;background-color:{color};color:white;"
             f"font-size:0.85rem;font-weight:600;white-space:nowrap;min-width:90px;max-width:140px;'>"
-            f"<span>{type_name}</span><span>×{format_multiplier(multiplier)}</span>"
+            f"{type_badge(type_name, size='small')}<span>×{format_multiplier(multiplier)}</span>"
             f"</div>"
         )
-
     badges_html += "</div>"
     st.markdown(badges_html, unsafe_allow_html=True)
 else:
@@ -246,13 +217,11 @@ else:
 
 st.divider()
 
+
 # ======================================================
 # Moves Section
 # ======================================================
 st.subheader("📋 Capacités")
-
-# Get full pokemon detail from API to access moves
-
 pokemon_detail = get_pokemon_detail(selected.id)
 
 if pokemon_detail and pokemon_detail.get('moves'):
@@ -283,31 +252,24 @@ if pokemon_detail and pokemon_detail.get('moves'):
         )
 
     learn_methods_filter = [learn_method_map[m] for m in selected_methods]
-
     type_filter_normalized = None if type_filter == "Toutes" else normalize_type(type_filter)
     category_filter_normalized = None if category_filter == "Toutes" else category_filter.lower()
 
-    # Filter moves
     filtered_moves = moves_json
-
     if type_filter_normalized:
         filtered_moves = [m for m in filtered_moves if normalize_type(m.get('type', '')) == type_filter_normalized]
-
     if category_filter_normalized:
         filtered_moves = [m for m in filtered_moves if m.get('category', '').lower() == category_filter_normalized]
-
     if learn_methods_filter:
         filtered_moves = [m for m in filtered_moves if m.get('learn_method') in learn_methods_filter]
 
     # Build table
     rows = []
     pokemon_types_normalized = [normalize_type(t) for t in selected.types]
-
     learn_method_labels = {"level_up": "Level-up", "before_evolution": "Hérité", "ct": "CT", "move_tutor": "Move Tutor"}
 
     for m in filtered_moves:
         learn_method = m.get('learn_method', '')
-
         if learn_method == "level_up":
             learn_level = m.get('learn_level')
             if learn_level == 0:
@@ -352,21 +314,19 @@ else:
 
 st.divider()
 
+
 # ======================================================
 # Navigation Actions
 # ======================================================
 st.markdown("### Actions Rapides")
-
 col_a, col_b, col_c = st.columns(3)
 
 with col_a:
     if st.button("⚔️ Comparer", use_container_width=True, key="btn_compare"):
-        st.switch_page("pages/2_Compare.py")
-
+        st.switch_page("pages/2_Combat_et_Prédiction.py")
 with col_b:
     if st.button("💥 Capacités", use_container_width=True, key="btn_moves"):
-        st.switch_page("pages/9_Moves_List.py")
-
+        st.switch_page("pages/1_Capacités.py")
 with col_c:
     if st.button("🌈 Types", use_container_width=True, key="btn_types"):
-        st.switch_page("pages/8_Types.py")
+        st.switch_page("pages/4_Types_et_Affinités.py")

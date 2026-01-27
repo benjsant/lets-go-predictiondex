@@ -50,61 +50,6 @@ info_box(
 )
 
 # ======================================================
-# État des services en temps réel
-# ======================================================
-st.markdown("<br>", unsafe_allow_html=True)
-section_header("Services Opérationnels", "🔧")
-
-col1, col2, col3, col4 = st.columns(4)
-
-# Check API
-with col1:
-    try:
-        headers = {"X-API-Key": API_KEY} if API_KEY else {}
-        response = requests.get(f"{API_BASE_URL}/health", headers=headers, timeout=3)
-        if response.status_code == 200:
-            st.success("✅ **API**\nOpérationnelle")
-        else:
-            st.error("❌ **API**\nErreur")
-    except Exception:
-        st.error("❌ **API**\nHors ligne")
-
-# Check Grafana
-with col2:
-    try:
-        response = requests.get("http://localhost:3001/api/health", timeout=3)
-        if response.status_code == 200:
-            st.success("✅ **Grafana**\nOpérationnel")
-        else:
-            st.warning("⚠️ **Grafana**\nProblème")
-    except Exception:
-        st.warning("⚠️ **Grafana**\nHors ligne")
-
-# Check MLflow
-with col3:
-    try:
-        response = requests.get("http://localhost:5001/health", timeout=3)
-        if response.status_code == 200:
-            st.success("✅ **MLflow**\nOpérationnel")
-        else:
-            st.warning("⚠️ **MLflow**\nProblème")
-    except Exception:
-        st.warning("⚠️ **MLflow**\nHors ligne")
-
-# Check Prometheus
-with col4:
-    try:
-        response = requests.get("http://localhost:9091/-/healthy", timeout=3)
-        if response.status_code == 200:
-            st.success("✅ **Prometheus**\nOpérationnel")
-        else:
-            st.warning("⚠️ **Prometheus**\nProblème")
-    except Exception:
-        st.warning("⚠️ **Prometheus**\nHors ligne")
-
-pokeball_divider()
-
-# ======================================================
 # Features Grid
 # ======================================================
 section_header("Que peux-tu faire ?", "🎯")
@@ -249,9 +194,6 @@ with st.expander("🤖 Comment ça marche ?"):
     - ⚡ **Temps de réponse < 500ms** (ultra-rapide !)
     - 🎯 **133 features analysées** pour chaque prédiction
 
-    **🚀 Version 2 en développement :**
-    - Possibilité de spécifier les 4 capacités exactes de l'adversaire
-    - Simulation de combat plus réaliste avec movesets fixes
     """)
 
 # ======================================================
@@ -278,26 +220,7 @@ with st.expander("🎮 Le savais-tu ?"):
     💡 **Statistique folle:** Avec toutes les combinaisons Pokémon × Capacités,
     il existe des **millions** de combats possibles différents !
 
-    🎯 **Capacités les plus puissantes:**
-    - Poing-Éclair : 150 de puissance
-    - Ultralaser : 150 de puissance
-    - Psyko : 140 de puissance (Spécial)
     """)
-
-# ======================================================
-# Version Info
-# ======================================================
-info_box(
-    "🚀 Version 2 en développement",
-    """
-    La prochaine version permettra de spécifier les capacités exactes de l'adversaire
-    pour des simulations encore plus précises et réalistes !
-    <br><br>
-    Reste connecté pour les nouvelles fonctionnalités.
-    """,
-    "🔮",
-    "info"
-)
 
 pokeball_divider()
 

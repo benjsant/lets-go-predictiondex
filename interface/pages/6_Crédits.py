@@ -28,11 +28,6 @@ page_header(
     "🏆"
 )
 
-# ======================================================
-# Introduction avec mascots
-# ======================================================
-pikachu_eevee_mascots()
-
 info_box(
     "À Propos du Projet",
     """
