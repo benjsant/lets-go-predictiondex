@@ -1,4 +1,3 @@
-# run_all_in_one.py
 """
 All-in-one ETL bootstrap script for Pokémon Let's Go
 ===================================================

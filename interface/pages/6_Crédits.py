@@ -161,19 +161,37 @@ pokeball_divider()
 # ======================================================
 section_header("Sources de Données", "🔗")
 
-info_box(
-    "PokéAPI",
-    """
-    <strong>PokéAPI</strong> est une API RESTful complète et gratuite pour les données Pokémon.
-    <br><br>
-    🔗 <a href='https://pokeapi.co' target='_blank' style='color:#3B4CCA;'>https://pokeapi.co</a>
-    <br><br>
-    Toutes les statistiques, types, capacités et sprites proviennent de cette source.
-    """,
-    "📡",
-    "info"
-)
+col_src1, col_src2 = st.columns(2)
 
+with col_src1:
+    info_box(
+        "PokéAPI",
+        """
+        <strong>PokéAPI</strong> est une API RESTful complète et gratuite pour les données Pokémon.
+        <br><br>
+        🔗 <a href='https://pokeapi.co' target='_blank' style='color:#3B4CCA;'>https://pokeapi.co</a>
+        <br><br>
+        Toutes les statistiques, types, capacités et sprites proviennent de cette source.
+        """,
+        "📡",
+        "info"
+    )
+
+with col_src2:
+    info_box(
+        "Pokepedia",
+        """
+        <strong>Pokepedia</strong> est une encyclopédie collaborative Pokémon sous licence Creative Commons CC-BY-SA.
+        <br><br>
+        🔗 <a href='https://www.pokepedia.fr' target='_blank' style='color:#3B4CCA;'>https://www.pokepedia.fr</a>
+        <br><br>
+        Données complémentaires et informations détaillées sur les capacités Let's Go.
+        """,
+        "📚",
+        "info"
+    )
+
+st.markdown("<br>", unsafe_allow_html=True)
 col1, col2 = st.columns(2)
 
 with col1:
@@ -244,9 +262,9 @@ st.markdown(f"""
 pokeball_divider()
 
 # ======================================================
-# Auteurs
+# Auteurs & Code Source
 # ======================================================
-section_header("Auteurs & Contributeurs", "👥")
+section_header("Auteurs & Code Source", "👥")
 
 info_box(
     "Développement Principal",
@@ -256,6 +274,8 @@ info_box(
     <br><br>
     <strong>🎯 Objectif pédagogique:</strong> Démontrer l'intégration d'un modèle ML
     dans une application web production-ready avec Docker, API REST et interface utilisateur moderne.
+    <br><br>
+    📂 <strong>Code Source:</strong> <a href='https://github.com/benjsant/lets-go-predictiondex' target='_blank' style='color:#3B4CCA;'>github.com/benjsant/lets-go-predictiondex</a>
     """,
     "💡",
     "success"
@@ -309,6 +329,7 @@ st.markdown(f"""
         <h3 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>Un grand merci à :</h3>
         <div style='margin:20px 0;color:{POKEMON_COLORS['text_primary']};line-height:2;'>
             <p><strong>📡 PokéAPI</strong> - Pour la fourniture gratuite des données Pokémon</p>
+            <p><strong>📚 Pokepedia</strong> - Pour les données complémentaires sous licence CC-BY-SA</p>
             <p><strong>🎨 Streamlit</strong> - Pour leur framework UI incroyable</p>
             <p><strong>⚡ FastAPI</strong> - Pour leur performance et simplicité</p>
             <p><strong>🤖 XGBoost</strong> - Pour leur algorithme ML puissant</p>
@@ -331,7 +352,10 @@ st.markdown(f"""
         Made with ❤️ pour les fans de Pokémon Let's Go Pikachu/Eevee
     </p>
     <p style='font-size:0.85rem;margin-top:15px;'>
-        Données fournies par <a href='https://pokeapi.co' target='_blank' style='color:{POKEMON_COLORS['primary']};text-decoration:none;'>PokéAPI</a>
+        Données fournies par <a href='https://pokeapi.co' target='_blank' style='color:{POKEMON_COLORS['primary']};text-decoration:none;'>PokéAPI</a> et <a href='https://www.pokepedia.fr' target='_blank' style='color:{POKEMON_COLORS['primary']};text-decoration:none;'>Pokepedia</a>
+    </p>
+    <p style='font-size:0.85rem;'>
+        🔗 <a href='https://github.com/benjsant/lets-go-predictiondex' target='_blank' style='color:{POKEMON_COLORS['primary']};text-decoration:none;'>Code source sur GitHub</a>
     </p>
 </div>
 """, unsafe_allow_html=True)

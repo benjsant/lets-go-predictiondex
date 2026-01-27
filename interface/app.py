@@ -1,5 +1,6 @@
 # interface/app.py
 import streamlit as st
+import requests
 from utils.pokemon_theme import (
     POKEMON_COLORS,
     feature_card,
@@ -10,6 +11,7 @@ from utils.pokemon_theme import (
     pokeball_divider,
     section_header,
 )
+from interface.config.settings import API_BASE_URL, API_KEY
 
 st.set_page_config(
     page_title="Let's Go PredictionDex",
@@ -46,6 +48,61 @@ info_box(
     "🏆",
     "success"
 )
+
+# ======================================================
+# État des services en temps réel
+# ======================================================
+st.markdown("<br>", unsafe_allow_html=True)
+section_header("Services Opérationnels", "🔧")
+
+col1, col2, col3, col4 = st.columns(4)
+
+# Check API
+with col1:
+    try:
+        headers = {"X-API-Key": API_KEY} if API_KEY else {}
+        response = requests.get(f"{API_BASE_URL}/health", headers=headers, timeout=3)
+        if response.status_code == 200:
+            st.success("✅ **API**\nOpérationnelle")
+        else:
+            st.error("❌ **API**\nErreur")
+    except Exception:
+        st.error("❌ **API**\nHors ligne")
+
+# Check Grafana
+with col2:
+    try:
+        response = requests.get("http://localhost:3001/api/health", timeout=3)
+        if response.status_code == 200:
+            st.success("✅ **Grafana**\nOpérationnel")
+        else:
+            st.warning("⚠️ **Grafana**\nProblème")
+    except Exception:
+        st.warning("⚠️ **Grafana**\nHors ligne")
+
+# Check MLflow
+with col3:
+    try:
+        response = requests.get("http://localhost:5001/health", timeout=3)
+        if response.status_code == 200:
+            st.success("✅ **MLflow**\nOpérationnel")
+        else:
+            st.warning("⚠️ **MLflow**\nProblème")
+    except Exception:
+        st.warning("⚠️ **MLflow**\nHors ligne")
+
+# Check Prometheus
+with col4:
+    try:
+        response = requests.get("http://localhost:9091/-/healthy", timeout=3)
+        if response.status_code == 200:
+            st.success("✅ **Prometheus**\nOpérationnel")
+        else:
+            st.warning("⚠️ **Prometheus**\nProblème")
+    except Exception:
+        st.warning("⚠️ **Prometheus**\nHors ligne")
+
+pokeball_divider()
 
 # ======================================================
 # Features Grid

@@ -13,13 +13,46 @@ from interface.services.pokemon_service import get_pokemon_detail, get_pokemon_l
 # -----------------------------
 # Pokémon helpers
 # -----------------------------
-def get_pokemon_options() -> List[PokemonSelectItem]:
+def get_pokemon_options(include_special_forms: bool = False, sort_by_form: bool = False) -> List[PokemonSelectItem]:
     """
     Récupère la liste de tous les Pokémon depuis l'API et les formate
     pour Streamlit (nom, sprite, types, stats).
+
+    Args:
+        include_special_forms: Si False, exclut les formes Alola, Mega, etc.
+        sort_by_form: Si True, trie les Pokémon par forme avant le nom
     """
     pokemons_json = get_pokemon_list()
-    return format_pokemon_selector(pokemons_json)
+
+    # Filtrer les formes spéciales si demandé
+    if not include_special_forms:
+        filtered_pokemons = []
+        for pokemon in pokemons_json:
+            name = pokemon.get("name", "").lower()
+            # Exclure les formes Alola, Mega, Gigamax, etc.
+            if not any(keyword in name for keyword in ["alola", "mega", "giga", "galarian", "hisuian"]):
+                filtered_pokemons.append(pokemon)
+        pokemons_json = filtered_pokemons
+
+    formatted_pokemons = format_pokemon_selector(pokemons_json)
+
+    # Trier par forme si demandé
+    if sort_by_form:
+        # Extraction de la forme depuis le nom (si présente)
+        def get_sort_key(p: PokemonSelectItem):
+            name_lower = p.name.lower()
+            if "alola" in name_lower:
+                return (1, p.name)  # Formes Alola après
+            elif "mega" in name_lower:
+                return (2, p.name)  # Formes Mega après
+            elif "giga" in name_lower:
+                return (3, p.name)  # Formes Gigamax après
+            else:
+                return (0, p.name)  # Formes normales en premier
+
+        formatted_pokemons = sorted(formatted_pokemons, key=get_sort_key)
+
+    return formatted_pokemons
 
 
 def get_pokemon_by_id(pokemon_id: int) -> Optional[PokemonSelectItem]:
