@@ -1,5 +1,3 @@
-# app/scripts/etl_post_process.py
-
 """
 ETL - Post-processing phase for Pokémon data (Pokémon Let's Go)
 

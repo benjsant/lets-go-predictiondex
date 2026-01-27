@@ -375,11 +375,11 @@ if st.button("🔮 Lancer la Simulation de Combat", type="primary", use_containe
             if manual_mode:
                 st.success(f"""
                 ✅ **Mode Manuel activé !** Le modèle a simulé tous les combats possibles avec les movesets
-                que tu as choisis. Précision : **94.46%** sur 898,472 combats analysés.
+                que tu as choisis. Précision : **96.24%** sur 898,612 combats analysés.
                 """)
             else:
                 st.info(f"""
-                💡 **Précision du modèle : 94.46%** sur 898,472 combats analysés (modèle v2).
+                💡 **Précision du modèle : 96.24%** sur 898,612 combats analysés (modèle v2).
 
                 ⚠️ **Scénario "worst-case" :** Le modèle suppose que {p2.name} utilise **sa meilleure
                 capacité possible** contre toi. Tes vraies chances peuvent être meilleures si ton
@@ -424,7 +424,7 @@ if st.button("🔮 Lancer la Simulation de Combat", type="primary", use_containe
                 - 🤖 **Auto** : L'adversaire joue toujours optimalement (worst-case)
                 - 🎯 **Manuel** : Tu contrôles les movesets des deux Pokémon (simulation réaliste)
 
-                Le modèle v2 a été entraîné sur **898,472 combats simulés** entre tous
+                Le modèle v2 a été entraîné sur **898,612 combats simulés** entre tous
                 les Pokémon de Let's Go avec différentes configurations de capacités !
                 """)
 

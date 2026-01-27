@@ -1,50 +1,53 @@
-# app/scripts/etl_init_db.py
 """
-ETL - Database initialization script (Pokémon Let's Go)
+ETL – Database initialization script (Pokémon Let's Go).
 
 This script initializes the relational database used by the ETL pipeline
 and the API layer of the Pokémon Let's Go project.
 
-Its purpose is to guarantee that:
-- All SQLAlchemy models are properly registered
-- The full database schema is created in a consistent and reproducible way
-- Mandatory reference tables contain required initial data
+Responsibilities
+----------------
+- Ensure all SQLAlchemy models are registered
+- Create the full database schema in a reproducible way
+- Insert mandatory reference data required by downstream ETL steps
 
-This script represents the foundation of the ETL process and must be
-executed before any data ingestion or transformation steps.
-
-Execution contexts:
-- Local development setup
+Execution Contexts
+------------------
+- Local development
 - Containerized environments (Docker / Docker Compose)
 - CI/CD pipelines
 - Database reset or re-initialization
 
-ETL phase:
-- Initialization (pre-Load)
+ETL Phase
+---------
+Initialization (pre-Load)
 
-Competency block:
-- E1: Relational data modeling, schema initialization, and controlled
-      insertion of reference data
+Competency Scope
+----------------
+- E1: Relational data modeling, schema initialization,
+      and controlled insertion of reference data
 """
 
-from core.models.move_category import MoveCategory
-from core.models.learn_method import LearnMethod
-from core.models.form import Form
+from __future__ import annotations
+
 import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from core.db.base import Base
+from core.models.form import Form
+from core.models.learn_method import LearnMethod
+from core.models.move_category import MoveCategory
+
 
 # ======================================================
-# ⚠️ MANDATORY IMPORT OF ALL MODELS
+# ⚠️ MANDATORY MODEL REGISTRATION
 # ======================================================
 """
 All SQLAlchemy models must be imported before calling
 Base.metadata.create_all().
 
-This ensures:
+This guarantees:
 - Proper table registration
 - Correct foreign key resolution
 - Complete schema generation
@@ -53,11 +56,10 @@ Failure to import a model here would result in missing tables
 or broken relationships in the database.
 """
 
-# --- Pokémon domain ---
+# NOTE:
+# Other domain models are imported transitively via Base metadata
+# or explicitly loaded by downstream ETL scripts.
 
-# --- Types domain ---
-
-# --- Moves domain ---
 
 # ======================================================
 # Database environment configuration
@@ -70,7 +72,7 @@ Default values are provided to:
 - Ensure compatibility with Docker Compose deployments
 - Maintain portability across environments
 
-The database used is PostgreSQL.
+The database engine used is PostgreSQL.
 """
 
 DB_USER = os.getenv("POSTGRES_USER", "letsgo_user")
@@ -88,9 +90,10 @@ print(f"🔗 Connecting to database at {DB_HOST}:{DB_PORT} / DB: {DB_NAME}")
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True,   # Enables SQL logging (useful for dev and CI)
-    future=True
+    echo=True,   # SQL logging (useful for dev and CI)
+    future=True,
 )
+
 
 # ======================================================
 # Database schema creation
@@ -107,10 +110,9 @@ This step must be executed before any ETL load script.
 """
 
 print("🛠️ Creating database schema...")
-
 Base.metadata.create_all(bind=engine)
-
 print("✅ Tables created")
+
 
 # ======================================================
 # Reference data initialization
@@ -118,21 +120,23 @@ print("✅ Tables created")
 """
 Insert mandatory reference data required by downstream ETL processes.
 
-The LearnMethod table represents a controlled vocabulary describing
-how a Pokémon can learn a move (e.g. level up, CT, tutor).
+These tables contain static, controlled vocabularies and must exist
+before loading Pokémon, moves, or relationships.
 
-Characteristics:
-- Static reference data
-- Required for Pokémon ↔ Move relationships
-- Inserted only if missing to preserve idempotency
+Insertion logic is idempotent:
+- Data is inserted only if missing
+- Existing rows are preserved
 """
 
+# ------------------------------------------------------
+# LearnMethod
+# ------------------------------------------------------
 print("📌 Initializing reference data (LearnMethod)...")
 
-methods = ["level_up", "ct", "move_tutor", "before_evolution"]
+LEARN_METHODS = ["level_up", "ct", "move_tutor", "before_evolution"]
 
 with Session(engine) as session:
-    for name in methods:
+    for name in LEARN_METHODS:
         exists = session.query(LearnMethod).filter_by(name=name).first()
         if not exists:
             session.add(LearnMethod(name=name))
@@ -140,12 +144,16 @@ with Session(engine) as session:
 
 print("✅ LearnMethod initialized")
 
+
+# ------------------------------------------------------
+# Forms
+# ------------------------------------------------------
 print("📌 Initializing reference data (Forms)...")
 
-standard_forms = ["base", "mega", "alola", "starter"]
+STANDARD_FORMS = ["base", "mega", "alola", "starter"]
 
 with Session(engine) as session:
-    for name in standard_forms:
+    for name in STANDARD_FORMS:
         exists = session.query(Form).filter_by(name=name).first()
         if not exists:
             session.add(Form(name=name))
@@ -153,12 +161,16 @@ with Session(engine) as session:
 
 print("✅ Forms initialized")
 
+
+# ------------------------------------------------------
+# Move Categories
+# ------------------------------------------------------
 print("📌 Initializing reference data (Move Categories)...")
 
-move_categories = ["physique", "spécial", "autre"]
+MOVE_CATEGORIES = ["physique", "spécial", "autre"]
 
 with Session(engine) as session:
-    for name in move_categories:
+    for name in MOVE_CATEGORIES:
         exists = session.query(MoveCategory).filter_by(name=name).first()
         if not exists:
             session.add(MoveCategory(name=name))

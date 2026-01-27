@@ -36,20 +36,17 @@ class PokemonMoveItem(scrapy.Item):
     Pokémon ↔ Move association table.
 
     Fields:
-    - pokemon_id: Internal Pokémon identifier (mandatory)
-    - move_name: Move name as displayed on Poképédia (mandatory)
-    - learn_method: Method used to learn the move
-        (e.g. level-up, ct, move_tutor)
-    - learn_level: Level at which the move is learned (optional)
-
-    This item is validated before being processed by
-    the persistence pipeline.
+        pokemon_id (int): Internal Pokémon identifier (mandatory).
+        move_name (str): Move name as displayed on Poképédia (mandatory).
+        learn_method (str): Method used to learn the move
+            (e.g. "level_up", "ct", "move_tutor").
+        learn_level (int | None): Level at which the move is learned.
     """
 
-    pokemon_id = scrapy.Field()      # int (mandatory)
-    move_name = scrapy.Field()       # str (mandatory)
-    learn_method = scrapy.Field()    # str: level_up | ct | move_tutor
-    learn_level = scrapy.Field()     # int | None
+    pokemon_id = scrapy.Field()
+    move_name = scrapy.Field()
+    learn_method = scrapy.Field()
+    learn_level = scrapy.Field()
 
     def validate(self):
         """
@@ -66,19 +63,19 @@ class PokemonMoveItem(scrapy.Item):
 
         Raises:
             ValueError: If any required field is missing
-                        or if learn_level is invalid.
+                or if learn_level is invalid.
 
         Returns:
             PokemonMoveItem: The validated (and normalized) item.
         """
         if not self.get("pokemon_id"):
-            raise ValueError("pokemon_id manquant")
+            raise ValueError("Missing required field: pokemon_id")
 
         if not self.get("move_name"):
-            raise ValueError("move_name manquant")
+            raise ValueError("Missing required field: move_name")
 
         if not self.get("learn_method"):
-            raise ValueError("learn_method manquant")
+            raise ValueError("Missing required field: learn_method")
 
         learn_level = self.get("learn_level")
         if learn_level is not None:
@@ -86,7 +83,7 @@ class PokemonMoveItem(scrapy.Item):
                 self["learn_level"] = int(learn_level)
             except (TypeError, ValueError) as exc:
                 raise ValueError(
-                    f"learn_level invalide: {learn_level}"
+                    f"Invalid learn_level value: {learn_level}"
                 ) from exc
 
         return self

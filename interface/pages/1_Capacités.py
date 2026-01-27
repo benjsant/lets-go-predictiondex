@@ -50,7 +50,7 @@ all_moves = load_all_moves()
 # ======================================================
 # Page Header
 # ======================================================
-page_header("Toutes les Capacités Pokémon", "Catalogue complet des 226 capacités avec filtres", "💥")
+page_header("Toutes les Capacités Pokémon", "Catalogue complet des 225 capacités avec filtres", "💥")
 st.markdown(f"**Explore les {len(all_moves)} capacités disponibles dans Pokémon Let's Go !**")
 
 st.divider()

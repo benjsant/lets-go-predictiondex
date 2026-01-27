@@ -1,5 +1,3 @@
-# core/models/form.py
-
 """
 SQLAlchemy Model – Form
 ======================

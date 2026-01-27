@@ -40,7 +40,7 @@ pikachu_eevee_mascots()
 info_box(
     "Bienvenue, Dresseur !",
     """
-    Grâce à l'intelligence artificielle et à <strong>94.46% de précision</strong>, découvre quelle capacité
+    Grâce à l'intelligence artificielle et à <strong>96.24% de précision</strong>, découvre quelle capacité
     te donnera le plus de chances de gagner tes combats !
     <br><br>
     PredictionDex analyse <strong>133 features</strong> pour prédire le résultat de chaque combat en moins de <strong>500ms</strong>.
@@ -221,7 +221,7 @@ with st.expander("🤖 Comment ça marche ?"):
     ### 🧠 La Magie de l'Intelligence Artificielle
 
     PredictionDex utilise un **modèle de Machine Learning XGBoost** entraîné sur
-    **34,040 combats Pokémon** simulés !
+    **898,612 combats Pokémon** simulés !
 
     **Ce que le modèle analyse :**
 
@@ -245,7 +245,7 @@ with st.expander("🤖 Comment ça marche ?"):
     4. Il prédit le vainqueur et la probabilité de victoire
 
     **Résultat:**
-    - ✅ **94.46% de précision** (prédit le bon gagnant 94 fois sur 100 !)
+    - ✅ **96.24% de précision** (prédit le bon gagnant 96 fois sur 100 !)
     - ⚡ **Temps de réponse < 500ms** (ultra-rapide !)
     - 🎯 **133 features analysées** pour chaque prédiction
 
@@ -262,17 +262,17 @@ with st.expander("🎮 Le savais-tu ?"):
     ### 💎 Fun Facts Pokémon Let's Go:
 
     **Contenu du jeu :**
-    - 📚 **188 Pokémon** disponibles (Génération 1 de Kanto + formes Alola)
-    - 💥 **226 capacités** différentes
+    - 📚 **187 Pokémon** disponibles (Génération 1 de Kanto + formes Alola)
+    - 💥 **225 capacités** différentes
     - 🌈 **18 types** élémentaires
-    - ⚔️ **35,344 matchups** possibles entre Pokémon (188 × 188)
-    - 🎯 **324 règles de types** (18 × 18 affinités)
+    - ⚔️ **34,969 matchups** possibles entre Pokémon (187 × 187)
+    - 🎯 **323 règles de types** (18 × 18 affinités - certaines combinaisons neutres)
 
     **Notre modèle ML :**
-    - 🤖 Entraîné sur **898,472 combats** simulés
+    - 🤖 Entraîné sur **898,612 combats** simulés
     - 📊 Analyse **133 features** différentes
     - ⚡ Répond en moins de **500ms**
-    - ✅ **94.46% de précision** sur les tests (v2)
+    - ✅ **96.24% de précision** sur les tests (v2)
     - 🧠 Algorithme **XGBoost** optimisé pour les combats
 
     💡 **Statistique folle:** Avec toutes les combinaisons Pokémon × Capacités,
@@ -308,7 +308,7 @@ st.markdown(f"""
 <div style='text-align:center;color:{POKEMON_COLORS['text_secondary']};padding:30px 0;'>
     <p style='font-size:1.1rem;'><strong>🤖 Propulsé par XGBoost</strong></p>
     <p style='font-size:0.95rem;'>
-        ⚡ Précision: <strong style='color:{POKEMON_COLORS['primary']};'>94.46%</strong> |
+        ⚡ Précision: <strong style='color:{POKEMON_COLORS['primary']};'>96.24%</strong> |
         Features: <strong style='color:{POKEMON_COLORS['primary']};'>133</strong> |
         Latence: <strong style='color:{POKEMON_COLORS['primary']};">&lt;500ms</strong>
     </p>

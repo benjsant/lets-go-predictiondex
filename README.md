@@ -64,10 +64,10 @@ docker compose up --build
 
 **PredictionDex** est une plateforme complète de **Machine Learning Operations (MLOps)** qui prédit l'issue de combats Pokémon dans Let's Go Pikachu/Eevee en analysant:
 
-- ✅ **188 Pokémon** de la 1ère génération + formes Alola
+- ✅ **188 Pokémon** de la 1ère génération + formes Alola + Méga
 - ✅ **226 capacités** avec puissance, type, priorité, STAB
 - ✅ **18 types** avec affinités (résistances/faiblesses)
-- ✅ **898,472 combats simulés** pour entraînement
+- ✅ **898,612 combats simulés** pour entraînement
 - ✅ **133 features** engineered (stats, multiplicateurs, avantages)
 
 ### 🎯 Objectif Pédagogique
@@ -618,12 +618,76 @@ git push origin feature/ma-fonctionnalite
 
 ---
 
+## ⚖️ Propriété Intellectuelle & Conformité
+
+### 🔒 Conformité RGPD
+
+Ce projet est **conforme au RGPD** (Règlement Général sur la Protection des Données) :
+
+- ❌ **Aucune donnée personnelle** collectée ou stockée
+- ✅ Base de données contenant **uniquement des données de jeu Pokémon**
+- ✅ Métriques techniques **anonymes et agrégées**
+- ✅ Pas de cookies de tracking, pas d'identification utilisateur
+
+### ⚠️ Disclaimer Juridique - Marques Pokémon
+
+**Pokémon** et tous les noms de personnages Pokémon sont des **marques déposées** de **Nintendo**, **Creatures Inc.** et **GAME FREAK Inc.**
+
+© 1995–2026 Nintendo / Creatures Inc. / GAME FREAK Inc.
+
+**Ce projet est un projet pédagogique à but non lucratif** développé dans le cadre d'une **certification RNCP Concepteur Développeur d'Applications** (Niveau 6).
+
+### 🎓 Exception Pédagogique (Loi Française)
+
+Ce projet bénéficie de l'**exception pédagogique** française (article L122-5 du Code de la Propriété Intellectuelle, loi DADVSI du 1er août 2006) qui autorise l'utilisation d'extraits d'œuvres à des fins exclusives d'illustration dans le cadre de l'enseignement et de la recherche.
+
+**Conditions respectées :**
+- ✅ Usage à des fins d'enseignement (certification RNCP)
+- ✅ Public spécifique : jury de certification, formateurs, étudiants
+- ✅ Usage non-commercial : aucune exploitation commerciale
+- ✅ Attribution des sources : PokéAPI et Pokepedia crédités
+
+### 📚 Sources de Données Tierces
+
+Les données Pokémon proviennent de **3 sources complémentaires** utilisées dans le pipeline ETL :
+
+#### 1. CSV manuels (3 fichiers - 738 lignes)
+- **`liste_pokemon.csv`** (188 Pokémon) : noms (FR/EN), types, formes (Alola, Mega, Starter)
+- **`liste_capacite_lets_go.csv`** (226 capacités) : noms, type, classe, puissance, précision, PP
+- **`table_type.csv`** (324 affinités) : matrice multiplicateurs de dégâts (type_attaquant × type_defenseur)
+
+*CSV créés manuellement en compilant des métadonnées de jeu depuis sources communautaires Pokémon.*
+
+#### 2. PokéAPI (API REST)
+- **Source :** https://pokeapi.co/
+- **Usage :** Enrichissement automatique des **statistiques de combat** (HP, Attaque, Défense, Vitesse) + sprites PNG
+- **Statut :** API RESTful open-source (non affiliée officiellement à Nintendo)
+
+#### 3. Pokepedia (Web Scraping avec Scrapy)
+- **Source :** https://www.pokepedia.fr/
+- **Usage :** Spider Scrapy pour extraire détails des capacités Let's Go (puissance, précision, PP, descriptions françaises)
+- **Licence :** Creative Commons CC-BY-SA (encyclopédie collaborative)
+
+**⚖️ Conformité :** Métadonnées et statistiques de jeu publiques (noms, types, HP, Attaque) - aucun code source, aucun asset propriétaire Nintendo - utilisées dans un cadre strictement pédagogique.
+
+### 🛡️ Engagement
+
+Ce projet :
+- Ne génère **aucun revenu** commercial
+- N'est **pas affilié** à Nintendo, The Pokémon Company ou leurs filiales
+- Respecte les **droits de propriété intellectuelle** des ayants droit
+- Utilise les données dans un **cadre strictement éducatif**
+
+---
+
 ## 🙏 Remerciements
 
 ### Sources de Données
 
-- **PokéAPI** (https://pokeapi.co/) - API REST Pokémon
-- **Pokepedia** (https://www.pokepedia.fr/) - Wiki Pokémon francophone
+- **PokéAPI** (https://pokeapi.co/) - API REST Pokémon (statistiques et sprites)
+- **Pokepedia** (https://www.pokepedia.fr/) - Encyclopédie Pokémon francophone (scraping capacités, licence CC-BY-SA)
+- **Serebii.net** (https://www.serebii.net/) - Base de données Pokémon (référence pour CSV capacités)
+- **Bulbapedia** (https://bulbapedia.bulbagarden.net/) - Encyclopédie Pokémon anglophone (référence pour CSV Pokémon)
 
 ### Technologies Open Source
 
