@@ -1,6 +1,8 @@
 # formatters/pokemon_formatter.py
-from typing import List, Dict
+from typing import Dict, List
+
 from interface.formatters.ui.pokemon_ui import PokemonSelectItem
+
 
 def format_pokemon_selector(pokemons: List[Dict]) -> List[PokemonSelectItem]:
     """

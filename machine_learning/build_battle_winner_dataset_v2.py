@@ -41,17 +41,16 @@ Validation:
     - Compétence C13: Versioned dataset generation for ML pipeline
 """
 
+import argparse
 import os
 import sys
-import argparse
-from pathlib import Path
-from datetime import datetime
 from collections import defaultdict
-from typing import List, Dict, Tuple, Optional
+from datetime import datetime
+from pathlib import Path
 
-import psycopg2
-import pandas as pd
 import numpy as np
+import pandas as pd
+import psycopg2
 from dotenv import load_dotenv
 from sklearn.model_selection import train_test_split
 
@@ -255,7 +254,7 @@ def calculate_damage(level, power, atk_stat, def_stat, stab, type_mult):
 def get_all_valid_moves(pokemon_id, pokemon_moves_df, attacker):
     """
     Get all valid offensive moves for a Pokemon.
-    
+
     Returns list of move dicts with basic info.
     """
     moves = pokemon_moves_df[pokemon_moves_df['pokemon_id'] == pokemon_id].copy()
@@ -275,13 +274,13 @@ def get_all_valid_moves(pokemon_id, pokemon_moves_df, attacker):
 def get_move_score_and_info(move, attacker, defender, type_eff):
     """
     Calculate move score and return move info dict.
-    
+
     Args:
         move: Move dict from pokemon_moves_df
         attacker: Attacker Pokemon dict
         defender: Defender Pokemon dict
         type_eff: Type effectiveness lookup
-        
+
     Returns:
         Dict with move info including score
     """
@@ -336,11 +335,11 @@ def get_move_score_and_info(move, attacker, defender, type_eff):
 def get_best_move(pokemon_id, pokemon_moves_df, attacker, defender, type_eff):
     """
     Select the best move for a Pokemon against a specific defender.
-    
+
     Returns dict with move info or None if no valid moves.
     """
     valid_moves = get_all_valid_moves(pokemon_id, pokemon_moves_df, attacker)
-    
+
     if not valid_moves:
         return None
 
@@ -349,7 +348,7 @@ def get_best_move(pokemon_id, pokemon_moves_df, attacker, defender, type_eff):
 
     for move in valid_moves:
         move_info = get_move_score_and_info(move, attacker, defender, type_eff)
-        
+
         if move_info['score'] > best_score:
             best_score = move_info['score']
             best_move = move_info
@@ -360,7 +359,7 @@ def get_best_move(pokemon_id, pokemon_moves_df, attacker, defender, type_eff):
 def determine_who_moves_first(a_priority, a_speed, b_priority, b_speed):
     """
     Determine which Pokemon moves first.
-    
+
     Returns: 1 if A moves first, 0 if B moves first
     """
     if a_priority > b_priority:
@@ -377,7 +376,7 @@ def determine_who_moves_first(a_priority, a_speed, b_priority, b_speed):
 def simulate_battle(attacker_a, attacker_b, move_a, move_b, type_eff):
     """
     Simulate a battle and determine the winner.
-    
+
     Returns: 1 if A wins, 0 if B wins
     """
     # Calculate damage for each side
@@ -451,7 +450,7 @@ def build_sample_dict(pokemon_a, pokemon_b, move_a, move_b, winner, scenario_typ
     return {
         # Metadata
         'scenario_type': scenario_type,
-        
+
         # IDs (for reference, not features)
         'pokemon_a_id': pokemon_a['pokemon_id'],
         'pokemon_b_id': pokemon_b['pokemon_id'],
@@ -511,7 +510,7 @@ def build_sample_dict(pokemon_a, pokemon_b, move_a, move_b, winner, scenario_typ
 def generate_best_move_scenario(pokemon_df, pokemon_moves_df, type_eff):
     """
     Generate dataset with best_move scenario (original v1 behavior).
-    
+
     For each matchup, both A and B use their best offensive move.
     """
     print("\n🎯 Generating BEST_MOVE scenario...")
@@ -556,7 +555,7 @@ def generate_best_move_scenario(pokemon_df, pokemon_moves_df, type_eff):
 def generate_random_move_scenario(pokemon_df, pokemon_moves_df, type_eff, num_samples=5):
     """
     Generate dataset with random_move scenario.
-    
+
     For each matchup:
     - A uses its best move
     - B uses a random offensive move (repeated num_samples times)
@@ -615,7 +614,7 @@ def generate_random_move_scenario(pokemon_df, pokemon_moves_df, type_eff, num_sa
 def generate_all_combinations_scenario(pokemon_df, pokemon_moves_df, type_eff, max_combinations_per_matchup=20):
     """
     Generate dataset with all_combinations scenario.
-    
+
     For each matchup, generate all possible moveA × moveB combinations.
     Limited to max_combinations_per_matchup to prevent explosion.
     """

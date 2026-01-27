@@ -1,12 +1,13 @@
 # interface/utils/ui_helpers.py
 
 from typing import List, Optional
-from interface.services.pokemon_service import get_pokemon_list, get_pokemon_detail, get_pokemon_weaknesses
-from interface.services.move_service import get_types
-from interface.formatters.pokemon_formatter import format_pokemon_selector
+
 from interface.formatters.move_formatter import format_pokemon_moves
+from interface.formatters.pokemon_formatter import format_pokemon_selector
 from interface.formatters.ui.move_ui import MoveSelectItem
 from interface.formatters.ui.pokemon_ui import PokemonSelectItem
+from interface.services.move_service import get_types
+from interface.services.pokemon_service import get_pokemon_detail, get_pokemon_list, get_pokemon_weaknesses
 
 
 # -----------------------------

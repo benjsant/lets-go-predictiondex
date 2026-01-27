@@ -8,8 +8,9 @@ Il est aligné avec les modèles SQLAlchemy et inclut les relations nécessaires
 les moves et les slots dans le contexte Pokémon.
 """
 
-from pydantic import BaseModel, ConfigDict
 from typing import List
+
+from pydantic import BaseModel, ConfigDict
 
 
 # -------------------------

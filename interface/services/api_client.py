@@ -1,7 +1,9 @@
 # interface/services/api_client.py
 
+from typing import Dict, List, Optional
+
 import requests
-from typing import List, Dict, Optional
+
 from interface.config.settings import API_BASE_URL, API_KEY
 
 

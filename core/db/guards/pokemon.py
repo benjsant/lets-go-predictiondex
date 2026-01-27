@@ -9,7 +9,9 @@ without duplicating entries.
 """
 
 from sqlalchemy.orm import Session
+
 from core.models import Pokemon
+
 from .utils import commit_if_needed
 
 
@@ -34,7 +36,7 @@ def upsert_pokemon(
     Args:
         session (Session): Active SQLAlchemy session.
         species_id (int): Pokémon species identifier.
-        form_id(int): form id 
+        form_id(int): form id
         form_name (str): Form name (Base, Mega X, Alola, etc.).
         name_pokeapi (str): Technical name from PokeAPI.
         name_pokepedia (str): Name as displayed on Poképédia.

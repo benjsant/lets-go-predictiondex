@@ -20,13 +20,14 @@ This layer:
 
 import unicodedata
 from typing import List, Optional
+
 from sqlalchemy.orm import Session, joinedload
 
 from core.models import (
-    Type,
-    TypeEffectiveness,
     Pokemon,
     PokemonType,
+    Type,
+    TypeEffectiveness,
 )
 
 
@@ -212,7 +213,7 @@ def list_pokemon_by_type(
             joinedload(Pokemon.form),
             joinedload(Pokemon.species),
             joinedload(Pokemon.types)
-                .joinedload(PokemonType.type),
+            .joinedload(PokemonType.type),
         )
         .order_by(Pokemon.id)
         .all()

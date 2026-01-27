@@ -72,6 +72,8 @@ jobs:
           POSTGRES_USER=letsgo_user
           POSTGRES_PASSWORD=letsgo_password
           DEV_MODE=true
+          API_KEY_REQUIRED=false
+          API_KEYS=test_key_for_ci_cd
           EOF
       
       - name: Start services
@@ -82,13 +84,13 @@ jobs:
       - name: Check service health
         run: |
           echo "Checking API health..."
-          curl -f http://localhost:8000/health || exit 1
+          curl -f http://localhost:8080/health || exit 1
           
           echo "Checking MLflow health..."
-          curl -f http://localhost:5000/health || exit 1
+          curl -f http://localhost:5001/health || exit 1
           
           echo "Checking Prometheus health..."
-          curl -f http://localhost:9090/-/healthy || exit 1
+          curl -f http://localhost:9091/-/healthy || exit 1
       
       - name: Run integration tests
         run: |

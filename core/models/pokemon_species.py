@@ -20,6 +20,7 @@ Data for this table is primarily sourced from Poképédia and/or PokeAPI.
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
+
 from core.db.base import Base
 
 

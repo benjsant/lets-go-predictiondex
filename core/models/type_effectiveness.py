@@ -15,7 +15,8 @@ It is an enriched association table linking:
 This table is central for battle calculations and machine learning simulations.
 """
 
-from sqlalchemy import Column, Integer, Numeric, ForeignKey
+from sqlalchemy import Column, ForeignKey, Integer, Numeric
+
 from core.db.base import Base
 
 

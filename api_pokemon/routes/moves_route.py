@@ -9,22 +9,22 @@ Designed to be Streamlit-friendly and unambiguous.
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Query, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from api_pokemon.services.move_service import (
+    get_move_by_id,
+    list_moves,
+    list_moves_by_type,
+    search_moves_by_name,
+)
 from core.db.session import get_db
 from core.schemas.move import (
-    MoveListItem,
     MoveDetail,
+    MoveListItem,
     MoveSelectableOut,
 )
 from core.schemas.type import TypeOut
-from api_pokemon.services.move_service import (
-    list_moves,
-    get_move_by_id,
-    search_moves_by_name,
-    list_moves_by_type,
-)
 
 router = APIRouter(prefix="/moves", tags=["Moves"])
 

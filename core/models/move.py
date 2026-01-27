@@ -23,8 +23,9 @@ It is a central entity of the project, used for:
 - machine learning model training.
 """
 
-from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
+
 from core.db.base import Base
 
 
@@ -81,7 +82,7 @@ class Move(Base):
 
     #: Foreign key to the elemental type
     type_id = Column(Integer, ForeignKey("type.id"), nullable=False)
-    
+
     #: Relationship to the elemental type
     type = relationship("Type", back_populates="moves")
 

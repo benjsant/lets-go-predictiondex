@@ -18,8 +18,9 @@ one-to-one relationship using the Pokémon ID as the primary key.
 Data is primarily sourced from PokéAPI.
 """
 
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
+
 from core.db.base import Base
 
 

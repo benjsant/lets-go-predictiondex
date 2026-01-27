@@ -17,6 +17,7 @@ and mirrors the `PokemonMove` SQLAlchemy association model.
 """
 
 from typing import Optional
+
 from pydantic import BaseModel, ConfigDict
 
 from core.schemas.learn_method import LearnMethodOut
@@ -37,4 +38,3 @@ class PokemonMoveORMOut(BaseModel):
     learn_level: Optional[int]
 
     model_config = ConfigDict(from_attributes=True)
-

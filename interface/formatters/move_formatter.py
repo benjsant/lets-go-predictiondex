@@ -1,6 +1,8 @@
 # formatters/move_formatter.py
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
+
 from interface.formatters.ui.move_ui import MoveSelectItem
+
 
 def format_pokemon_moves(
     moves: List[Dict],

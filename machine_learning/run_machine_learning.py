@@ -49,27 +49,32 @@ Validation:
     - Compétence C13: MLOps pipeline (orchestration, versioning, export)
 """
 
-import os
-import sys
 import argparse
-import subprocess
 import json
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, List, Tuple, Optional
+import os
 import pickle
-import joblib  # For RandomForest model compression
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
-import pandas as pd
+import joblib  # For RandomForest model compression
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score, f1_score, roc_auc_score,
-    classification_report, confusion_matrix, roc_curve
-)
-from sklearn.model_selection import cross_val_score, GridSearchCV
+import pandas as pd
 import xgboost as xgb
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
+from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import StandardScaler
 
 # MLflow integration (C13 - MLOps)
 try:
@@ -106,7 +111,7 @@ DEFAULT_XGBOOST_PARAMS = {
     'subsample': 0.8,
     'colsample_bytree': 0.8,
     'tree_method': 'hist',        # CPU-optimized histogram algorithm (faster than 'auto')
-    'predictor': 'cpu_predictor', # Explicit CPU predictor
+    'predictor': 'cpu_predictor',  # Explicit CPU predictor
     'random_state': RANDOM_SEED,
     'n_jobs': -1,                 # Use all CPU cores
     'eval_metric': 'logloss',
@@ -137,9 +142,9 @@ XGBOOST_PARAM_GRID = {
 # STEP 1: DATASET PREPARATION
 # ================================================================
 
-def run_dataset_preparation(dataset_version: str = 'v1', scenario_type: str = 'all', 
-                           num_random_samples: int = 5, max_combinations: int = 20,
-                           verbose: bool = True) -> bool:
+def run_dataset_preparation(dataset_version: str = 'v1', scenario_type: str = 'all',
+                            num_random_samples: int = 5, max_combinations: int = 20,
+                            verbose: bool = True) -> bool:
     """
     Run dataset preparation script to generate train/test datasets from DB.
 
@@ -208,7 +213,7 @@ def run_dataset_preparation(dataset_version: str = 'v1', scenario_type: str = 'a
             print(f"   Train samples: {len(df_train):,}")
             print(f"   Test samples: {len(df_test):,}")
             print(f"   Total features: {df_train.shape[1]}")
-            
+
             # Check for scenario_type column (v2)
             if 'scenario_type' in df_train.columns:
                 print(f"\n   ✅ Multi-scenario dataset (v2) detected:")
@@ -277,7 +282,6 @@ def filter_by_scenario(df_train: pd.DataFrame, df_test: pd.DataFrame, scenario_t
     except Exception as e:
         print(f"\n❌ Error during scenario filtering: {e}")
         return df_train, df_test
-
 
 
 # ================================================================
@@ -481,14 +485,14 @@ def train_model(X_train: pd.DataFrame, y_train: pd.Series,
         X_tr, X_val, y_tr, y_val = train_test_split(
             X_train, y_train, test_size=0.2, random_state=RANDOM_SEED, stratify=y_train
         )
-        
+
         # Fit with early stopping
         model.fit(
             X_tr, y_tr,
             eval_set=[(X_tr, y_tr), (X_val, y_val)],
             verbose=False
         )
-        
+
         if verbose:
             # Get best iteration
             best_iteration = model.best_iteration if hasattr(model, 'best_iteration') else model.n_estimators
@@ -545,7 +549,7 @@ def tune_hyperparameters(X_train: pd.DataFrame, y_train: pd.Series,
     # Configure GridSearchCV with optimization
     from sklearn.model_selection import StratifiedKFold
     cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=RANDOM_SEED)
-    
+
     grid_search = GridSearchCV(
         estimator=base_model,
         param_grid=param_grid,
@@ -645,8 +649,8 @@ def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
 
 
 def analyze_feature_importance(model: Any, feature_columns: List[str],
-                                top_n: int = 20,
-                                verbose: bool = True) -> pd.DataFrame:
+                               top_n: int = 20,
+                               verbose: bool = True) -> pd.DataFrame:
     """
     Analyze and display feature importance.
 
@@ -719,7 +723,7 @@ def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
 
         # Evaluate model
         metrics = evaluate_model(model, X_train, X_test, y_train, y_test,
-                                model_name=model_type, verbose=False)
+                                 model_name=model_type, verbose=False)
         results.append(metrics)
 
         if verbose:
@@ -732,7 +736,8 @@ def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
         print("\n" + "=" * 80)
         print("COMPARISON RESULTS")
         print("=" * 80)
-        print("\n", results_df[['model_name', 'test_accuracy', 'test_f1', 'test_roc_auc', 'overfitting']].to_string(index=False))
+        print("\n", results_df[['model_name', 'test_accuracy', 'test_f1',
+              'test_roc_auc', 'overfitting']].to_string(index=False))
 
     # Select best model
     best_idx = results_df['test_accuracy'].idxmax()
@@ -769,7 +774,7 @@ def export_model(model: Any, scalers: Dict, feature_columns: List[str],
     # Export model (use joblib compression for RandomForest, pickle for others)
     model_path = MODELS_DIR / f"battle_winner_model_{version}.pkl"
     model_type_name = type(model).__name__
-    
+
     if model_type_name == 'RandomForestClassifier':
         # Use joblib with aggressive compression for RandomForest (5-10x smaller)
         joblib.dump(model, model_path, compress=('zlib', 9))
@@ -937,7 +942,7 @@ Examples:
 
     args = parser.parse_args()
     verbose = not args.quiet
-    
+
     # Set global paths based on dataset version
     global DATA_DIR, RAW_DIR, PROCESSED_DIR, FEATURES_DIR
     DATA_DIR = DATA_DIR_V2 if args.dataset_version == 'v2' else DATA_DIR_V1
@@ -976,7 +981,7 @@ Examples:
         if tracker:
             run_name = f"{args.mode}_{args.dataset_version}_{args.version}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             tracker.start_run(run_name=run_name)
-            
+
             # Log pipeline configuration
             tracker.log_params({
                 'mode': args.mode,
@@ -1039,8 +1044,8 @@ Examples:
             # Optional: Hyperparameter tuning
             if args.tune_hyperparams:
                 model, best_params = tune_hyperparameters(X_train, y_train,
-                                                         model_type=args.model,
-                                                         verbose=verbose)
+                                                          model_type=args.model,
+                                                          verbose=verbose)
                 hyperparams = best_params
             else:
                 model = train_model(X_train, y_train, model_type=args.model, verbose=verbose)
@@ -1048,7 +1053,7 @@ Examples:
 
             # Evaluate
             metrics = evaluate_model(model, X_train, X_test, y_train, y_test,
-                                   model_name=args.model, verbose=verbose)
+                                     model_name=args.model, verbose=verbose)
 
             # Log to MLflow
             if tracker:
@@ -1067,13 +1072,20 @@ Examples:
             analyze_feature_importance(model, feature_columns, verbose=verbose)
 
             # Export
-            model_path = export_model(model, scalers, feature_columns, metrics, hyperparams, version=args.version, verbose=verbose)
-            
+            model_path = export_model(
+                model,
+                scalers,
+                feature_columns,
+                metrics,
+                hyperparams,
+                version=args.version,
+                verbose=verbose)
+
             # Log model to MLflow
             if tracker and model_path:
-                tracker.log_model(model, artifact_path=f"model_{args.version}", 
-                                model_type=args.model, scalers=scalers, 
-                                metadata={'feature_columns': feature_columns})
+                tracker.log_model(model, artifact_path=f"model_{args.version}",
+                                  model_type=args.model, scalers=scalers,
+                                  metadata={'feature_columns': feature_columns})
 
             if not args.skip_export_features:
                 export_features(X_train, X_test, y_train, y_test, verbose=verbose)
@@ -1091,7 +1103,14 @@ Examples:
 
             # Export best model
             best_metrics = next(m for m in all_metrics if m['model_name'] == best_model_name)
-            model_path = export_model(best_model, scalers, feature_columns, best_metrics, hyperparams=None, version=args.version, verbose=verbose)
+            model_path = export_model(
+                best_model,
+                scalers,
+                feature_columns,
+                best_metrics,
+                hyperparams=None,
+                version=args.version,
+                verbose=verbose)
 
             # Log to MLflow
             if tracker:
@@ -1101,16 +1120,16 @@ Examples:
                         f"{m['model_name']}_test_f1": m['test_f1'],
                     })
                 if model_path:
-                    tracker.log_model(best_model, artifact_path=f"model_{args.version}", 
-                                    model_type=best_model_name, scalers=scalers,
-                                    metadata={'feature_columns': feature_columns})
-                    
+                    tracker.log_model(best_model, artifact_path=f"model_{args.version}",
+                                      model_type=best_model_name, scalers=scalers,
+                                      metadata={'feature_columns': feature_columns})
+
                     # Register best model after comparison
                     model_name = "battle_winner_predictor"
                     best_metric = next(m for m in all_metrics if m['model_name'] == best_model_name)
                     description = f"{best_model_name} (winner after comparison) - Accuracy: {best_metric['test_accuracy']:.4f}"
                     version_number = tracker.register_model(model_name=model_name, description=description)
-                    
+
                     if version_number and best_metric.get('test_accuracy', 0) >= 0.85:
                         if verbose:
                             print(f"\n🎯 Best model meets quality threshold")
@@ -1133,11 +1152,11 @@ Examples:
                 if verbose:
                     print("\n🔧 Running hyperparameter tuning on best model...")
                 best_model, best_params = tune_hyperparameters(X_train, y_train,
-                                                              model_type='xgboost',
-                                                              verbose=verbose)
+                                                               model_type='xgboost',
+                                                               verbose=verbose)
                 # Re-evaluate
                 metrics = evaluate_model(best_model, X_train, X_test, y_train, y_test,
-                                       model_name='xgboost_tuned', verbose=verbose)
+                                         model_name='xgboost_tuned', verbose=verbose)
                 hyperparams = best_params
             else:
                 metrics = next(m for m in all_metrics if m['model_name'] == best_model_name)
@@ -1147,7 +1166,14 @@ Examples:
             analyze_feature_importance(best_model, feature_columns, verbose=verbose)
 
             # Export
-            model_path = export_model(best_model, scalers, feature_columns, metrics, hyperparams, version=args.version, verbose=verbose)
+            model_path = export_model(
+                best_model,
+                scalers,
+                feature_columns,
+                metrics,
+                hyperparams,
+                version=args.version,
+                verbose=verbose)
 
             # Log to MLflow
             if tracker:
@@ -1163,15 +1189,15 @@ Examples:
                     'overfitting': metrics['overfitting'],
                 })
                 if model_path:
-                    tracker.log_model(best_model, artifact_path=f"model_{args.version}", 
-                                    model_type=best_model_name, scalers=scalers,
-                                    metadata={'feature_columns': feature_columns})
-                    
+                    tracker.log_model(best_model, artifact_path=f"model_{args.version}",
+                                      model_type=best_model_name, scalers=scalers,
+                                      metadata={'feature_columns': feature_columns})
+
                     # Register model in MLflow Model Registry
                     model_name = "battle_winner_predictor"
                     description = f"{best_model_name} - Accuracy: {metrics['test_accuracy']:.4f}, ROC-AUC: {metrics['test_roc_auc']:.4f}"
                     version_number = tracker.register_model(model_name=model_name, description=description)
-                    
+
                     # Auto-promote to Production if metrics are good
                     if version_number and metrics.get('test_accuracy', 0) >= 0.85:
                         if verbose:

@@ -1,7 +1,10 @@
-#app\db\guards\move_category.py
+# app\db\guards\move_category.py
 from sqlalchemy.orm import Session
+
 from core.models import MoveCategory
+
 from .utils import commit_if_needed
+
 
 def upsert_move_category(session: Session, name: str, auto_commit: bool = False) -> MoveCategory:
     category = session.query(MoveCategory).filter(MoveCategory.name.ilike(name)).one_or_none()

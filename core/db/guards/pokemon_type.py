@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+
 from core.models import PokemonType
 
 

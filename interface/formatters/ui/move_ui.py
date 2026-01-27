@@ -1,7 +1,9 @@
 # /interface/formatters/ui/move_ui.py
 
-from pydantic import BaseModel
 from typing import Optional
+
+from pydantic import BaseModel
+
 
 class MoveSelectItem(BaseModel):
     """
@@ -17,4 +19,3 @@ class MoveSelectItem(BaseModel):
     power: Optional[int] = None
     accuracy: Optional[int] = None
     damage_type: Optional[str] = None  # <-- pour priorités et moves spéciaux
-

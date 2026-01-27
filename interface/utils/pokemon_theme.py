@@ -70,6 +70,7 @@ TYPE_ICONS = {
 # Custom CSS
 # ======================================================
 
+
 def load_custom_css():
     """Load custom CSS for Pokémon theme."""
     st.markdown(f"""
@@ -302,12 +303,16 @@ def pokemon_card(pokemon, show_stats: bool = True):
 
 def pokeball_divider():
     """Display a themed divider with Pokéball emoji and Pikachu/Eevee gradient."""
-    st.markdown(f"<div style='text-align:center;margin:20px 0;'><div style='display:inline-block;background:linear-gradient(90deg, {POKEMON_COLORS['primary']} 0%, {POKEMON_COLORS['accent']} 50%, {POKEMON_COLORS['primary_alt']} 100%);height:3px;width:200px;border-radius:2px;'></div><div style='margin:10px 0;'><span style='font-size:2rem;'>⚪🔴⚪</span></div><div style='display:inline-block;background:linear-gradient(90deg, {POKEMON_COLORS['primary_alt']} 0%, {POKEMON_COLORS['accent']} 50%, {POKEMON_COLORS['primary']} 100%);height:3px;width:200px;border-radius:2px;'></div></div>", unsafe_allow_html=True)
+    st.markdown(
+        f"<div style='text-align:center;margin:20px 0;'><div style='display:inline-block;background:linear-gradient(90deg, {POKEMON_COLORS['primary']} 0%, {POKEMON_COLORS['accent']} 50%, {POKEMON_COLORS['primary_alt']} 100%);height:3px;width:200px;border-radius:2px;'></div><div style='margin:10px 0;'><span style='font-size:2rem;'>⚪🔴⚪</span></div><div style='display:inline-block;background:linear-gradient(90deg, {POKEMON_COLORS['primary_alt']} 0%, {POKEMON_COLORS['accent']} 50%, {POKEMON_COLORS['primary']} 100%);height:3px;width:200px;border-radius:2px;'></div></div>",
+        unsafe_allow_html=True)
 
 
 def section_header(title: str, icon: str = "✨"):
     """Display a styled section header."""
-    st.markdown(f"<div style='background:linear-gradient(135deg, {POKEMON_COLORS['bg_secondary']} 0%, {POKEMON_COLORS['bg_card']} 100%);padding:15px 20px;border-radius:12px;border-left:5px solid {POKEMON_COLORS['primary']};border-right:5px solid {POKEMON_COLORS['primary_alt']};margin:20px 0;box-shadow:0 2px 6px rgba(0,0,0,0.08);'><h2 style='margin:0;color:{POKEMON_COLORS['secondary']};'>{icon} {title}</h2></div>", unsafe_allow_html=True)
+    st.markdown(
+        f"<div style='background:linear-gradient(135deg, {POKEMON_COLORS['bg_secondary']} 0%, {POKEMON_COLORS['bg_card']} 100%);padding:15px 20px;border-radius:12px;border-left:5px solid {POKEMON_COLORS['primary']};border-right:5px solid {POKEMON_COLORS['primary_alt']};margin:20px 0;box-shadow:0 2px 6px rgba(0,0,0,0.08);'><h2 style='margin:0;color:{POKEMON_COLORS['secondary']};'>{icon} {title}</h2></div>",
+        unsafe_allow_html=True)
 
 
 def probability_bar(probability: float, label: str = "Probabilité"):
@@ -326,7 +331,9 @@ def probability_bar(probability: float, label: str = "Probabilité"):
         emoji = "⚠️"
 
     st.markdown(f"**{emoji} {label}**")
-    st.markdown(f"<div style='background:{POKEMON_COLORS['bg_secondary']};border-radius:10px;overflow:hidden;height:30px;margin:10px 0;'><div style='background:linear-gradient(90deg, {color} 0%, {color}CC 100%);width:{percentage}%;height:100%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;transition:width 0.5s ease;'>{percentage:.1f}%</div></div>", unsafe_allow_html=True)
+    st.markdown(
+        f"<div style='background:{POKEMON_COLORS['bg_secondary']};border-radius:10px;overflow:hidden;height:30px;margin:10px 0;'><div style='background:linear-gradient(90deg, {color} 0%, {color}CC 100%);width:{percentage}%;height:100%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;transition:width 0.5s ease;'>{percentage:.1f}%</div></div>",
+        unsafe_allow_html=True)
 
 
 def info_box(title: str, content: str, icon: str = "💡", color: str = "info"):
@@ -340,13 +347,17 @@ def info_box(title: str, content: str, icon: str = "💡", color: str = "info"):
 
     c = colors.get(color, colors["info"])
 
-    st.markdown(f"<div style='background:{POKEMON_COLORS['bg_card']};border-left:5px solid {c['border']};border-radius:8px;padding:15px 20px;margin:15px 0;box-shadow:0 2px 4px rgba(0,0,0,0.1);'><div style='font-weight:700;font-size:1.1rem;margin-bottom:8px;color:{POKEMON_COLORS['text_primary']};'>{icon} {title}</div><div style='color:{POKEMON_COLORS['text_primary']};line-height:1.6;'>{content}</div></div>", unsafe_allow_html=True)
+    st.markdown(
+        f"<div style='background:{POKEMON_COLORS['bg_card']};border-left:5px solid {c['border']};border-radius:8px;padding:15px 20px;margin:15px 0;box-shadow:0 2px 4px rgba(0,0,0,0.1);'><div style='font-weight:700;font-size:1.1rem;margin-bottom:8px;color:{POKEMON_COLORS['text_primary']};'>{icon} {title}</div><div style='color:{POKEMON_COLORS['text_primary']};line-height:1.6;'>{content}</div></div>",
+        unsafe_allow_html=True)
 
 
 def page_header(title: str, subtitle: str = "", icon: str = "⚡"):
     """Display a consistent page header."""
     subtitle_html = f"<p style='font-size:1.2rem;color:{POKEMON_COLORS['text_secondary']};margin-top:10px;'>{subtitle}</p>" if subtitle else ''
-    st.markdown(f"<div style='text-align:center;padding:20px 0;background:{POKEMON_COLORS['bg_main']};border-radius:8px;'><h1 style='font-size:2.5rem;color:{POKEMON_COLORS['text_primary']};margin:0;text-shadow:2px 2px 4px rgba(0,0,0,0.1);'>{icon} {title}</h1>{subtitle_html}</div>", unsafe_allow_html=True)
+    st.markdown(
+        f"<div style='text-align:center;padding:20px 0;background:{POKEMON_COLORS['bg_main']};border-radius:8px;'><h1 style='font-size:2.5rem;color:{POKEMON_COLORS['text_primary']};margin:0;text-shadow:2px 2px 4px rgba(0,0,0,0.1);'>{icon} {title}</h1>{subtitle_html}</div>",
+        unsafe_allow_html=True)
     pokeball_divider()
 
 

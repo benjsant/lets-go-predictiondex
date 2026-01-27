@@ -9,7 +9,9 @@ integrity and avoiding duplicates.
 """
 
 from sqlalchemy.orm import Session
+
 from core.models import Move
+
 from .utils import commit_if_needed
 
 

@@ -1,15 +1,11 @@
 # interface/pages/9_Moves_List.py
-import streamlit as st
-import pandas as pd
 from typing import Optional
 
+import pandas as pd
+import streamlit as st
+from utils.pokemon_theme import TYPE_COLORS, load_custom_css, page_header
+
 from interface.services.api_client import get_all_moves
-from utils.pokemon_theme import (
-    load_custom_css,
-    page_header,
-    type_badge,
-    TYPE_COLORS
-)
 
 # ======================================================
 # Page Config
@@ -26,10 +22,13 @@ load_custom_css()
 # ======================================================
 # Helper Functions
 # ======================================================
+
+
 def clean_text(t: Optional[str]) -> str:
     if not t:
         return ""
     return t.replace("\n", "").replace("\r", "").strip()
+
 
 def normalize_type(t: str) -> str:
     """Normalize type name for consistent matching."""
@@ -38,10 +37,13 @@ def normalize_type(t: str) -> str:
 # ======================================================
 # Load Data
 # ======================================================
+
+
 @st.cache_data(ttl=3600)
 def load_all_moves():
     """Load and cache all moves."""
     return get_all_moves()
+
 
 all_moves = load_all_moves()
 

@@ -14,8 +14,9 @@ Alignement SQLAlchemy :
 - FK : defending_type_id -> type.id
 """
 
-from pydantic import BaseModel, ConfigDict
 from decimal import Decimal
+
+from pydantic import BaseModel, ConfigDict
 
 
 # -------------------------

@@ -20,9 +20,9 @@ any business logic. It is consumed by:
 """
 
 import os
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 
 # --------------------
 # Database parameters (Docker / Dev friendly)
@@ -55,6 +55,7 @@ SessionLocal = sessionmaker(
     autoflush=False,
     autocommit=False,
 )
+
 
 def get_db():
     """

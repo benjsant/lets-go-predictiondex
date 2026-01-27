@@ -1,11 +1,10 @@
 # interface/pages/4_Quiz_Types.py
-import streamlit as st
 import random
+
+import streamlit as st
+from utils.pokemon_theme import load_custom_css, page_header
+
 from interface.services.api_client import get_type_affinities
-from utils.pokemon_theme import (
-    load_custom_css,
-    page_header
-)
 
 # ======================================================
 # Page Config
@@ -38,6 +37,8 @@ if 'last_answer_correct' not in st.session_state:
 # ======================================================
 # Load Type Affinities & Types
 # ======================================================
+
+
 @st.cache_data(ttl=3600)
 def load_types_and_affinities():
     """Load and cache types and affinities."""
@@ -59,6 +60,7 @@ def load_types_and_affinities():
         })
 
     return affinities
+
 
 affinities = load_types_and_affinities()
 
@@ -83,6 +85,8 @@ TYPE_COLORS = {
 # ======================================================
 # Helper Functions
 # ======================================================
+
+
 def generate_question():
     """Generate a random type matchup question."""
     # Filter interesting matchups (not neutral)
@@ -95,11 +99,13 @@ def generate_question():
         'correct_multiplier': question['multiplier']
     }
 
+
 def format_type_badge(type_name):
     """Format a type as a colored badge."""
     icon = TYPE_ICONS.get(type_name.lower(), "")
     color = TYPE_COLORS.get(type_name.lower(), "#999")
     return f"<span style='background:{color};color:white;padding:8px 16px;border-radius:12px;font-size:1.2rem;font-weight:600;display:inline-block;margin:4px;'>{icon} {type_name.capitalize()}</span>"
+
 
 def check_answer(user_choice, correct_multiplier):
     """Check if the user's answer is correct."""
@@ -114,6 +120,7 @@ def check_answer(user_choice, correct_multiplier):
         correct_category = "strong"
 
     return user_choice == correct_category
+
 
 # ======================================================
 # Page Header

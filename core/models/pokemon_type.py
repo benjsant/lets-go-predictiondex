@@ -17,8 +17,9 @@ Each Pokémon can have one or two types, ordered by slot:
 - slot = 2 → secondary type
 """
 
-from sqlalchemy import Column, Integer, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
+
 from core.db.base import Base
 
 

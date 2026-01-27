@@ -27,6 +27,9 @@ Competency block:
       insertion of reference data
 """
 
+from core.models.move_category import MoveCategory
+from core.models.learn_method import LearnMethod
+from core.models.form import Form
 import os
 
 from sqlalchemy import create_engine
@@ -51,22 +54,10 @@ or broken relationships in the database.
 """
 
 # --- Pokémon domain ---
-from core.models.pokemon_species import PokemonSpecies
-from core.models.pokemon import Pokemon
-from core.models.pokemon_stat import PokemonStat
-from core.models.pokemon_type import PokemonType
-from core.models.pokemon_move import PokemonMove
-
-# --- Moves domain ---
-from core.models.move import Move
-from core.models.learn_method import LearnMethod
 
 # --- Types domain ---
-from core.models.type import Type
-from core.models.type_effectiveness import TypeEffectiveness
-from core.models.form import Form
-from core.models.move_category import MoveCategory
 
+# --- Moves domain ---
 
 # ======================================================
 # Database environment configuration

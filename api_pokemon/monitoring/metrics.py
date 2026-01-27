@@ -11,12 +11,12 @@ Metrics collected:
 """
 
 import time
-import psutil
 from typing import Callable
-from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
-from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
 
+import psutil
+from fastapi import Request, Response
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # ============================================================================
 # API Metrics
@@ -99,7 +99,7 @@ system_memory_available = Gauge(
 def track_prediction(model_version: str, duration: float, confidence: float, win_prob: float):
     """
     Track a model prediction.
-    
+
     Args:
         model_version: Version of the model (e.g., 'v2')
         duration: Prediction duration in seconds
@@ -115,7 +115,7 @@ def track_prediction(model_version: str, duration: float, confidence: float, win
 def track_request(method: str, endpoint: str, status: int, duration: float):
     """
     Track an API request.
-    
+
     Args:
         method: HTTP method (GET, POST, etc.)
         endpoint: API endpoint path
@@ -129,7 +129,7 @@ def track_request(method: str, endpoint: str, status: int, duration: float):
 def track_error(method: str, endpoint: str, error_type: str):
     """
     Track an API error.
-    
+
     Args:
         method: HTTP method
         endpoint: API endpoint path
@@ -141,7 +141,7 @@ def track_error(method: str, endpoint: str, error_type: str):
 def update_system_metrics():
     """Update system resource metrics."""
     system_cpu_usage.set(psutil.cpu_percent(interval=0.1))
-    
+
     memory = psutil.virtual_memory()
     system_memory_usage.set(memory.used)
     system_memory_available.set(memory.available)
@@ -155,29 +155,29 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
     """
     Middleware to automatically track API requests and errors.
     """
-    
+
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         """
         Process request and track metrics.
-        
+
         Args:
             request: FastAPI request
             call_next: Next middleware/handler
-            
+
         Returns:
             Response from handler
         """
         # Skip metrics endpoint itself
         if request.url.path == "/metrics":
             return await call_next(request)
-        
+
         # Track request
         start_time = time.time()
-        
+
         try:
             response = await call_next(request)
             duration = time.time() - start_time
-            
+
             # Track successful request
             track_request(
                 method=request.method,
@@ -185,22 +185,22 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
                 status=response.status_code,
                 duration=duration
             )
-            
+
             # Update system metrics periodically
             update_system_metrics()
-            
+
             return response
-            
+
         except Exception as e:
             duration = time.time() - start_time
-            
+
             # Track error
             track_error(
                 method=request.method,
                 endpoint=request.url.path,
                 error_type=type(e).__name__
             )
-            
+
             # Also track as failed request
             track_request(
                 method=request.method,
@@ -208,14 +208,14 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
                 status=500,
                 duration=duration
             )
-            
+
             raise
 
 
 def metrics_middleware(app):
     """
     Add Prometheus middleware to FastAPI app.
-    
+
     Args:
         app: FastAPI application instance
     """
@@ -229,13 +229,13 @@ def metrics_middleware(app):
 def get_metrics() -> Response:
     """
     Generate Prometheus metrics response.
-    
+
     Returns:
         Response with Prometheus metrics in text format
     """
     # Update system metrics before generating response
     update_system_metrics()
-    
+
     return Response(
         content=generate_latest(),
         media_type=CONTENT_TYPE_LATEST

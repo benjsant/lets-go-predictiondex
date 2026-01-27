@@ -8,7 +8,9 @@ that duplicate associations are not created during ETL processes.
 """
 
 from sqlalchemy.orm import Session
+
 from core.models import PokemonMove
+
 from .utils import commit_if_needed
 
 

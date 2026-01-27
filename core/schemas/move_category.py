@@ -1,6 +1,7 @@
 # core/schemas/move_category.py
 from pydantic import BaseModel, ConfigDict
 
+
 class MoveCategoryOut(BaseModel):
     """
     Output schema representing a Pokémon move category.

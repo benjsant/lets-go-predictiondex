@@ -1,8 +1,9 @@
 # interface/services/prediction_service.py
+import random
 from typing import List
+
 from interface.formatters.ui.move_ui import MoveSelectItem
 from interface.formatters.ui.pokemon_ui import PokemonSelectItem
-import random
 
 
 def predict_battle_mock(

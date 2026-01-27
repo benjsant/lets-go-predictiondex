@@ -22,17 +22,18 @@ Each Pokémon:
 """
 
 from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Numeric,
-    Text,
-    ForeignKey,
-    UniqueConstraint,
     TIMESTAMP,
+    Column,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.orm import relationship
+
 from core.db.base import Base
 
 
@@ -130,7 +131,7 @@ class Pokemon(Base):
     form = relationship(
         "Form",
         back_populates="pokemons"
-        )
+    )
 
     __table_args__ = (
         # Ensure only one given form exists per species

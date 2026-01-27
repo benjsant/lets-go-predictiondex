@@ -17,18 +17,19 @@ model classes.
 # Third-party / shared imports
 from core.db.base import Base
 
+from .form import Form
+from .learn_method import LearnMethod
+from .move import Move
+from .move_category import MoveCategory
+from .pokemon import Pokemon
+from .pokemon_move import PokemonMove
+
 # Local model imports (order matters for relationships)
 from .pokemon_species import PokemonSpecies
-from .pokemon import Pokemon
 from .pokemon_stat import PokemonStat
 from .pokemon_type import PokemonType
 from .type import Type
-from .move import Move
-from .pokemon_move import PokemonMove
-from .learn_method import LearnMethod
 from .type_effectiveness import TypeEffectiveness
-from .form import Form
-from .move_category import MoveCategory
 
 __all__ = [
     "Base",

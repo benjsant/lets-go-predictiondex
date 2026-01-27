@@ -23,20 +23,26 @@ Sorties:
     - models/battle_winner_metadata_<version>.pkl
 """
 
-import sys
 import argparse
-from pathlib import Path
-from datetime import datetime
 import pickle
-import joblib  # For RandomForest compression
+import sys
+from datetime import datetime
+from pathlib import Path
 
+import joblib  # For RandomForest compression
 import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.model_selection import GridSearchCV, StratifiedKFold
 import xgboost as xgb
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
+from sklearn.preprocessing import StandardScaler
 
 # MLflow Model Registry
 try:
@@ -71,7 +77,7 @@ XGBOOST_PARAMS = {
     'subsample': 0.8,
     'colsample_bytree': 0.8,
     'tree_method': 'hist',        # CPU-optimized histogram algorithm
-    'predictor': 'cpu_predictor', # Explicit CPU predictor
+    'predictor': 'cpu_predictor',  # Explicit CPU predictor
     'random_state': RANDOM_SEED,
     'n_jobs': -1,                 # Use all CPU cores
     'eval_metric': 'logloss',
@@ -106,7 +112,7 @@ XGBOOST_PARAM_GRID = XGBOOST_PARAM_GRID_FAST
 
 def load_datasets(dataset_version='v1'):
     """Load train and test datasets from parquet files.
-    
+
     Args:
         dataset_version: 'v1' for original datasets, 'v2' for multi-scenario datasets
     """
@@ -132,7 +138,7 @@ def load_datasets(dataset_version='v1'):
 
     print(f"  Train: {len(df_train):,} samples")
     print(f"  Test: {len(df_test):,} samples")
-    
+
     # Check for scenario_type column
     if 'scenario_type' in df_train.columns:
         print(f"  ✅ Multi-scenario dataset detected")
@@ -175,13 +181,13 @@ def filter_by_scenario(df_train, df_test, scenario_type: str):
         f"✅ Filtering scenario_type='{scenario_type}': "
         f"train {before_train:,}→{len(df_train_filtered):,}, test {before_test:,}→{len(df_test_filtered):,}"
     )
-    
+
     # Show class balance after filtering
     train_balance = df_train_filtered['winner'].mean()
     test_balance = df_test_filtered['winner'].mean()
     print(f"   Class balance - Train: A={train_balance*100:.1f}% / B={100-train_balance*100:.1f}%")
     print(f"   Class balance - Test:  A={test_balance*100:.1f}% / B={100-test_balance*100:.1f}%")
-    
+
     return df_train_filtered, df_test_filtered
 
 
@@ -232,12 +238,12 @@ def engineer_features(df_train, df_test):
 
     # === Step 4: Remove categorical columns and IDs ===
     id_features = ['pokemon_a_id', 'pokemon_b_id', 'pokemon_a_name', 'pokemon_b_name', 'a_move_name', 'b_move_name']
-    
+
     # Add scenario_type to columns to drop if present (not used as feature)
     if 'scenario_type' in X_train_encoded.columns:
         id_features.append('scenario_type')
         print("  ℹ️  Removing 'scenario_type' column (metadata, not a feature)")
-    
+
     columns_to_drop = categorical_features + id_features
     if 'scenario_type' in X_train_encoded.columns:
         columns_to_drop.append('scenario_type')
@@ -350,20 +356,20 @@ def train_xgboost(X_train, y_train, use_gridsearch: bool = False, grid_type: str
         # Select parameter grid
         if grid_type == 'extended':
             param_grid = XGBOOST_PARAM_GRID_EXTENDED
-            num_combinations = (len(param_grid['n_estimators']) * len(param_grid['max_depth']) * 
-                              len(param_grid['learning_rate']) * len(param_grid['subsample']) * 
-                              len(param_grid['colsample_bytree']))
+            num_combinations = (len(param_grid['n_estimators']) * len(param_grid['max_depth']) *
+                                len(param_grid['learning_rate']) * len(param_grid['subsample']) *
+                                len(param_grid['colsample_bytree']))
             print(f"\n🔍 Training XGBoost with GridSearchCV (EXTENDED grid: {num_combinations} combinations)...")
         else:
             param_grid = XGBOOST_PARAM_GRID_FAST
-            num_combinations = (len(param_grid['n_estimators']) * len(param_grid['max_depth']) * 
-                              len(param_grid['learning_rate']))
+            num_combinations = (len(param_grid['n_estimators']) * len(param_grid['max_depth']) *
+                                len(param_grid['learning_rate']))
             print(f"\n🔍 Training XGBoost with GridSearchCV (FAST grid: {num_combinations} combinations)...")
-        
+
         cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=RANDOM_SEED)
         base_model = xgb.XGBClassifier(
-            random_state=RANDOM_SEED, 
-            n_jobs=-1, 
+            random_state=RANDOM_SEED,
+            n_jobs=-1,
             eval_metric='logloss',
             tree_method='hist',          # CPU-optimized
             predictor='cpu_predictor'    # Explicit CPU
@@ -385,13 +391,13 @@ def train_xgboost(X_train, y_train, use_gridsearch: bool = False, grid_type: str
     else:
         print("\n🚀 Training XGBoost model (fixed params)...")
         print(f"  Hyperparameters: {XGBOOST_PARAMS}")
-        
+
         # Split for early stopping
         from sklearn.model_selection import train_test_split
         X_tr, X_val, y_tr, y_val = train_test_split(
             X_train, y_train, test_size=0.2, random_state=RANDOM_SEED, stratify=y_train
         )
-        
+
         best_model = xgb.XGBClassifier(**XGBOOST_PARAMS)
         best_model.fit(
             X_tr, y_tr,
@@ -399,7 +405,7 @@ def train_xgboost(X_train, y_train, use_gridsearch: bool = False, grid_type: str
             verbose=False
         )
         best_params = XGBOOST_PARAMS
-        
+
         # Report best iteration
         if hasattr(best_model, 'best_iteration'):
             print(f"  ✅ Best iteration: {best_model.best_iteration}/{best_model.n_estimators}")
@@ -468,7 +474,7 @@ def export_model(model, scalers, feature_columns, metrics, version: str, best_pa
     # Export model with compression based on model type
     model_path = MODELS_DIR / f"battle_winner_model_{version}.pkl"
     model_type = type(model).__name__
-    
+
     if model_type == 'RandomForestClassifier':
         # Use joblib with aggressive compression for RandomForest (5-10x smaller)
         joblib.dump(model, model_path, compress=('zlib', 9))
@@ -566,7 +572,7 @@ def main():
         help="Disable MLflow Model Registry registration"
     )
     args = parser.parse_args()
-    
+
     # Set global paths based on dataset version
     global DATA_DIR, PROCESSED_DIR, FEATURES_DIR
     DATA_DIR = DATA_DIR_V2 if args.dataset_version == 'v2' else DATA_DIR_V1
@@ -598,7 +604,8 @@ def main():
         )
 
         # Train model
-        model, best_params = train_xgboost(X_train, y_train, use_gridsearch=args.use_gridsearch, grid_type=args.grid_type)
+        model, best_params = train_xgboost(
+            X_train, y_train, use_gridsearch=args.use_gridsearch, grid_type=args.grid_type)
 
         # Evaluate
         metrics = evaluate_model(model, X_train, X_test, y_train, y_test)
@@ -619,7 +626,7 @@ def main():
             try:
                 tracker = MLflowTracker(experiment_name=f"battle_winner_{args.version}")
                 tracker.start_run(run_name=f"train_model_{args.version}_{datetime.now().strftime('%Y%m%d_%H%M')}")
-                
+
                 # Log parameters
                 tracker.log_params({
                     'dataset_version': args.dataset_version,
@@ -629,23 +636,23 @@ def main():
                     'grid_type': args.grid_type if args.use_gridsearch else 'none',
                     **(best_params if best_params else {})
                 })
-                
+
                 # Log metrics
                 tracker.log_metrics(metrics)
-                
+
                 # Log model with scalers and metadata
-                tracker.log_model(model, artifact_path=f"model_{args.version}", 
-                                model_type='xgboost', scalers=scalers,
-                                metadata={'feature_columns': feature_columns})
-                
+                tracker.log_model(model, artifact_path=f"model_{args.version}",
+                                  model_type='xgboost', scalers=scalers,
+                                  metadata={'feature_columns': feature_columns})
+
                 # Register in Model Registry
                 model_name = "battle_winner_predictor"
                 description = f"XGBoost model v{args.version} - Accuracy: {metrics['test_accuracy']:.4f}"
                 if args.use_gridsearch:
                     description += f" (GridSearch {args.grid_type})"
-                
+
                 version_number = tracker.register_model(model_name=model_name, description=description)
-                
+
                 # Auto-promote to Production if quality threshold met
                 if version_number and metrics.get('test_accuracy', 0) >= 0.85:
                     print(f"\n🎯 Model meets quality threshold (accuracy >= 0.85)")
@@ -654,7 +661,7 @@ def main():
                 elif version_number:
                     print(f"\n⚠️  Model registered as version {version_number} but not promoted (accuracy < 0.85)")
                     print(f"   Manual promotion: MLflow UI or CLI")
-                
+
                 tracker.end_run()
                 print(f"\n✅ Model registered in MLflow Model Registry")
             except Exception as e:

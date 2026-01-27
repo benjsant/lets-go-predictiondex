@@ -1,6 +1,7 @@
 # core/schemas/form.py
 from pydantic import BaseModel, ConfigDict
 
+
 class FormOut(BaseModel):
     """
     Output schema representing a Pokémon form.

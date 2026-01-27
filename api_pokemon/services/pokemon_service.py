@@ -12,19 +12,14 @@ This service is responsible for:
 - returning ORM objects ready for Pydantic serialization
 """
 
-from typing import List, Optional
-from sqlalchemy.orm import Session, joinedload
-
-from core.models import (
-    Pokemon,
-    PokemonType,
-    Move,
-    PokemonMove,
-    TypeEffectiveness, 
-    Type
-)
 from collections import defaultdict
 from decimal import Decimal
+from typing import List, Optional
+
+from sqlalchemy.orm import Session, joinedload
+
+from core.models import Move, Pokemon, PokemonMove, PokemonType, Type, TypeEffectiveness
+
 
 # -------------------------
 # 🔹 List Pokémon
@@ -44,7 +39,7 @@ def list_pokemon(db: Session) -> List[Pokemon]:
             joinedload(Pokemon.species),
             joinedload(Pokemon.form),
             joinedload(Pokemon.types)
-                .joinedload(PokemonType.type),
+            .joinedload(PokemonType.type),
         )
         .order_by(Pokemon.id)
         .all()
@@ -79,15 +74,15 @@ def get_pokemon_by_id(
             joinedload(Pokemon.form),
             joinedload(Pokemon.stats),
             joinedload(Pokemon.types)
-                .joinedload(PokemonType.type),
+            .joinedload(PokemonType.type),
             joinedload(Pokemon.moves)
-                .joinedload(PokemonMove.move)
-                .joinedload(Move.type),
+            .joinedload(PokemonMove.move)
+            .joinedload(Move.type),
             joinedload(Pokemon.moves)
-                .joinedload(PokemonMove.move)
-                .joinedload(Move.category),
+            .joinedload(PokemonMove.move)
+            .joinedload(Move.category),
             joinedload(Pokemon.moves)
-                .joinedload(PokemonMove.learn_method),
+            .joinedload(PokemonMove.learn_method),
         )
         .filter(Pokemon.id == pokemon_id)
         .one_or_none()
@@ -96,6 +91,8 @@ def get_pokemon_by_id(
 # -------------------------
 # 🔹 Search Pokémon by species name
 # -------------------------
+
+
 def search_pokemon_by_species_name(db: Session, name: str, lang: str = "fr") -> List[Pokemon]:
     """
     Search Pokémon by species name (localized).
@@ -124,6 +121,7 @@ def search_pokemon_by_species_name(db: Session, name: str, lang: str = "fr") -> 
         .order_by(Pokemon.id)
         .all()
     )
+
 
 def compute_pokemon_weaknesses(
     db: Session,

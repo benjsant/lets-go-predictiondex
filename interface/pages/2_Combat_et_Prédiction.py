@@ -1,16 +1,12 @@
 # interface/pages/2_Compare.py
 import streamlit as st
-from interface.utils.ui_helpers import (
-    get_pokemon_options,
-    get_moves_for_pokemon,
-    get_pokemon_weaknesses,
-)
+from utils.pokemon_theme import POKEMON_COLORS, load_custom_css, page_header, type_badge
+
 from interface.services.api_client import predict_best_move
-from utils.pokemon_theme import (
-    load_custom_css,
-    page_header,
-    type_badge,
-    POKEMON_COLORS
+from interface.utils.ui_helpers import (
+    get_moves_for_pokemon,
+    get_pokemon_options,
+    get_pokemon_weaknesses,
 )
 
 # ======================================================
@@ -88,6 +84,8 @@ TYPE_COLORS = {
 # ======================================================
 # Carte Pokémon
 # ======================================================
+
+
 def display_pokemon_card(pokemon):
     st.markdown(f"### {pokemon.name}")
 
@@ -105,6 +103,7 @@ def display_pokemon_card(pokemon):
         stats_keys = ["hp", "attack", "defense", "sp_attack", "sp_defense", "speed"]
         for i, key in enumerate(stats_keys):
             cols[i % 3].metric(key.upper(), int(pokemon.stats.get(key, 0)))
+
 
 # ======================================================
 # Affichage Pokémon côte à côte
@@ -127,8 +126,10 @@ weak_p2 = {w["attacking_type"].capitalize(): float(w["multiplier"])
 
 all_types = sorted(set(weak_p1.keys()) | set(weak_p2.keys()))
 
+
 def format_mult(m):
     return {0.0: "0", 0.25: "¼", 0.5: "½", 1.0: "1", 2.0: "2", 4.0: "4"}.get(m, str(m))
+
 
 def color_mult(m):
     if m == 0:
@@ -141,8 +142,10 @@ def color_mult(m):
         return "#ff7f0e"   # faible
     return "#d62728"       # très faible
 
+
 # Build header row
-header_cells = [f"<div style='width:55px;text-align:center;font-weight:600;color:{POKEMON_COLORS['text_primary']};'>{t}</div>" for t in all_types]
+header_cells = [
+    f"<div style='width:55px;text-align:center;font-weight:600;color:{POKEMON_COLORS['text_primary']};'>{t}</div>" for t in all_types]
 header_row = f"<div style='display:flex;gap:4px;margin-bottom:6px;'><div style='width:110px;'></div>{''.join(header_cells)}</div>"
 
 # Build data rows
@@ -190,21 +193,21 @@ col_moves_a, col_moves_b = st.columns(2)
 # ======================================================
 with col_moves_a:
     st.markdown(f"### 🥊 Moveset de {p1.name}")
-    
+
     moves_a = get_moves_for_pokemon(p1.id)
     if not moves_a:
         st.warning("Aucune attaque disponible.")
         st.stop()
-    
+
     # Filtrer moves offensives uniquement
     offensive_moves_a = [m for m in moves_a if m.power and m.power > 0]
-    
+
     if not offensive_moves_a:
         st.error("Aucune capacité offensive disponible.")
         st.stop()
-    
+
     move_names_a = [m.name for m in offensive_moves_a]
-    
+
     selected_move_names_a = st.multiselect(
         "⚔️ Capacités disponibles",
         options=move_names_a,
@@ -213,7 +216,7 @@ with col_moves_a:
         key="moves_a",
         help="💡 Sélectionne jusqu'à 4 capacités offensives"
     )
-    
+
     if len(selected_move_names_a) < 1:
         st.warning("⚠️ Sélectionne au moins 1 capacité.")
 
@@ -222,22 +225,22 @@ with col_moves_a:
 # ======================================================
 with col_moves_b:
     st.markdown(f"### 🛡️ Moveset de {p2.name}")
-    
+
     if manual_mode:
         moves_b = get_moves_for_pokemon(p2.id)
         if not moves_b:
             st.warning("Aucune attaque disponible.")
             st.stop()
-        
+
         # Filtrer moves offensives uniquement
         offensive_moves_b = [m for m in moves_b if m.power and m.power > 0]
-        
+
         if not offensive_moves_b:
             st.error("Aucune capacité offensive disponible.")
             st.stop()
-        
+
         move_names_b = [m.name for m in offensive_moves_b]
-        
+
         selected_move_names_b = st.multiselect(
             "⚔️ Capacités disponibles",
             options=move_names_b,
@@ -246,16 +249,16 @@ with col_moves_b:
             key="moves_b",
             help="💡 Sélectionne jusqu'à 4 capacités offensives"
         )
-        
+
         if len(selected_move_names_b) < 1:
             st.warning("⚠️ Sélectionne au moins 1 capacité.")
     else:
         selected_move_names_b = None
         st.info("""
         🤖 **Mode automatique**
-        
+
         L'adversaire utilisera toujours sa **meilleure capacité possible** pour chaque scénario.
-        
+
         C'est un "worst-case" : tu affrontes un adversaire qui joue au mieux !
         """)
 
@@ -294,12 +297,12 @@ if st.button("🔮 Lancer la Simulation de Combat", type="primary", use_containe
                 available_moves=selected_move_names_a,
                 available_moves_b=selected_move_names_b  # None si mode auto
             )
-            
+
             # Vérification que l'API a retourné un résultat
             if result is None:
                 st.error("❌ L'API n'a pas retourné de résultat. Vérifiez les logs de l'API pour plus de détails.")
                 st.stop()
-            
+
             if not result.get('recommended_move'):
                 st.error("❌ Résultat invalide de l'API. Aucune capacité recommandée trouvée.")
                 st.stop()
@@ -316,7 +319,15 @@ if st.button("🔮 Lancer la Simulation de Combat", type="primary", use_containe
                 )
             with col_metric2:
                 best_move_data = result['all_moves'][0]
-                type_icon = {"feu": "🔥", "eau": "💧", "plante": "🌿", "électrik": "⚡", "glace": "🧊", "combat": "🥊"}.get(best_move_data['move_type'].lower(), "💫")
+                type_icon = {
+                    "feu": "🔥",
+                    "eau": "💧",
+                    "plante": "🌿",
+                    "électrik": "⚡",
+                    "glace": "🧊",
+                    "combat": "🥊"}.get(
+                    best_move_data['move_type'].lower(),
+                    "💫")
                 st.metric(
                     "💥 Type de la capacité",
                     f"{type_icon} {best_move_data['move_type'].capitalize()}"
@@ -342,7 +353,7 @@ if st.button("🔮 Lancer la Simulation de Combat", type="primary", use_containe
                     icon = "❌"
                     color = "error"
 
-                with st.expander(f"{icon} **#{i} - {move_data['move_name']}** — {win_prob:.1f}%", expanded=(i==1)):
+                with st.expander(f"{icon} **#{i} - {move_data['move_name']}** — {win_prob:.1f}%", expanded=(i == 1)):
                     col1, col2, col3, col4 = st.columns(4)
 
                     col1.metric("Type", move_data['move_type'].capitalize())
@@ -351,7 +362,8 @@ if st.button("🔮 Lancer la Simulation de Combat", type="primary", use_containe
                     col4.metric("Type Mult", f"{move_data['type_multiplier']}x")
 
                     if move_data.get('priority', 0) != 0:
-                        st.caption(f"⚡ Priorité: {move_data['priority']} (attaque {'en premier' if move_data['priority'] > 0 else 'en dernier'})")
+                        st.caption(
+                            f"⚡ Priorité: {move_data['priority']} (attaque {'en premier' if move_data['priority'] > 0 else 'en dernier'})")
 
                     # Verdict
                     if move_data['predicted_winner'] == 'A':

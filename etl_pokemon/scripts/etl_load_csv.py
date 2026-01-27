@@ -60,19 +60,17 @@ from decimal import Decimal
 
 # Ensure all SQLAlchemy models are registered
 import core.models  # noqa: F401
-
-from core.db.session import SessionLocal
-from core.models import (
-    PokemonSpecies,
-    PokemonType,
-    TypeEffectiveness,
-    Form,
-    MoveCategory,
-)
-from core.db.guards.type import upsert_type
 from core.db.guards.move import upsert_move
 from core.db.guards.pokemon import upsert_pokemon
 from core.db.guards.pokemon_type import upsert_pokemon_type
+from core.db.guards.type import upsert_type
+from core.db.session import SessionLocal
+from core.models import (
+    Form,
+    MoveCategory,
+    PokemonSpecies,
+    TypeEffectiveness,
+)
 
 DATA_PATH = "etl_pokemon/data/csv"
 
@@ -197,7 +195,7 @@ def load_move_categories(session):
 def load_moves(session):
     """Extract and load Pokémon moves with type, category, power, accuracy, and description."""
     print("➡ Loading moves...")
-    from core.models import Type, MoveCategory
+    from core.models import MoveCategory, Type
     type_map = {normalize_key(t.name): t.id for t in session.query(Type).all()}
     category_map = {normalize_key(c.name): c.id for c in session.query(MoveCategory).all()}
 
@@ -291,7 +289,7 @@ def load_pokemon(session):
 def load_pokemon_types(session):
     """Associate Pokémon forms with elemental types (slot 1 and slot 2)."""
     print("➡ Loading pokemon types...")
-    from core.models import Type, Pokemon
+    from core.models import Pokemon, Type
 
     type_map = {
         normalize_key(t.name): t.id

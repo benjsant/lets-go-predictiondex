@@ -8,7 +8,9 @@ and reused during ETL processes.
 """
 
 from sqlalchemy.orm import Session
+
 from core.models import Type
+
 from .utils import commit_if_needed
 
 

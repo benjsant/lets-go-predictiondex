@@ -8,6 +8,7 @@ Quick script to verify that the trained model can be loaded and used for predict
 
 import pickle
 from pathlib import Path
+
 import pandas as pd
 
 # Paths

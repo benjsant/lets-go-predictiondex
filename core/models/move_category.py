@@ -8,8 +8,9 @@ Represents the category of a Pokémon move (Physical, Special, Status).
 Used for normalization and referential integrity.
 """
 
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
+
 from core.db.base import Base
 
 

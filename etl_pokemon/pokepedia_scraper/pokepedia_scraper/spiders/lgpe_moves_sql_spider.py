@@ -1,11 +1,11 @@
 import re
+
 import scrapy
+from pokepedia_scraper.items import PokemonMoveItem
 from sqlalchemy.orm import Session
-from sqlalchemy import select
 
 from core.db.session import engine
-from core.models import Pokemon, Form
-from pokepedia_scraper.items import PokemonMoveItem
+from core.models import Form, Pokemon
 
 
 class LetsGoPokemonMovesSQLSpider(scrapy.Spider):
@@ -47,7 +47,7 @@ class LetsGoPokemonMovesSQLSpider(scrapy.Spider):
         - pokemon_name: Poképédia page name
         - form_id: ID of the Pokémon's form
         - starter_form_id: ID of the "starter" form (used for conditional logic)
-        
+
         Yields:
             scrapy.Request: Request object for each eligible Pokémon
         """
@@ -126,7 +126,7 @@ class LetsGoPokemonMovesSQLSpider(scrapy.Spider):
         - Locate the "Par montée en niveau" section on the page
         - Identify the LGPE-specific column in the moves table
         - Parse levels (special cases: "Départ" → 0, "Évolution" → -1, "N.xx" → integer)
-        
+
         Args:
             response (scrapy.http.Response): HTTP response from Poképédia page
 

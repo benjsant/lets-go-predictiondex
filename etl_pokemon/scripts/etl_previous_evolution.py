@@ -20,17 +20,17 @@ RÈGLES MÉTIER
 - ✅ Évite les doublons : ne copie que les moves non possédés
 """
 
-import time
 import logging
-import requests
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from sqlalchemy.orm import Session
+import requests
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import Session
 
 from core.db.session import SessionLocal
-from core.models import Pokemon, Move, LearnMethod, PokemonMove
+from core.models import LearnMethod, Move, Pokemon, PokemonMove
 
 # ---------------------------------------------------------------------
 # Logging
@@ -58,6 +58,8 @@ INCLUDED_FORM_IDS = [BASE_FORM_ID, ALOLA_FORM_ID, STARTER_FORM_ID]
 # ---------------------------------------------------------------------
 # Helpers – PokeAPI
 # ---------------------------------------------------------------------
+
+
 def get_species_data(name_or_id: str) -> dict | None:
     """Retrieve species data from PokeAPI with retries."""
     for _ in range(MAX_RETRIES):
@@ -83,6 +85,7 @@ def get_species_data(name_or_id: str) -> dict | None:
         time.sleep(1)
     return None
 
+
 def walk_chain_for_previous(
     chain: dict,
     target_name: str,
@@ -104,6 +107,8 @@ def walk_chain_for_previous(
 # ---------------------------------------------------------------------
 # Worker
 # ---------------------------------------------------------------------
+
+
 def process_pokemon_moves(
     pokemon_id: int,
     name_pokeapi: str,
@@ -132,7 +137,7 @@ def process_pokemon_moves(
         # Pour les formes Alola, extraire le nom de base pour PokeAPI
         # Ex: "rattata-alola" → chercher species "rattata"
         species_name = name_pokeapi.replace("-alola", "").replace("-starter", "")
-        
+
         species_data = get_species_data(species_name)
         if not species_data or not species_data.get("evolution_chain"):
             return 0
@@ -164,7 +169,7 @@ def process_pokemon_moves(
                 candidates.append(f"{prev_name}-alola")
             elif form_id == STARTER_FORM_ID:
                 candidates.append(f"{prev_name}-starter")
-            
+
             for candidate_name in candidates:
                 base_pokemon = (
                     session.query(Pokemon)
@@ -222,6 +227,8 @@ def process_pokemon_moves(
 # ---------------------------------------------------------------------
 # Main ETL
 # ---------------------------------------------------------------------
+
+
 def inherit_previous_evolution_moves_threaded():
     """
     Main ETL entrypoint.
@@ -277,6 +284,7 @@ def inherit_previous_evolution_moves_threaded():
         "✅ Previous evolution move inheritance completed: %d moves inherited",
         total_inherited
     )
+
 
 # ---------------------------------------------------------------------
 if __name__ == "__main__":

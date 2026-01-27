@@ -13,20 +13,19 @@ This service is responsible for:
 - recommending the best move against an opponent
 """
 
-import pickle
-import joblib
 import os
-from pathlib import Path
-from typing import List, Dict, Optional, Tuple
+import pickle
 from collections import defaultdict
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
+import joblib
 import pandas as pd
-import numpy as np
 from sqlalchemy.orm import Session, joinedload
 
 from core.models import (
-    Pokemon,
     Move,
+    Pokemon,
     PokemonMove,
     PokemonType,
     Type,
@@ -65,11 +64,11 @@ class PredictionModel:
     def load(self):
         """
         Load model artifacts.
-        
+
         Priority:
         1. Try MLflow Model Registry (Production stage)
         2. Fallback to local files (joblib compressed or pickle)
-        
+
         Environment variables:
         - USE_MLFLOW_REGISTRY: Enable/disable registry loading (default: true)
         - MLFLOW_MODEL_NAME: Model name in registry (default: battle_winner_predictor)
@@ -81,40 +80,38 @@ class PredictionModel:
         use_mlflow = os.getenv('USE_MLFLOW_REGISTRY', 'true').lower() == 'true'
         model_name = os.getenv('MLFLOW_MODEL_NAME', 'battle_winner_predictor')
         model_stage = os.getenv('MLFLOW_MODEL_STAGE', 'Production')
-        
-        print(f"🔍 Loading ML model...")
-        
+
+        print("🔍 Loading ML model...")
+
         # Try MLflow Model Registry first
         if use_mlflow and MLFLOW_AVAILABLE:
             try:
                 print(f"   Trying MLflow Model Registry ({model_name} @ {model_stage})...")
-                model_uri = f"models:/{model_name}/{model_stage}"
-                
+
                 # Load model bundle from registry
                 model_bundle = load_model_from_registry(model_name, stage=model_stage)
-                
+
                 if model_bundle:
                     self._model = model_bundle.get('model')
                     self._scalers = model_bundle.get('scalers')
                     self._metadata = model_bundle.get('metadata')
-                    
+
                     if self._model:
-                        print(f"✅ Model loaded from MLflow Registry")
+                        print("✅ Model loaded from MLflow Registry")
                         version_info = model_bundle.get('version', 'unknown')
                         print(f"   Version: {version_info}")
                         return
-                    else:
-                        print(f"⚠️  Model bundle incomplete, falling back to local files")
+                    print("⚠️  Model bundle incomplete, falling back to local files")
                 else:
-                    print(f"⚠️  No model in registry, falling back to local files")
+                    print("⚠️  No model in registry, falling back to local files")
             except Exception as e:
                 print(f"⚠️  MLflow Registry error: {e}")
-                print(f"   Falling back to local files...")
+                print("   Falling back to local files...")
         elif use_mlflow and not MLFLOW_AVAILABLE:
-            print(f"⚠️  MLflow not available, using local files")
-        
+            print("⚠️  MLflow not available, using local files")
+
         # Fallback: Load from local files
-        print(f"   Loading from local files...")
+        print("   Loading from local files...")
         model_path = MODELS_DIR / "battle_winner_model_v2.pkl"
         scalers_path = MODELS_DIR / "battle_winner_scalers_v2.pkl"
         metadata_path = MODELS_DIR / "battle_winner_metadata_v2.pkl"
@@ -137,8 +134,8 @@ class PredictionModel:
 
         with open(metadata_path, 'rb') as f:
             self._metadata = pickle.load(f)
-        
-        print(f"✅ Model loaded from local files")
+
+        print("✅ Model loaded from local files")
 
     @property
     def model(self):
@@ -253,7 +250,7 @@ def select_best_move_for_matchup(
     defender: Pokemon,
     available_moves: List[str],
     type_effectiveness: Dict[Tuple[int, int], float],
-    db: Session
+    _db: Session
 ) -> Optional[Dict]:
     """
     Select the best move for the attacker against the defender.
@@ -263,7 +260,7 @@ def select_best_move_for_matchup(
         defender: Defending Pokemon
         available_moves: List of move names available to the attacker
         type_effectiveness: Type effectiveness chart
-        db: Database session
+        _db: Database session (unused, kept for API compatibility)
 
     Returns:
         Dict with move info and score, or None if no valid moves
@@ -357,8 +354,6 @@ def prepare_features_for_prediction(
     b_type_2 = types_b[1] if len(types_b) > 1 else 'none'
 
     # Get move type names
-    a_move_type = None
-    b_move_type = None
 
     # We need to query the type names
     # For simplicity, we'll pass them from the move_info dicts
@@ -550,7 +545,7 @@ def predict_best_move(
         all_moves_b = [pm.move.name for pm in pokemon_b.moves if pm.move.power is not None]
 
     if not all_moves_b:
-        raise ValueError(f"Pokemon B has no offensive moves available")
+        raise ValueError("Pokemon B has no offensive moves available")
 
     # Try each move for A and predict win probability
     move_results = []

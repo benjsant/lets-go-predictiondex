@@ -8,8 +8,9 @@ This model represents a Pokémon form (Base, Mega, Alola, Starter, etc.).
 It centralizes form information and replaces the boolean flags in Pokemon.
 """
 
-from sqlalchemy import Column, Integer, String, Text, Boolean
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
+
 from core.db.base import Base
 
 

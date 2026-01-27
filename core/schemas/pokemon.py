@@ -13,13 +13,14 @@ These schemas are read-only output models, built from SQLAlchemy ORM
 objects and optimized for clean, stable API contracts.
 """
 
-from typing import List, Optional
 from decimal import Decimal
+from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict
 
+from core.schemas.form import FormOut
 from core.schemas.pokemon_species import PokemonSpeciesOut
 from core.schemas.pokemon_type import PokemonTypeOut
-from core.schemas.form import FormOut
 
 
 # -------------------------
@@ -56,8 +57,6 @@ class PokemonMoveUIOut(BaseModel):
     damage_type: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
-
-
 
 
 # -------------------------

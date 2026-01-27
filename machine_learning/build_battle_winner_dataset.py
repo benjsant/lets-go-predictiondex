@@ -19,13 +19,12 @@ Output:
 
 import os
 import sys
-from pathlib import Path
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime
+from pathlib import Path
 
-import psycopg2
 import pandas as pd
-import numpy as np
+import psycopg2
 from dotenv import load_dotenv
 from sklearn.model_selection import train_test_split
 
@@ -393,7 +392,7 @@ def generate_dataset(pokemon_df, pokemon_moves_df, type_eff):
 
     samples = []
     skipped = 0
-    total = len(pokemon_df) * len(pokemon_df)
+    len(pokemon_df) * len(pokemon_df)
 
     for idx_a, pokemon_a in pokemon_df.iterrows():
         for idx_b, pokemon_b in pokemon_df.iterrows():
@@ -551,8 +550,8 @@ def print_summary(train_df, test_df):
 
     print("\nFeature columns:")
     feature_cols = [c for c in train_df.columns if c not in ['pokemon_a_id', 'pokemon_b_id',
-                                                              'pokemon_a_name', 'pokemon_b_name',
-                                                              'a_move_name', 'b_move_name', 'winner']]
+                                                             'pokemon_a_name', 'pokemon_b_name',
+                                                             'a_move_name', 'b_move_name', 'winner']]
     print(f"  Total: {len(feature_cols)}")
     for col in feature_cols[:10]:
         print(f"    - {col}")

@@ -1,15 +1,14 @@
 # interface/app.py
 import streamlit as st
-import random
 from utils.pokemon_theme import (
-    load_custom_css,
-    page_header,
-    section_header,
+    POKEMON_COLORS,
     feature_card,
     info_box,
-    pokeball_divider,
+    load_custom_css,
+    page_header,
     pikachu_eevee_mascots,
-    POKEMON_COLORS
+    pokeball_divider,
+    section_header,
 )
 
 st.set_page_config(

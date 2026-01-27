@@ -6,14 +6,14 @@ Test Prediction Endpoint
 Quick test script to validate the /predict/best-move endpoint.
 """
 
+from api_pokemon.main import app
+from fastapi.testclient import TestClient
 import sys
 from pathlib import Path
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from fastapi.testclient import TestClient
-from api_pokemon.main import app
 
 # Create test client
 client = TestClient(app)

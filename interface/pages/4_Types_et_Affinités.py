@@ -1,15 +1,11 @@
 # interface/pages/8_Types.py
-import streamlit as st
-import pandas as pd
 from typing import Optional
 
+import pandas as pd
+import streamlit as st
+from utils.pokemon_theme import TYPE_COLORS, load_custom_css, page_header
+
 from interface.services.api_client import get_all_types, get_type_affinities
-from utils.pokemon_theme import (
-    load_custom_css,
-    page_header,
-    type_badge,
-    TYPE_COLORS
-)
 
 # ======================================================
 # Page Config
@@ -26,19 +22,24 @@ load_custom_css()
 # ======================================================
 # Helper Functions
 # ======================================================
+
+
 def clean_text(t: Optional[str]) -> str:
     if not t:
         return ""
     return t.replace("\n", "").replace("\r", "").strip()
 
+
 def normalize_type(t: str) -> str:
     """Normalize type name for consistent matching."""
     return clean_text(t).lower().replace("é", "e").replace("è", "e")
+
 
 def format_multiplier(m: float) -> str:
     """Format multiplier with special symbols."""
     mapping = {0.0: "0", 0.25: "¼", 0.5: "½", 1.0: "1", 2.0: "2", 4.0: "4"}
     return mapping.get(m, str(m))
+
 
 def get_multiplier_color(m: float) -> str:
     """Get background color based on multiplier."""
@@ -55,6 +56,8 @@ def get_multiplier_color(m: float) -> str:
 # ======================================================
 # Load Data
 # ======================================================
+
+
 @st.cache_data(ttl=3600)
 def load_types_data():
     """Load and cache types and affinities."""
@@ -74,6 +77,7 @@ def load_types_data():
         })
 
     return types_list, affinities
+
 
 types_list, affinities = load_types_data()
 
@@ -262,16 +266,19 @@ for attacking_type in type_names_sorted:
 df = pd.DataFrame(matrix_data).T
 
 # Custom styling function
+
+
 def color_multiplier(val):
     """Color cells based on multiplier value."""
     val_clean = val.replace("¼", "0.25").replace("½", "0.5")
     try:
         m = float(val_clean)
-    except:
+    except BaseException:
         m = 1.0
 
     color = get_multiplier_color(m)
     return f'background-color: {color}; color: white; font-weight: 600; text-align: center;'
+
 
 # Display styled dataframe
 st.dataframe(

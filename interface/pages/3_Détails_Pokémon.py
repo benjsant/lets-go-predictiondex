@@ -1,19 +1,16 @@
 # interface/pages/7_Pokemon_Detail.py
-import streamlit as st
-import pandas as pd
-from typing import List, Optional
+from interface.services.pokemon_service import get_pokemon_detail
+from typing import Optional
 
+import pandas as pd
+import streamlit as st
+from utils.pokemon_theme import TYPE_COLORS, load_custom_css, page_header
+
+from interface.formatters.ui.pokemon_ui import PokemonSelectItem
 from interface.utils.ui_helpers import (
     get_pokemon_by_id,
     get_pokemon_options,
     get_pokemon_weaknesses_ui,
-)
-from interface.formatters.ui.pokemon_ui import PokemonSelectItem
-from utils.pokemon_theme import (
-    load_custom_css,
-    page_header,
-    type_badge,
-    TYPE_COLORS
 )
 
 # ======================================================
@@ -31,14 +28,18 @@ load_custom_css()
 # ======================================================
 # Helper Functions
 # ======================================================
+
+
 def clean_text(t: Optional[str]) -> str:
     if not t:
         return ""
     return t.replace("\n", "").replace("\r", "").strip()
 
+
 def normalize_type(t: str) -> str:
     """Normalize type name for consistent matching."""
     return clean_text(t).lower().replace("é", "e").replace("è", "e")
+
 
 def format_type_badge(type_name: str) -> str:
     """Format a type as a colored badge."""
@@ -58,10 +59,12 @@ def format_type_badge(type_name: str) -> str:
     </span>
     """
 
+
 def format_multiplier(m: float) -> str:
     """Format multiplier with special symbols."""
     mapping = {0.0: "0", 0.25: "¼", 0.5: "½", 1.0: "1", 2.0: "2", 4.0: "4"}
     return mapping.get(m, str(m))
+
 
 def affinity_color(m: float) -> str:
     """Get color based on affinity multiplier."""
@@ -74,6 +77,7 @@ def affinity_color(m: float) -> str:
     if m <= 2:
         return "#ff7f0e"   # faible
     return "#d62728"       # très faible
+
 
 # ======================================================
 # Load Pokemon Options
@@ -100,7 +104,7 @@ if pokemon_id_from_query:
         default_id = int(pokemon_id_from_query)
         if default_id not in pokemon_lookup:
             default_id = list(pokemon_lookup.keys())[0]
-    except:
+    except BaseException:
         default_id = list(pokemon_lookup.keys())[0]
 else:
     default_id = list(pokemon_lookup.keys())[0]
@@ -205,7 +209,8 @@ if selected.stats:
         # Ranking
         all_totals = [p.total_stats for p in pokemon_options if p.total_stats]
         all_totals_sorted = sorted(all_totals, reverse=True)
-        rank = all_totals_sorted.index(selected.total_stats) + 1 if selected.total_stats in all_totals_sorted else len(pokemon_options)
+        rank = all_totals_sorted.index(selected.total_stats) + \
+            1 if selected.total_stats in all_totals_sorted else len(pokemon_options)
         st.caption(f"🏆 Classement: #{rank}/{len(pokemon_options)}")
 
 st.divider()
@@ -247,7 +252,7 @@ st.divider()
 st.subheader("📋 Capacités")
 
 # Get full pokemon detail from API to access moves
-from interface.services.pokemon_service import get_pokemon_detail
+
 pokemon_detail = get_pokemon_detail(selected.id)
 
 if pokemon_detail and pokemon_detail.get('moves'):

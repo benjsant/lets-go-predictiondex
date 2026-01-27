@@ -20,6 +20,7 @@ This table is central to:
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
+
 from core.db.base import Base
 
 

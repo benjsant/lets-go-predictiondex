@@ -29,9 +29,9 @@ Competency block:
 - E1: Advanced data transformation and normalization logic
 """
 
-from core.db.session import SessionLocal
-from core.models import Pokemon, PokemonSpecies, Form
 from core.db.guards.pokemon_move import upsert_pokemon_move
+from core.db.session import SessionLocal
+from core.models import Form, Pokemon, PokemonSpecies
 
 
 def inherit_mega_moves():

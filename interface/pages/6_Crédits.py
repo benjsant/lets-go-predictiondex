@@ -1,13 +1,13 @@
 # interface/pages/3_Credits.py
 import streamlit as st
 from utils.pokemon_theme import (
+    POKEMON_COLORS,
+    info_box,
     load_custom_css,
     page_header,
-    section_header,
-    info_box,
-    pokeball_divider,
     pikachu_eevee_mascots,
-    POKEMON_COLORS
+    pokeball_divider,
+    section_header,
 )
 
 st.set_page_config(

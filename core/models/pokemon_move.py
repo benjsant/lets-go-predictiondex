@@ -24,13 +24,14 @@ It is a core building block of the project:
 """
 
 from sqlalchemy import (
-    Column,
-    Integer,
-    ForeignKey,
-    UniqueConstraint,
     CheckConstraint,
+    Column,
+    ForeignKey,
+    Integer,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
+
 from core.db.base import Base
 
 

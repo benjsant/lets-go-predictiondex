@@ -16,23 +16,23 @@ This layer:
 """
 
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Query, Depends
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from core.db.session import get_db
 from api_pokemon.services.type_service import (
-    list_types,
     get_type_affinities,
     get_type_affinities_by_name,
     list_pokemon_by_type,
     list_pokemon_by_type_name,
+    list_types,
 )
-
-from core.schemas.type import TypeOut
-from core.schemas.type_effectiveness import TypeEffectivenessOut
+from core.db.session import get_db
+from core.schemas.form import FormOut
 from core.schemas.pokemon import PokemonListItem
 from core.schemas.pokemon_type import PokemonTypeOut
-from core.schemas.form import FormOut
+from core.schemas.type import TypeOut
+from core.schemas.type_effectiveness import TypeEffectivenessOut
 
 router = APIRouter(prefix="/types", tags=["Types"])
 

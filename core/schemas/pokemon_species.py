@@ -16,6 +16,7 @@ serves as a stable reference for Pokédex-level information.
 """
 
 from typing import Optional
+
 from pydantic import BaseModel, ConfigDict
 
 

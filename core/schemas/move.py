@@ -19,8 +19,10 @@ These schemas are designed to:
 - ensure consistent responses across endpoints.
 """
 
-from typing import Optional, List
+from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict
+
 from core.schemas.type import TypeOut
 
 
@@ -102,6 +104,7 @@ class MoveWithPokemons(MoveDetail):
     - GET /moves/{id}
     """
     pokemons: List[MovePokemonOut]
+
 
 class MoveSelectableOut(BaseModel):
     """

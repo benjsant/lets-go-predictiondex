@@ -26,12 +26,12 @@ Competency block:
 - E1: Data integration, relational modeling, ETL robustness
 """
 
-from sqlalchemy.orm import Session
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import Session
 
 from core.db.session import engine
-from core.models import Move, LearnMethod, PokemonMove
+from core.models import LearnMethod, Move, PokemonMove
 
 
 class PokemonMovePipeline:

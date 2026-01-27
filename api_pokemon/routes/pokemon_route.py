@@ -1,25 +1,25 @@
 # api_pokemon/routes/pokemon_route.py
 
 from typing import List
-from fastapi import APIRouter, HTTPException, Query, Depends
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from core.db.session import get_db
 from api_pokemon.services.pokemon_service import (
-    list_pokemon,
+    compute_pokemon_weaknesses,
     get_pokemon_by_id,
+    list_pokemon,
     search_pokemon_by_species_name,
 )
-
+from core.db.session import get_db
+from core.schemas.form import FormOut
 from core.schemas.pokemon import (
-    PokemonListItem,
     PokemonDetail,
+    PokemonListItem,
     PokemonMoveUIOut,
 )
 from core.schemas.pokemon_type import PokemonTypeOut
-from core.schemas.form import FormOut
 from core.schemas.pokemon_weakness import PokemonWeaknessOut
-from api_pokemon.services.pokemon_service import compute_pokemon_weaknesses
 
 router = APIRouter(prefix="/pokemon", tags=["Pokemon"])
 
@@ -140,6 +140,7 @@ def get_pokemon_detail(
             for pm in pokemon.moves
         ],
     )
+
 
 @router.get(
     "/{pokemon_id}/weaknesses",

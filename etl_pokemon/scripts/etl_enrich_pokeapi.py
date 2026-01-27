@@ -17,17 +17,17 @@ Execution:
 - Competency Block: E1
 """
 
-import time
-from decimal import Decimal
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from decimal import Decimal
 
 import requests
 from sqlalchemy.orm import Session
 
-from core.db.session import SessionLocal
-from core.models import Pokemon, PokemonStat, Form
 from core.db.guards.pokemon_stats import upsert_pokemon_stats
+from core.db.session import SessionLocal
+from core.models import Form, Pokemon
 
 # ---------------------------------------------------------------------
 # Logging configuration
@@ -54,6 +54,8 @@ POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon/{}"
 # ---------------------------------------------------------------------
 # PokeAPI Extraction
 # ---------------------------------------------------------------------
+
+
 def get_pokemon_data(name: str, retries: int = 3, delay: int = 2) -> dict | None:
     """Retrieve Pokémon data from PokeAPI."""
     url = POKEAPI_URL.format(name.lower())
@@ -84,6 +86,8 @@ def get_pokemon_data(name: str, retries: int = 3, delay: int = 2) -> dict | None
 # ---------------------------------------------------------------------
 # Worker
 # ---------------------------------------------------------------------
+
+
 def process_pokemon(pokemon_id: int, starter_form_id: int) -> str | None:
     """Enrich a single Pokémon record using PokeAPI data."""
     session: Session = SessionLocal()
@@ -135,6 +139,8 @@ def process_pokemon(pokemon_id: int, starter_form_id: int) -> str | None:
 # ---------------------------------------------------------------------
 # Entry Point
 # ---------------------------------------------------------------------
+
+
 def main():
     """Execute PokeAPI enrichment for all Pokémon."""
     session: Session = SessionLocal()
@@ -155,6 +161,7 @@ def main():
                 updated += 1
 
     logger.info("✅ PokeAPI enrichment completed: %s Pokémon enriched", updated)
+
 
 # ---------------------------------------------------------------------
 if __name__ == "__main__":
