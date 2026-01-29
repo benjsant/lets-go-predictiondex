@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -135,7 +135,7 @@ jobs:
           echo "📛 Badge generated: $SCORE/100 - $LABEL"
 
       - name: Upload validation report (HTML)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: monitoring-validation-report
           path: |
@@ -146,7 +146,7 @@ jobs:
 
       - name: Upload validation output
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: validation-output
           path: validation_output.txt
@@ -252,7 +252,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download badge
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: monitoring-validation-report
 
