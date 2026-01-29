@@ -79,44 +79,44 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     st.markdown(f"""
-    <div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['primary']};'>
-        <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>🐍 Backend</h4>
-        <ul style='color:{POKEMON_COLORS['text_primary']};'>
-            <li><strong>Python 3.11+</strong></li>
-            <li><strong>FastAPI</strong> - API REST</li>
-            <li><strong>SQLAlchemy</strong> - ORM</li>
-            <li><strong>PostgreSQL</strong> - Base de données</li>
-            <li><strong>Pydantic</strong> - Validation</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+<div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['primary']};'>
+    <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>🐍 Backend</h4>
+    <ul style='color:{POKEMON_COLORS['text_primary']};'>
+        <li><strong>Python 3.11+</strong></li>
+        <li><strong>FastAPI</strong> - API REST</li>
+        <li><strong>SQLAlchemy</strong> - ORM</li>
+        <li><strong>PostgreSQL</strong> - Base de données</li>
+        <li><strong>Pydantic</strong> - Validation</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
 
 with col2:
     st.markdown(f"""
-    <div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['primary_alt']};'>
-        <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>🤖 Machine Learning</h4>
-        <ul style='color:{POKEMON_COLORS['text_primary']};'>
-            <li><strong>XGBoost</strong> - Modèle ML</li>
-            <li><strong>Scikit-learn</strong> - Preprocessing</li>
-            <li><strong>Pandas</strong> - Data manipulation</li>
-            <li><strong>NumPy</strong> - Calculs numériques</li>
-            <li><strong>Joblib</strong> - Serialization</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+<div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['primary_alt']};'>
+    <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>🤖 Machine Learning</h4>
+    <ul style='color:{POKEMON_COLORS['text_primary']};'>
+        <li><strong>XGBoost</strong> - Modèle ML</li>
+        <li><strong>Scikit-learn</strong> - Preprocessing</li>
+        <li><strong>Pandas</strong> - Data manipulation</li>
+        <li><strong>NumPy</strong> - Calculs numériques</li>
+        <li><strong>Joblib</strong> - Serialization</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
 
 with col3:
     st.markdown(f"""
-    <div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['accent']};'>
-        <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>🎨 Frontend</h4>
-        <ul style='color:{POKEMON_COLORS['text_primary']};'>
-            <li><strong>Streamlit</strong> - UI Framework</li>
-            <li><strong>HTML/CSS</strong> - Styling custom</li>
-            <li><strong>Requests</strong> - API client</li>
-            <li><strong>Docker</strong> - Containerisation</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+<div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['accent']};'>
+    <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>🎨 Frontend</h4>
+    <ul style='color:{POKEMON_COLORS['text_primary']};'>
+        <li><strong>Streamlit</strong> - UI Framework</li>
+        <li><strong>HTML/CSS</strong> - Styling custom</li>
+        <li><strong>Requests</strong> - API client</li>
+        <li><strong>Docker</strong> - Containerisation</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
 
 pokeball_divider()
 
@@ -191,39 +191,49 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.markdown(f"""
-    <div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border:2px solid {POKEMON_COLORS['primary']};'>
-        <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>📚 Pipeline ETL - 3 Sources</h4>
-        <ul style='color:{POKEMON_COLORS['text_primary']};line-height:1.8;'>
-            <li><strong>Source 1 : CSV manuels</strong><br>
-            <small style='color:{POKEMON_COLORS['text_secondary']};'>• 187 Pokémon : noms (FR/EN), types, formes (Alola, Mega)<br>
-            • 225 capacités : noms, type, puissance, précision, PP<br>
-            • 323 affinités de types : multiplicateurs de dégâts</small></li>
-
-            <li><strong>Source 2 : PokéAPI REST</strong><br>
-            <small style='color:{POKEMON_COLORS['text_secondary']};'>Enrichissement automatique via appels HTTP GET<br>
-            • Statistiques de combat : HP, Attaque, Défense, Vitesse<br>
-            • Sprites PNG des Pokémon</small></li>
-
-            <li><strong>Source 3 : Web Scraping Pokepedia</strong><br>
-            <small style='color:{POKEMON_COLORS['text_secondary']};'>Scrapy spider pour détails capacités Let's Go<br>
-            Puissance, précision, PP, descriptions françaises</small></li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+<div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border:2px solid {POKEMON_COLORS['primary']};'>
+    <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>📚 Pipeline ETL - 3 Sources</h4>
+    <ul style='color:{POKEMON_COLORS['text_primary']};line-height:1.8;list-style-position:outside;padding-left:20px;'>
+        <li style='margin-bottom:16px;'>
+            <strong>Source 1 : CSV manuels</strong>
+            <ul style='list-style-type:none;padding-left:0;margin-top:6px;'>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– 187 Pokémon : noms (FR/EN), types, formes (Alola, Mega)</li>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– 225 capacités : noms, type, puissance, précision, PP</li>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– 323 affinités de types : multiplicateurs de dégâts</li>
+            </ul>
+        </li>
+        <li style='margin-bottom:16px;'>
+            <strong>Source 2 : PokéAPI REST</strong>
+            <ul style='list-style-type:none;padding-left:0;margin-top:6px;'>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>Enrichissement automatique via appels HTTP GET</li>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– Statistiques de combat : HP, Attaque, Défense, Vitesse</li>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– Sprites PNG des Pokémon</li>
+            </ul>
+        </li>
+        <li style='margin-bottom:0;'>
+            <strong>Source 3 : Web Scraping Pokepedia</strong>
+            <ul style='list-style-type:none;padding-left:0;margin-top:6px;'>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>Scrapy spider pour détails capacités Let's Go</li>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– Puissance, précision, PP, descriptions françaises</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
 
 with col2:
     st.markdown(f"""
-    <div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border:2px solid {POKEMON_COLORS['primary_alt']};'>
-        <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>⚙️ Traitements appliqués</h4>
-        <ul style='color:{POKEMON_COLORS['text_primary']};'>
-            <li>Normalisation des noms (français)</li>
-            <li>Calcul des dégâts avec formule Let's Go</li>
-            <li>Génération de features ML</li>
-            <li>Simulation de 898,612 combats</li>
-            <li>Entraînement XGBoost</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+<div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border:2px solid {POKEMON_COLORS['primary_alt']};'>
+    <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>⚙️ Traitements appliqués</h4>
+    <ul style='color:{POKEMON_COLORS['text_primary']};'>
+        <li>Normalisation des noms (français)</li>
+        <li>Calcul des dégâts avec formule Let's Go</li>
+        <li>Génération de features ML</li>
+        <li>Simulation de 898,612 combats</li>
+        <li>Entraînement XGBoost</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
 
 pokeball_divider()
 
@@ -311,28 +321,28 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.markdown(f"""
-    <div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['success']};'>
-        <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>📊 Données stockées</h4>
-        <ul style='color:{POKEMON_COLORS['text_primary']};'>
-            <li><strong>Base de données PostgreSQL</strong> : Uniquement données Pokémon (stats, types, capacités)</li>
-            <li><strong>Aucune table utilisateur</strong> : Pas de comptes, pas d'historique personnel</li>
-            <li><strong>Données de jeu uniquement</strong> : Issues de PokéAPI et Pokepedia</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+<div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['success']};'>
+    <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>📊 Données stockées</h4>
+    <ul style='color:{POKEMON_COLORS['text_primary']};'>
+        <li><strong>Base de données PostgreSQL</strong> : Uniquement données Pokémon (stats, types, capacités)</li>
+        <li><strong>Aucune table utilisateur</strong> : Pas de comptes, pas d'historique personnel</li>
+        <li><strong>Données de jeu uniquement</strong> : Issues de PokéAPI et Pokepedia</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
 
 with col2:
     st.markdown(f"""
-    <div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['info']};'>
-        <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>📈 Métriques techniques</h4>
-        <ul style='color:{POKEMON_COLORS['text_primary']};'>
-            <li><strong>Prometheus</strong> : Métriques agrégées (latence, nombre de requêtes)</li>
-            <li><strong>Pas d'IP collectées</strong> : Aucune identification possible</li>
-            <li><strong>Session locale</strong> : Streamlit utilise une session volatile (score quiz, sélections UI)</li>
-            <li><strong>Données anonymes</strong> : Aucune possibilité de relier à une personne</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+<div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['info']};'>
+    <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>📈 Métriques techniques</h4>
+    <ul style='color:{POKEMON_COLORS['text_primary']};'>
+        <li><strong>Prometheus</strong> : Métriques agrégées (latence, nombre de requêtes)</li>
+        <li><strong>Pas d'IP collectées</strong> : Aucune identification possible</li>
+        <li><strong>Session locale</strong> : Streamlit utilise une session volatile (score quiz, sélections UI)</li>
+        <li><strong>Données anonymes</strong> : Aucune possibilité de relier à une personne</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -342,11 +352,13 @@ st.markdown(f"""
     <p style='color:{POKEMON_COLORS['text_primary']};line-height:1.8;'>
         Ce projet pédagogique <strong>ne collecte, ne stocke et ne traite aucune donnée personnelle</strong>.
         L'application fonctionne entièrement sans identification des utilisateurs.
-        <br><br>
+    </p>
+    <p style='color:{POKEMON_COLORS['text_primary']};line-height:1.8;'>
         Les seules données présentes dans le système sont des <strong>statistiques de jeu Pokémon</strong>
         (HP, Attaque, Défense, etc.) et des <strong>métriques techniques agrégées</strong> pour le monitoring
         (nombre de requêtes API, temps de réponse).
-        <br><br>
+    </p>
+    <p style='color:{POKEMON_COLORS['text_primary']};line-height:1.8;'>
         <strong>Aucune donnée à caractère personnel</strong> au sens de l'article 4 du RGPD n'est collectée.
         Le projet est donc <strong>naturellement conforme au RGPD</strong> par absence de traitement
         de données personnelles.
@@ -367,12 +379,15 @@ st.markdown(f"""
     <p style='color:{POKEMON_COLORS['text_primary']};line-height:1.8;'>
         <strong>Pokémon</strong> et tous les noms de personnages Pokémon sont des <strong>marques déposées</strong> de
         <strong>Nintendo</strong>, <strong>Creatures Inc.</strong> et <strong>GAME FREAK Inc.</strong>
-        <br><br>
+    </p>
+    <p style='color:{POKEMON_COLORS['text_primary']};line-height:1.8;'>
         © 1995–2026 Nintendo / Creatures Inc. / GAME FREAK Inc.
-        <br><br>
+    </p>
+    <p style='color:{POKEMON_COLORS['text_primary']};line-height:1.8;'>
         Ce projet est un <strong>projet pédagogique à but non lucratif</strong> développé dans le cadre d'une
         <strong>certification RNCP Concepteur Développeur d'Applications</strong> (Niveau 6).
-        <br><br>
+    </p>
+    <p style='color:{POKEMON_COLORS['text_primary']};line-height:1.8;'>
         <strong>Usage éducatif protégé :</strong> Ce projet bénéficie de l'<strong>exception pédagogique</strong>
         (article L122-5 du Code de la Propriété Intellectuelle, loi DADVSI du 1er août 2006) qui autorise
         l'utilisation d'extraits d'œuvres à des fins exclusives d'illustration dans le cadre de l'enseignement
@@ -387,43 +402,53 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.markdown(f"""
-    <div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['info']};'>
-        <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>📚 Sources de Données Tierces</h4>
-        <ul style='color:{POKEMON_COLORS['text_primary']};line-height:1.8;'>
-            <li><strong>1. CSV manuels (3 fichiers)</strong><br>
-            <small style='color:{POKEMON_COLORS['text_secondary']};'>• 225 capacités + 187 Pokémon + 323 affinités de types<br>
-            • Compilés depuis sources communautaires Pokémon</small></li>
-
-            <li style='margin-top:10px;'><strong>2. PokéAPI</strong> (pokeapi.co)<br>
-            <small style='color:{POKEMON_COLORS['text_secondary']};'>API RESTful open-source (non affiliée à Nintendo)<br>
-            • Statistiques de combat : HP, Attaque, Défense, Vitesse<br>
-            • Sprites et images des Pokémon</small></li>
-
-            <li style='margin-top:10px;'><strong>3. Pokepedia</strong> (pokepedia.fr)<br>
-            <small style='color:{POKEMON_COLORS['text_secondary']};'>Web scraping (Scrapy) - Licence CC-BY-SA<br>
-            • Détails capacités : puissance, précision, PP</small></li>
-        </ul>
-        <p style='color:{POKEMON_COLORS['text_secondary']};font-size:0.9rem;margin-top:10px;'>
+<div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['info']};'>
+    <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>📚 Sources de Données Tierces</h4>
+    <ul style='color:{POKEMON_COLORS['text_primary']};line-height:1.8;list-style-position:outside;padding-left:20px;'>
+        <li style='margin-bottom:16px;'>
+            <strong>1. CSV manuels (3 fichiers)</strong>
+            <ul style='list-style-type:none;padding-left:0;margin-top:6px;'>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– 225 capacités + 187 Pokémon + 323 affinités de types</li>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– Compilés depuis sources communautaires Pokémon</li>
+            </ul>
+        </li>
+        <li style='margin-bottom:16px;'>
+            <strong>2. PokéAPI</strong> (pokeapi.co)
+            <ul style='list-style-type:none;padding-left:0;margin-top:6px;'>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>API RESTful open-source (non affiliée à Nintendo)</li>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– Statistiques de combat : HP, Attaque, Défense, Vitesse</li>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– Sprites et images des Pokémon</li>
+            </ul>
+        </li>
+        <li style='margin-bottom:0;'>
+            <strong>3. Pokepedia</strong> (pokepedia.fr)
+            <ul style='list-style-type:none;padding-left:0;margin-top:6px;'>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>Web scraping (Scrapy) – Licence CC-BY-SA</li>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– Détails capacités : puissance, précision, PP</li>
+            </ul>
+        </li>
+    </ul>
+    <p style='color:{POKEMON_COLORS['text_secondary']};font-size:0.9rem;margin-top:12px;'>
         <strong>⚖️ Conformité :</strong> Statistiques de jeu publiques utilisées dans un cadre strictement pédagogique.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 with col2:
     st.markdown(f"""
-    <div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['success']};'>
-        <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>🎓 Cadre Pédagogique</h4>
-        <ul style='color:{POKEMON_COLORS['text_primary']};'>
-            <li><strong>Objectif :</strong> Démonstration de compétences techniques (data science, ML, API)</li>
-            <li><strong>Public :</strong> Jury de certification RNCP, formateurs, étudiants</li>
-            <li><strong>Usage :</strong> Non-commercial, exclusivement éducatif</li>
-            <li><strong>Certification :</strong> RNCP Niveau 6 "Concepteur Développeur d'Applications"</li>
-        </ul>
-        <p style='color:{POKEMON_COLORS['text_secondary']};font-size:0.9rem;margin-top:10px;'>
+<div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['success']};'>
+    <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>🎓 Cadre Pédagogique</h4>
+    <ul style='color:{POKEMON_COLORS['text_primary']};'>
+        <li><strong>Objectif :</strong> Démonstration de compétences techniques (data science, ML, API)</li>
+        <li><strong>Public :</strong> Jury de certification RNCP, formateurs, étudiants</li>
+        <li><strong>Usage :</strong> Non-commercial, exclusivement éducatif</li>
+        <li><strong>Certification :</strong> RNCP Niveau 6 "Concepteur Développeur d'Applications"</li>
+    </ul>
+    <p style='color:{POKEMON_COLORS['text_secondary']};font-size:0.9rem;margin-top:10px;'>
         Aucune exploitation commerciale, aucune revente, aucun profit généré.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 pokeball_divider()
 
@@ -436,29 +461,31 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.markdown(f"""
-    <div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['info']};'>
-        <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>⚖️ Usage Pédagogique</h4>
-        <p style='color:{POKEMON_COLORS['text_primary']};'>
+<div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['info']};'>
+    <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>⚖️ Usage Pédagogique</h4>
+    <p style='color:{POKEMON_COLORS['text_primary']};'>
         Ce projet est destiné à un usage <strong>pédagogique et expérimental</strong>.
-        <br><br>
+    </p>
+    <p style='color:{POKEMON_COLORS['text_primary']};'>
         Les données Pokémon proviennent de <strong>PokéAPI</strong> et sont utilisées
         dans le respect de leurs conditions d'utilisation.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 with col2:
     st.markdown(f"""
-    <div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['success']};'>
-        <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>🎓 Open Source</h4>
-        <p style='color:{POKEMON_COLORS['text_primary']};'>
+<div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:12px;border-left:4px solid {POKEMON_COLORS['success']};'>
+    <h4 style='color:{POKEMON_COLORS['secondary']};margin-top:0;'>🎓 Open Source</h4>
+    <p style='color:{POKEMON_COLORS['text_primary']};'>
         Le code source peut être consulté, forké et adapté pour
         vos propres projets d'apprentissage.
-        <br><br>
+    </p>
+    <p style='color:{POKEMON_COLORS['text_primary']};'>
         N'hésitez pas à expérimenter et à partager vos améliorations !
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 pokeball_divider()
 

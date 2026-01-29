@@ -1,0 +1,268 @@
+name: Monitoring Validation
+
+on:
+  push:
+    branches: [ main, monitoring_grafana_evidently, develop ]
+  pull_request:
+    branches: [ main, monitoring_grafana_evidently ]
+  workflow_dispatch:
+    inputs:
+      n_predictions:
+        description: 'Number of test predictions to generate'
+        required: false
+        default: '100'
+
+jobs:
+  validate-monitoring:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          POSTGRES_USER=letsgo_user
+          POSTGRES_PASSWORD=letsgo_password
+          POSTGRES_DB=letsgo_db
+          POSTGRES_HOST=db
+          POSTGRES_PORT=5432
+          DEV_MODE=true
+          API_KEY_REQUIRED=true
+          API_KEYS="test_key_for_monitoring_validation,BgQJ2_Ur4uYKBsw6Jf4TI_yfA6u0BFwb4a1YbOSmMVQ"
+          DISABLE_MLFLOW_TRACKING=false
+          USE_MLFLOW_REGISTRY=false
+          ML_SKIP_IF_EXISTS=true
+          EOF
+
+      - name: Start all services
+        run: |
+          docker compose up -d
+          echo "⏳ Waiting for services to be ready..."
+
+      - name: Wait for PostgreSQL
+        run: |
+          echo "Waiting for PostgreSQL..."
+          timeout 60 bash -c 'until docker compose exec -T db pg_isready -U letsgo_user; do sleep 2; done'
+          echo "✅ PostgreSQL ready"
+
+      - name: Wait for API
+        run: |
+          echo "Waiting for API..."
+          timeout 120 bash -c 'until curl -sf http://localhost:8080/health; do sleep 3; done'
+          echo "✅ API ready"
+
+      - name: Wait for Prometheus
+        run: |
+          echo "Waiting for Prometheus..."
+          timeout 60 bash -c 'until curl -sf http://localhost:9091/-/healthy; do sleep 3; done'
+          echo "✅ Prometheus ready"
+
+      - name: Wait for Grafana
+        run: |
+          echo "Waiting for Grafana..."
+          timeout 60 bash -c 'until curl -sf http://localhost:3001/api/health; do sleep 3; done'
+          echo "✅ Grafana ready"
+
+      - name: Wait for MLflow
+        run: |
+          echo "Waiting for MLflow..."
+          timeout 60 bash -c 'until curl -sf http://localhost:5001/health; do sleep 3; done'
+          echo "✅ MLflow ready"
+
+      - name: Check all services status
+        run: |
+          echo "📊 Services Status:"
+          docker compose ps
+          echo ""
+          echo "🔍 Service Health Checks:"
+          echo "- API: $(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/health)"
+          echo "- Prometheus: $(curl -s -o /dev/null -w '%{http_code}' http://localhost:9091/-/healthy)"
+          echo "- Grafana: $(curl -s -o /dev/null -w '%{http_code}' http://localhost:3001/api/health)"
+          echo "- MLflow: $(curl -s -o /dev/null -w '%{http_code}' http://localhost:5001/health)"
+          echo "- pgAdmin: $(curl -s -o /dev/null -w '%{http_code}' http://localhost:5050)"
+
+      - name: Install validation dependencies
+        run: |
+          pip install requests
+
+      - name: Run Monitoring Validation Script
+        id: validation
+        run: |
+          echo "🎯 Running monitoring validation..."
+          python tests/integration/test_monitoring_validation.py | tee validation_output.txt
+
+          # Extract score from output
+          SCORE=$(grep -oP 'SCORE DE VALIDATION: \K\d+' validation_output.txt || echo "0")
+          echo "score=$SCORE" >> $GITHUB_OUTPUT
+          echo "✅ Validation completed with score: $SCORE/100"
+
+      - name: Generate monitoring badge
+        run: |
+          SCORE="${{ steps.validation.outputs.score }}"
+          if [ "$SCORE" -ge 90 ]; then
+            COLOR="success"
+            LABEL="Excellent"
+          elif [ "$SCORE" -ge 75 ]; then
+            COLOR="green"
+            LABEL="Good"
+          elif [ "$SCORE" -ge 60 ]; then
+            COLOR="yellow"
+            LABEL="Average"
+          else
+            COLOR="red"
+            LABEL="Poor"
+          fi
+
+          # Create badge JSON
+          mkdir -p reports/badges
+          cat > reports/badges/monitoring.json << EOF
+          {
+            "schemaVersion": 1,
+            "label": "Monitoring",
+            "message": "$SCORE/100 - $LABEL",
+            "color": "$COLOR"
+          }
+          EOF
+
+          echo "📛 Badge generated: $SCORE/100 - $LABEL"
+
+      - name: Upload validation report (HTML)
+        uses: actions/upload-artifact@v3
+        with:
+          name: monitoring-validation-report
+          path: |
+            reports/monitoring/validation_report.html
+            reports/monitoring/validation_report.json
+            reports/badges/monitoring.json
+          retention-days: 90
+
+      - name: Upload validation output
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: validation-output
+          path: validation_output.txt
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const score = '${{ steps.validation.outputs.score }}';
+            let emoji = '🏆';
+            let verdict = 'Excellent';
+
+            if (score < 90) {
+              emoji = '✅';
+              verdict = 'Good';
+            }
+            if (score < 75) {
+              emoji = '⚠️';
+              verdict = 'Average';
+            }
+            if (score < 60) {
+              emoji = '❌';
+              verdict = 'Poor';
+            }
+
+            const body = `## ${emoji} Monitoring Validation Results
+
+            **Score: ${score}/100** - ${verdict}
+
+            ### Services Validated:
+            - ✅ API (FastAPI)
+            - ✅ PostgreSQL
+            - ✅ Prometheus
+            - ✅ Grafana
+            - ✅ MLflow
+            - ✅ pgAdmin
+
+            ### Validation Checks:
+            - Services health
+            - Metrics collection
+            - Prometheus targets
+            - Grafana datasources
+            - Alert configuration
+            - Drift detection
+
+            📊 [Download full HTML report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Check if validation passed
+        run: |
+          SCORE="${{ steps.validation.outputs.score }}"
+          echo "Final Score: $SCORE/100"
+
+          if [ "$SCORE" -lt 60 ]; then
+            echo "❌ Validation failed: Score too low ($SCORE < 60)"
+            exit 1
+          elif [ "$SCORE" -lt 75 ]; then
+            echo "⚠️ Validation warning: Score could be improved ($SCORE < 75)"
+          else
+            echo "✅ Validation passed: Excellent score!"
+          fi
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          echo "📋 Docker Compose Logs:"
+          docker compose logs --tail=100
+
+          echo ""
+          echo "📋 API Logs:"
+          docker compose logs api --tail=50
+
+          echo ""
+          echo "📋 Prometheus Logs:"
+          docker compose logs prometheus --tail=50
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "🧹 Cleaning up..."
+          docker compose down -v
+          docker system prune -f
+
+  publish-badge:
+    runs-on: ubuntu-latest
+    needs: validate-monitoring
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download badge
+        uses: actions/download-artifact@v3
+        with:
+          name: monitoring-validation-report
+
+      - name: Commit badge to gh-pages
+        run: |
+          mkdir -p badges
+          cp reports/badges/monitoring.json badges/monitoring.json
+
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add badges/monitoring.json
+          git commit -m "Update monitoring validation badge [skip ci]" || echo "No changes to commit"
+          git push origin gh-pages || echo "Nothing to push"

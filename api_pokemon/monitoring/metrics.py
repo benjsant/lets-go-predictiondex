@@ -59,10 +59,11 @@ model_prediction_duration_seconds = Histogram(
     buckets=[0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0]
 )
 
-model_confidence_score = Gauge(
+model_confidence_score = Histogram(
     'model_confidence_score',
-    'Model prediction confidence score (0-1)',
-    ['model_version']
+    'Distribution of model prediction confidence scores (0-1)',
+    ['model_version'],
+    buckets=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 1.0]
 )
 
 model_win_probability = Histogram(
@@ -108,7 +109,7 @@ def track_prediction(model_version: str, duration: float, confidence: float, win
     """
     model_predictions_total.labels(model_version=model_version).inc()
     model_prediction_duration_seconds.labels(model_version=model_version).observe(duration)
-    model_confidence_score.labels(model_version=model_version).set(confidence)
+    model_confidence_score.labels(model_version=model_version).observe(confidence)
     model_win_probability.labels(model_version=model_version).observe(win_prob)
 
 

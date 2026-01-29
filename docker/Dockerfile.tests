@@ -1,0 +1,37 @@
+FROM python:3.11-slim
+
+LABEL maintainer="Let's Go PredictionDex Team"
+LABEL description="Test runner container for integration and system tests"
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy all requirements files
+COPY tests/requirements.txt /app/tests/
+COPY api_pokemon/requirements.txt /app/api_requirements.txt
+COPY machine_learning/requirements.txt /app/ml_requirements.txt
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r /app/tests/requirements.txt && \
+    pip install --no-cache-dir -r /app/api_requirements.txt && \
+    pip install --no-cache-dir -r /app/ml_requirements.txt
+
+# Copy source code
+COPY core/ /app/core/
+COPY api_pokemon/ /app/api_pokemon/
+COPY machine_learning/ /app/machine_learning/
+COPY tests/ /app/tests/
+
+# Set Python path
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# Default command: run integration tests
+CMD ["pytest", "tests/integration/", "-v", "--tb=short", "--color=yes"]

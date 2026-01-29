@@ -194,7 +194,7 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, rate(api_request_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.95, sum(rate(api_request_duration_seconds_bucket[2m])) by (le))",
           "refId": "A"
         }
       ],
@@ -262,17 +262,17 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, rate(api_request_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.50, sum(rate(api_request_duration_seconds_bucket[2m])) by (le))",
           "legendFormat": "P50",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.95, rate(api_request_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.95, sum(rate(api_request_duration_seconds_bucket[2m])) by (le))",
           "legendFormat": "P95",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99, rate(api_request_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.99, sum(rate(api_request_duration_seconds_bucket[2m])) by (le))",
           "legendFormat": "P99",
           "refId": "C"
         }

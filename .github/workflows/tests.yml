@@ -1,13 +1,16 @@
-name: Tests
+name: Unit Tests
 
 on:
   push:
-    branches: [ main, monitoring_grafana_evidently, develop ]
+    branches: [ main, monitoring_grafana_evidently, develop, prototype_final_v1 ]
   pull_request:
     branches: [ main, monitoring_grafana_evidently ]
 
+# This workflow runs only UNIT tests (fast, no Docker Compose needed)
+# For complete integration tests, see complete-tests.yml
+
 jobs:
-  test:
+  unit-tests:
     runs-on: ubuntu-latest
     
     services:
@@ -64,7 +67,8 @@ jobs:
       
       - name: Run unit tests
         run: |
-          pytest tests/ -v --tb=short --cov=api_pokemon --cov=core --cov=machine_learning --cov-report=xml --cov-report=term-missing
+          # Run only unit tests (exclude integration tests)
+          pytest tests/api/ tests/ml/ tests/monitoring/ tests/mlflow/ -v --tb=short --cov=api_pokemon --cov=core --cov=machine_learning --cov-report=xml --cov-report=term-missing
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

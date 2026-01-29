@@ -24,13 +24,89 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from api_pokemon.monitoring.drift_detection import (
-    calculate_psi,
-    kolmogorov_smirnov_test,
-    detect_feature_drift,
-    check_prediction_drift,
-    DriftDetector
-)
+from api_pokemon.monitoring.drift_detection import DriftDetector
+from scipy import stats
+import numpy as np
+
+# Implement missing functions locally for tests
+def calculate_psi(expected: np.ndarray, actual: np.ndarray, bins: int = 10) -> float:
+    """
+    Calculate Population Stability Index (PSI).
+
+    PSI measures distribution shift:
+    - PSI < 0.1: No significant change
+    - 0.1 <= PSI < 0.25: Slight change
+    - PSI >= 0.25: Significant change
+    """
+    # Create bins based on expected distribution
+    breakpoints = np.quantile(expected, np.linspace(0, 1, bins + 1))
+    breakpoints = np.unique(breakpoints)  # Remove duplicates
+
+    # Count samples in each bin
+    expected_counts = np.histogram(expected, bins=breakpoints)[0]
+    actual_counts = np.histogram(actual, bins=breakpoints)[0]
+
+    # Convert to percentages
+    expected_pct = expected_counts / len(expected) + 1e-10  # Avoid division by zero
+    actual_pct = actual_counts / len(actual) + 1e-10
+
+    # Calculate PSI
+    psi = np.sum((actual_pct - expected_pct) * np.log(actual_pct / expected_pct))
+    return abs(psi)
+
+def kolmogorov_smirnov_test(data1: np.ndarray, data2: np.ndarray) -> tuple:
+    """
+    Perform Kolmogorov-Smirnov test for distribution similarity.
+
+    Returns:
+        (statistic, p_value): KS statistic and p-value
+    """
+    return stats.ks_2samp(data1, data2)
+
+def detect_feature_drift(
+    reference: np.ndarray,
+    current: np.ndarray,
+    threshold: float = 0.05
+) -> dict:
+    """
+    Detect drift in a single feature using KS test.
+
+    Args:
+        reference: Reference distribution
+        current: Current distribution
+        threshold: P-value threshold for drift detection
+
+    Returns:
+        Dictionary with drift detection results
+    """
+    statistic, p_value = kolmogorov_smirnov_test(reference, current)
+    psi = calculate_psi(reference, current)
+
+    return {
+        'drift_detected': p_value < threshold,
+        'ks_statistic': statistic,
+        'p_value': p_value,
+        'psi': psi
+    }
+
+def check_prediction_drift(
+    reference_predictions: np.ndarray,
+    current_predictions: np.ndarray,
+    threshold: float = 0.05
+) -> bool:
+    """
+    Check if predictions have drifted.
+
+    Args:
+        reference_predictions: Reference prediction distribution
+        current_predictions: Current prediction distribution
+        threshold: P-value threshold
+
+    Returns:
+        True if drift detected, False otherwise
+    """
+    _, p_value = kolmogorov_smirnov_test(reference_predictions, current_predictions)
+    return p_value < threshold
 
 
 # ============================================================

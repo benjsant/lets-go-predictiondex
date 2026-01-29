@@ -19,6 +19,7 @@ import requests
 import time
 import random
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -26,6 +27,24 @@ from typing import Dict, List, Tuple
 API_URL = "http://localhost:8080"
 PROMETHEUS_URL = "http://localhost:9091"
 GRAFANA_URL = "http://localhost:3001"
+
+# Load API Key from .env file if available
+def load_api_key():
+    """Load API key from .env file."""
+    env_file = Path(__file__).parent.parent.parent / ".env"
+    if env_file.exists():
+        with open(env_file) as f:
+            for line in f:
+                if line.startswith("API_KEYS="):
+                    keys = line.split("=", 1)[1].strip().strip('"')
+                    return keys.split(",")[0] if keys else None
+    return os.getenv("API_KEYS", "").split(",")[0] if os.getenv("API_KEYS") else None
+
+# Get API Key
+API_KEY = load_api_key()
+
+# Headers for API requests
+API_HEADERS = {"X-API-Key": API_KEY} if API_KEY else {}
 
 # Cache des Pokémon
 pokemon_cache = {}
@@ -80,7 +99,7 @@ class MonitoringValidator:
             return pokemon_cache[pokemon_id]
         
         try:
-            response = requests.get(f"{API_URL}/pokemon/{pokemon_id}", timeout=5)
+            response = requests.get(f"{API_URL}/pokemon/{pokemon_id}", headers=API_HEADERS, timeout=5)
             if response.status_code == 200:
                 data = response.json()
                 offensive_moves = [
@@ -126,6 +145,7 @@ class MonitoringValidator:
                 req_start = time.time()
                 response = requests.post(
                     f"{API_URL}/predict/best-move",
+                    headers=API_HEADERS,
                     json={
                         "pokemon_a_id": pokemon_a_id,
                         "pokemon_b_id": pokemon_b_id,
@@ -189,12 +209,12 @@ class MonitoringValidator:
         
         queries = {
             "api_request_rate": "rate(api_requests_total[1m])",
-            "api_latency_p95": "histogram_quantile(0.95, rate(api_request_duration_seconds_bucket[5m]))",
-            "api_latency_p99": "histogram_quantile(0.99, rate(api_request_duration_seconds_bucket[5m]))",
+            "api_latency_p95": "histogram_quantile(0.95, sum(rate(api_request_duration_seconds_bucket[2m])) by (le))",
+            "api_latency_p99": "histogram_quantile(0.99, sum(rate(api_request_duration_seconds_bucket[2m])) by (le))",
             "model_predictions_total": "model_predictions_total",
             "model_prediction_rate": "rate(model_predictions_total[1m])",
-            "model_latency_p95": "histogram_quantile(0.95, rate(model_prediction_duration_seconds_bucket[5m]))",
-            "model_confidence_avg": "avg(model_confidence_score)",
+            "model_latency_p95": "histogram_quantile(0.95, sum(rate(model_prediction_duration_seconds_bucket[2m])) by (le))",
+            "model_confidence_avg": "rate(model_confidence_score_sum[2m]) / rate(model_confidence_score_count[2m])",
             "api_errors_total": "api_errors_total",
             "cpu_usage": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
             "memory_available_mb": "node_memory_MemAvailable_bytes / 1024 / 1024"

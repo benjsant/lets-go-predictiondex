@@ -1,0 +1,159 @@
+name: Complete Tests (Docker)
+
+on:
+  push:
+    branches: [ main, prototype_final_v1, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      build:
+        description: 'Rebuild Docker images'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  docker-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          POSTGRES_USER=letsgo_user
+          POSTGRES_PASSWORD=letsgo_password
+          POSTGRES_DB=letsgo_db
+          POSTGRES_HOST=db
+          POSTGRES_PORT=5432
+          DEV_MODE=true
+          API_KEY_REQUIRED=true
+          API_KEYS=test_key_for_github_actions,BgQJ2_Ur4uYKBsw6Jf4TI_yfA6u0BFwb4a1YbOSmMVQ
+          DISABLE_MLFLOW_TRACKING=false
+          USE_MLFLOW_REGISTRY=false
+          ML_SKIP_IF_EXISTS=true
+          EOF
+
+      - name: Install test dependencies
+        run: |
+          pip install requests
+
+      - name: Run all tests via Docker
+        id: tests
+        run: |
+          echo "🐳 Launching tests in Docker..."
+
+          if [ "${{ github.event.inputs.build }}" = "true" ]; then
+            python3 scripts/run_all_tests.py --build --no-start
+          else
+            python3 scripts/run_all_tests.py --no-start
+          fi
+
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "✅ All tests passed!"
+          else
+            echo "❌ Tests failed with exit code: $EXIT_CODE"
+          fi
+
+          exit $EXIT_CODE
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: |
+            reports/**/*.json
+            reports/**/*.html
+          retention-days: 30
+
+      - name: Generate test summary
+        if: always()
+        run: |
+          echo "## 🧪 Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.tests.outputs.exit_code }}" = "0" ]; then
+            echo "✅ **All tests passed successfully!**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Tests failed** (exit code: ${{ steps.tests.outputs.exit_code }})" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Services Tested:" >> $GITHUB_STEP_SUMMARY
+          echo "- PostgreSQL" >> $GITHUB_STEP_SUMMARY
+          echo "- API (FastAPI)" >> $GITHUB_STEP_SUMMARY
+          echo "- MLflow" >> $GITHUB_STEP_SUMMARY
+          echo "- Prometheus" >> $GITHUB_STEP_SUMMARY
+          echo "- Grafana" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 [Download test reports](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const exitCode = '${{ steps.tests.outputs.exit_code }}';
+            const success = exitCode === '0';
+            const emoji = success ? '✅' : '❌';
+            const verdict = success ? 'All tests passed!' : 'Tests failed';
+
+            const body = `## ${emoji} Complete Test Results
+
+            **Status: ${verdict}**
+
+            ### Tests Executed (via Docker):
+            - ✅ Integration tests
+            - ✅ System validation
+            - ✅ Monitoring validation
+            - ✅ MLflow integration
+
+            ### Services Validated:
+            - PostgreSQL
+            - API (FastAPI)
+            - MLflow Tracking Server
+            - Prometheus
+            - Grafana
+            - pgAdmin
+
+            ${success ? '🎉 Ready to merge!' : '⚠️ Please fix the failing tests before merging.'}
+
+            📊 [View detailed test reports](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          echo "📋 Docker Services Status:"
+          docker compose ps
+
+          echo ""
+          echo "📋 Last 100 lines of logs:"
+          docker compose logs --tail=100
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "🧹 Cleaning up Docker resources..."
+          docker compose down -v || true
+          docker system prune -f || true

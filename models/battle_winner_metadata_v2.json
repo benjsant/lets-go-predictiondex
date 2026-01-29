@@ -1,7 +1,7 @@
 {
   "model_type": "XGBClassifier",
   "version": "v2",
-  "trained_at": "2026-01-26T17:58:23.882961",
+  "trained_at": "2026-01-29T14:46:32.726225",
   "feature_columns": [
     "a_hp",
     "a_attack",

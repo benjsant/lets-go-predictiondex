@@ -67,7 +67,7 @@ class TestMLflowTracker:
                         tracker = MLflowTracker(experiment_name="test")
                         metrics = {'accuracy': 0.95, 'f1': 0.92}
                         tracker.log_metrics(metrics)
-                        mock_log.assert_called_once_with(metrics)
+                        mock_log.assert_called_once_with(metrics, step=None)
     
     def test_log_model_xgboost(self):
         """Test logging XGBoost model"""
@@ -98,11 +98,12 @@ class TestMLflowTracker:
                 with patch('mlflow.create_experiment', return_value='1'):
                     with patch('mlflow.log_params') as mock_log:
                         tracker = MLflowTracker(experiment_name="test")
-                        tracker.log_dataset_info(
-                            train_samples=1000,
-                            test_samples=250,
-                            num_features=45
-                        )
+                        dataset_info = {
+                            'train_samples': 1000,
+                            'test_samples': 250,
+                            'num_features': 45
+                        }
+                        tracker.log_dataset_info(dataset_info)
                         mock_log.assert_called_once()
     
     def test_start_run(self):

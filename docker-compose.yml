@@ -19,6 +19,26 @@ services:
       timeout: 5s
       retries: 5
 
+  pgadmin:
+    image: dpage/pgadmin4:8.1
+    container_name: letsgo_pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@predictiondex.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin4/servers.json:/pgadmin4/servers.json
+    ports:
+      - "5050:80"  # Interface web accessible sur http://localhost:5050
+    networks:
+      - backend
+    restart: unless-stopped
+
   etl:
     build:
       context: .
@@ -256,6 +276,49 @@ services:
       start_period: 30s
     restart: unless-stopped
 
+  # ====================================================================
+  # Integration Tests (run with --profile tests)
+  # ====================================================================
+
+  tests:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.tests
+    container_name: letsgo_tests
+    depends_on:
+      api:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+      prometheus:
+        condition: service_started
+      grafana:
+        condition: service_started
+    environment:
+      PYTHONPATH: /app
+      PYTHONUNBUFFERED: 1
+      # Service URLs (internal Docker network)
+      API_URL: http://api:8080
+      MLFLOW_URL: http://mlflow:5001
+      PROMETHEUS_URL: http://prometheus:9090
+      GRAFANA_URL: http://grafana:3000
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: letsgo_db
+      POSTGRES_USER: letsgo_user
+      POSTGRES_PASSWORD: letsgo_password
+    volumes:
+      - ./tests:/app/tests
+      - ./reports:/app/reports
+      - ./core:/app/core
+      - ./api_pokemon:/app/api_pokemon
+      - ./machine_learning:/app/machine_learning
+    networks:
+      - backend
+      - monitoring
+    profiles:
+      - tests  # Only starts when using: docker compose --profile tests up
+
 networks:
   backend:
     driver: bridge
@@ -265,6 +328,7 @@ networks:
 
 volumes:
   postgres_data:
+  pgadmin_data:
   prometheus_data:
   grafana_data:
   mlflow_data:
