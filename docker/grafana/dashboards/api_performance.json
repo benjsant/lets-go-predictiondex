@@ -330,7 +330,7 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "sum(rate(api_errors_total[5m])) / sum(rate(api_requests_total[5m]))",
+          "expr": "(sum(rate(api_errors_total[5m])) or vector(0)) / (sum(rate(api_requests_total[5m])) or vector(1))",
           "refId": "A"
         }
       ],

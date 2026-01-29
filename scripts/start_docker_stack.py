@@ -179,7 +179,7 @@ def main():
         ("streamlit", 8501, "Interface Streamlit"),
         ("prometheus", 9090, "Prometheus"),
         ("grafana", 3000, "Grafana"),
-        ("mlflow", 5000, "MLflow"),
+        ("mlflow", 5001, "MLflow"),
     ]
     
     all_ok = True

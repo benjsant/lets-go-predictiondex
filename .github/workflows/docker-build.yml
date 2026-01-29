@@ -9,6 +9,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     
     strategy:
       matrix:
@@ -46,6 +47,7 @@ jobs:
 
   integration-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: build-and-test
     
     steps:
@@ -79,18 +81,31 @@ jobs:
       - name: Start services
         run: |
           docker compose up -d
-          sleep 60  # Wait for services to be ready
-      
-      - name: Check service health
+          echo "⏳ Waiting for services to be ready..."
+
+      - name: Wait for PostgreSQL
         run: |
-          echo "Checking API health..."
-          curl -f http://localhost:8080/health || exit 1
-          
-          echo "Checking MLflow health..."
-          curl -f http://localhost:5001/health || exit 1
-          
-          echo "Checking Prometheus health..."
-          curl -f http://localhost:9091/-/healthy || exit 1
+          echo "Waiting for PostgreSQL..."
+          timeout 90 bash -c 'until docker compose exec -T db pg_isready -U letsgo_user; do sleep 2; done'
+          echo "✅ PostgreSQL ready"
+
+      - name: Wait for API
+        run: |
+          echo "Waiting for API..."
+          timeout 120 bash -c 'until curl -sf http://localhost:8080/health; do sleep 3; done'
+          echo "✅ API ready"
+
+      - name: Wait for MLflow
+        run: |
+          echo "Waiting for MLflow..."
+          timeout 90 bash -c 'until curl -sf http://localhost:5001/health; do sleep 3; done'
+          echo "✅ MLflow ready"
+
+      - name: Wait for Prometheus
+        run: |
+          echo "Waiting for Prometheus..."
+          timeout 60 bash -c 'until curl -sf http://localhost:9091/-/healthy; do sleep 3; done'
+          echo "✅ Prometheus ready"
       
       - name: Run integration tests
         run: |

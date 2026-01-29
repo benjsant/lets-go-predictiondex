@@ -1,5 +1,6 @@
 # Test Dependencies for Let's Go PredictionDex
-# ================================================
+# Updated: 2026-01-29
+# Versions aligned with Docker production environment
 
 # Testing Framework
 pytest==7.4.3
@@ -8,21 +9,30 @@ pytest-asyncio==0.21.1
 pytest-mock==3.12.0
 
 # HTTP Testing
-requests==2.31.0
+requests==2.32.5
 httpx==0.25.2
 
 # Database Testing
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.11
 sqlalchemy==2.0.23
+asyncpg==0.31.0
 
 # API Testing
-fastapi==0.104.1
-pydantic==2.5.2
+fastapi==0.128.0
+pydantic==2.12.5
+uvicorn==0.40.0
 
 # MLflow Client
-mlflow==2.9.2
+mlflow==3.8.1
 
 # Utilities
-python-dotenv==1.0.0
-pandas==2.1.4
-numpy==1.26.2
+python-dotenv==1.2.1
+pandas==2.3.3
+numpy==2.4.1
+scikit-learn==1.8.0
+xgboost==3.1.3
+pyarrow==22.0.0
+
+# Monitoring
+prometheus-client==0.22.1
+evidently==0.7.20

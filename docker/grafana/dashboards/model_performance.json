@@ -107,11 +107,11 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "model_confidence_score{model_version=\"v2\"}",
+          "expr": "model_confidence_score_sum{model_version=\"v2\"} / model_confidence_score_count{model_version=\"v2\"}",
           "refId": "A"
         }
       ],
-      "title": "Model Confidence",
+      "title": "Model Confidence (Avg)",
       "type": "stat"
     },
     {
@@ -164,7 +164,7 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(model_prediction_duration_seconds_bucket[2m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(model_prediction_duration_seconds_bucket) by (le))",
           "refId": "A"
         }
       ],
@@ -281,17 +281,17 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum(rate(model_prediction_duration_seconds_bucket[2m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(increase(model_prediction_duration_seconds_bucket[$__rate_interval])) by (le))",
           "legendFormat": "P50",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(model_prediction_duration_seconds_bucket[2m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(increase(model_prediction_duration_seconds_bucket[$__rate_interval])) by (le))",
           "legendFormat": "P95",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99, sum(rate(model_prediction_duration_seconds_bucket[2m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(increase(model_prediction_duration_seconds_bucket[$__rate_interval])) by (le))",
           "legendFormat": "P99",
           "refId": "C"
         }
@@ -360,8 +360,8 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "model_confidence_score{model_version=\"v2\"}",
-          "legendFormat": "Confidence Score",
+          "expr": "rate(model_confidence_score_sum{model_version=\"v2\"}[$__rate_interval]) / rate(model_confidence_score_count{model_version=\"v2\"}[$__rate_interval])",
+          "legendFormat": "Avg Confidence",
           "refId": "A"
         }
       ],
@@ -406,8 +406,8 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "expr": "sum(rate(model_win_probability_bucket[5m])) by (le)",
-          "legendFormat": "{{ le }}",
+          "expr": "sum(increase(model_win_probability_bucket[$__range])) by (le)",
+          "legendFormat": "≤ {{ le }}",
           "refId": "A"
         }
       ],

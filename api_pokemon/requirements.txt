@@ -1,29 +1,33 @@
+# API Pokemon Requirements
+# Updated: 2026-01-29
+# Versions aligned with Docker production environment
+
 # --- Core ---
-python-dotenv
+python-dotenv==1.2.1
 
 # --- API Framework ---
-fastapi
-uvicorn[standard]
-pydantic
-pydantic-settings
+fastapi==0.128.0
+uvicorn[standard]==0.40.0
+pydantic==2.12.5
+pydantic-settings==2.12.0
 
 # --- Database ---
-sqlalchemy
-psycopg2-binary
-asyncpg
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.11
+asyncpg==0.31.0
 
 # --- HTTP ---
-requests
+requests==2.32.5
 
 # --- ML Dependencies (for prediction service) ---
-pandas
-numpy
-scikit-learn
-xgboost
-pyarrow
+pandas==2.3.3
+numpy==2.4.1
+scikit-learn==1.8.0
+xgboost==3.1.3
+pyarrow==22.0.0
 
 # --- Monitoring & Observability ---
-prometheus-client
-psutil
-evidently>=0.7.0,<0.8.0  # Latest stable version
-mlflow==3.8.1  # MLflow tracking (C13 - MLOps)
+prometheus-client==0.22.1
+psutil==7.2.1
+evidently==0.7.20
+mlflow==3.8.1

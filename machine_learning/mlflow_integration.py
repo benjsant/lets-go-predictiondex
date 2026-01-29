@@ -49,7 +49,7 @@ class MLflowTracker:
 
         Args:
             experiment_name: Name of the MLflow experiment
-            tracking_uri: MLflow tracking server URI (default: http://mlflow:5000)
+            tracking_uri: MLflow tracking server URI (default: http://mlflow:5001)
         """
         # Check if MLflow tracking is explicitly disabled
         if os.getenv("DISABLE_MLFLOW_TRACKING", "false").lower() == "true":
@@ -58,7 +58,7 @@ class MLflowTracker:
             self.experiment_id = None
             return
 
-        # Set tracking URI (default to mlflow:5000 for Docker, localhost for local dev)
+        # Set tracking URI (default to mlflow:5001 for Docker, localhost for local dev)
         if tracking_uri is None:
             # Check if running in Docker (MLFLOW_TRACKING_URI env var)
             tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
@@ -70,18 +70,18 @@ class MLflowTracker:
                 # Retry MLflow connection up to 30 seconds
                 for attempt in range(10):
                     try:
-                        socket.create_connection(("mlflow", 5000), timeout=3)
-                        tracking_uri = "http://mlflow:5000"
-                        print(f"✅ MLflow detected at mlflow:5000 (attempt {attempt + 1})")
+                        socket.create_connection(("mlflow", 5001), timeout=3)
+                        tracking_uri = "http://mlflow:5001"
+                        print(f"✅ MLflow detected at mlflow:5001 (attempt {attempt + 1})")
                         break
                     except (socket.error, socket.timeout):
                         if attempt < 9:
                             print(f"⏳ Waiting for MLflow... (attempt {attempt + 1}/10)")
                             time.sleep(3)
                         else:
-                            # Fallback to localhost for local dev
-                            tracking_uri = "http://localhost:5000"
-                            print("⚠️ MLflow not detected, trying localhost:5000")
+                            # Fallback to localhost for local dev (Docker host)
+                            tracking_uri = "http://localhost:5001"
+                            print("⚠️ MLflow not detected, trying localhost:5001")
 
         # Set or create experiment
         try:
@@ -537,7 +537,7 @@ def load_model_from_registry(
 
         # Set tracking URI
         if tracking_uri is None:
-            tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
+            tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5001")
 
         mlflow.set_tracking_uri(tracking_uri)
         client = MlflowClient(tracking_uri=tracking_uri)

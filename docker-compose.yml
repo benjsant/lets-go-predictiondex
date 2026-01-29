@@ -134,9 +134,9 @@ services:
       - ./models:/app/models            # For model metadata
       - ./machine_learning:/app/machine_learning  # For ML pipeline + MLflow integration
       - ./api_pokemon/monitoring:/app/api_pokemon/monitoring  # Persist monitoring data
-    # Port 8080 exposed for Swagger demos (localhost only, API Key required)
+    # Port 8080 exposed for API access (API Key required for security)
     ports:
-      - "127.0.0.1:8080:8080"  # Bind to localhost only (not 0.0.0.0)
+      - "8080:8080"  # Accessible from all interfaces (needed for CI/CD)
     networks:
       - backend
       - monitoring
@@ -156,8 +156,6 @@ services:
     depends_on:
       api:
         condition: service_healthy
-    env_file:
-      - ./interface/.env
     environment:
       PYTHONPATH: /app
     volumes:

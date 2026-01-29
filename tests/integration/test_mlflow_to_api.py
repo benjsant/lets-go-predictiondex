@@ -508,8 +508,8 @@ class TestRealMLflowServer:
         import mlflow
         model, X, y = sample_trained_model
         
-        # Connect to local MLflow server
-        mlflow.set_tracking_uri("http://localhost:5000")
+        # Connect to MLflow server (Docker service)
+        mlflow.set_tracking_uri("http://mlflow:5001")
         
         tracker = MLflowTracker(experiment_name="real_server_integration_test")
         
