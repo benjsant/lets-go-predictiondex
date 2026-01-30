@@ -2,7 +2,7 @@ name: Complete Tests (Docker)
 
 on:
   push:
-    branches: [ main, prototype_final_v1, develop ]
+    branches: [ main, prototype_final_v1, develop , nettoyage_clean_code_final ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
