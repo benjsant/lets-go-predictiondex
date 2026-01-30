@@ -1,4 +1,39 @@
-# app/main.py
+"""
+FastAPI Application - Pokémon Let's Go PredictionDex API
+=========================================================
+
+Main application module for the PredictionDex REST API.
+
+This module initializes the FastAPI application with:
+- Prometheus metrics middleware for monitoring
+- ML model preloading at startup
+- API key authentication for protected endpoints
+- Health check and metrics endpoints
+- Swagger/ReDoc documentation
+
+The API provides:
+- Pokémon database queries (151 Gen 1 + forms)
+- Move database with type effectiveness
+- ML-powered battle predictions (94.24% accuracy)
+- Real-time monitoring with Prometheus metrics
+
+Endpoints:
+    Public (no auth):
+        - GET /health - Health status
+        - GET /metrics - Prometheus metrics
+        - GET /docs - Swagger documentation
+        - GET /redoc - ReDoc documentation
+
+    Protected (API key required):
+        - /pokemon/* - Pokémon routes
+        - /moves/* - Moves routes
+        - /types/* - Type effectiveness routes
+        - /predict/* - ML prediction routes
+
+Environment Variables:
+    API_KEY_REQUIRED: Enable/disable API key auth (default: true)
+    API_KEY: Required API key for protected endpoints
+"""
 
 import os
 

@@ -94,7 +94,7 @@ class Pokemon(Base):
     #: Record creation timestamp
     created_at = Column(
         TIMESTAMP,
-        server_default=func.now(),
+        server_default=func.now(),  # pylint: disable=not-callable
         nullable=False,
     )
 

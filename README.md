@@ -131,7 +131,7 @@ Ce projet valide les **compétences E1 et E3** du titre RNCP **"Concepteur Déve
 |-------|-------|-----|
 | **Prometheus** | Métriques temps réel | http://localhost:9091 |
 | **Grafana** | 2 dashboards (API + Model) | http://localhost:3001 |
-| **Evidently** | Data drift detection | Reports JSON |
+| **Production Data** | ML features collection | Parquet files |
 | **MLflow** | Experiment tracking + Registry | http://localhost:5001 |
 
 ---
@@ -210,7 +210,7 @@ Ce projet valide les **compétences E1 et E3** du titre RNCP **"Concepteur Déve
 │                      MONITORING STACK                            │
 ├─────────────────────────────────────────────────────────────────┤
 │  📊 Prometheus → Grafana (2 dashboards)                          │
-│  🔍 Evidently → Data Drift Detection                             │
+│  💾 Production Data Collection → ML features (133)               │
 │  📈 MLflow → Experiment Tracking + Model Registry                 │
 │  🚨 Alerting → 8 règles configurées                              │
 └─────────────────────────────────────────────────────────────────┘
@@ -252,7 +252,7 @@ Ce projet valide les **compétences E1 et E3** du titre RNCP **"Concepteur Déve
 | **Experiment Tracking** | MLflow | 2.18 | Tracking + Model Registry |
 | **Metrics** | Prometheus | 2.47 | Collecte métriques |
 | **Dashboards** | Grafana | 10.1 | Visualisation |
-| **Data Drift** | Evidently | 0.4 | Drift detection |
+| **Data Collection** | Pandas + PyArrow | 2.3/22.0 | Production data logging |
 
 ### Frontend & DevOps
 
@@ -448,7 +448,7 @@ pytest tests/ --cov=api_pokemon --cov=machine_learning --cov-report=html
 |-----------|-----------|---------|
 | **C9** - API REST IA | ✅ 100% | /predict/battle + /predict/best-move |
 | **C10** - Intégration app | ✅ 100% | Streamlit 7 pages + API client |
-| **C11** - Monitoring | ✅ 100% | Prometheus + Grafana + Evidently |
+| **C11** - Monitoring | ✅ 100% | Prometheus + Grafana + MLflow |
 | **C12** - Tests ML | ✅ 100% | 252 tests (82% coverage) |
 | **C13** - MLOps CI/CD | ✅ 100% | Docker + GitHub Actions + MLflow |
 

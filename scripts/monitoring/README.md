@@ -15,7 +15,7 @@ Scripts pour valider et tester la stack de monitoring (Prometheus + Grafana + AP
 1. ✅ Génère 100 prédictions de test
 2. ✅ Collecte métriques Prometheus
 3. ✅ Vérifie l'état des services (API, Prometheus, Grafana)
-4. ✅ Force la détection de drift
+4. ✅ Vérifie la collecte des données de production
 5. ✅ Analyse les résultats
 6. ✅ Génère rapports JSON + HTML
 
@@ -56,7 +56,7 @@ xdg-open reports/monitoring/validation_report.html
 - ✅ Taux de succès des prédictions (100%)
 - ✅ Latence API (P95, P99)
 - ✅ Taux de collecte Prometheus
-- ✅ Détection de drift (Evidently)
+- ✅ Collecte données production (ML features)
 - ✅ CPU/RAM système (Node Exporter)
 
 ### Score de validation

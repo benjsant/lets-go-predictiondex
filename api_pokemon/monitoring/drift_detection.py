@@ -67,18 +67,19 @@ class DriftDetector:
 
             if not ref_file.exists():
                 self.logger.warning(
-                    f"Reference data file not found: {ref_file}. "
-                    "This is optional for production data collection."
+                    "Reference data file not found: %s. "
+                    "This is optional for production data collection.",
+                    ref_file
                 )
                 return
 
             # Load and sample reference data
             reference_df = pd.read_parquet(ref_file)
             self.reference_data = reference_df.sample(n=min(10000, len(reference_df)), random_state=42)
-            self.logger.info(f"Loaded reference data: {self.reference_data.shape}")
+            self.logger.info("Loaded reference data: %s", self.reference_data.shape)
 
         except Exception as e:
-            self.logger.error(f"Failed to load reference data: {e}")
+            self.logger.error("Failed to load reference data: %s", e)
             self.reference_data = None
 
     def add_prediction(
@@ -103,7 +104,7 @@ class DriftDetector:
 
         # Save buffer when it reaches max size
         if len(self.production_buffer) >= self.max_buffer_size:
-            self.logger.info(f"Buffer full ({self.max_buffer_size}). Saving production data.")
+            self.logger.info("Buffer full (%d). Saving production data.", self.max_buffer_size)
             self.save_production_data()
             self.production_buffer = []
 
@@ -147,13 +148,13 @@ class DriftDetector:
                         # If all values are True/False, convert to int
                         if df[col].dropna().isin([True, False]).all():
                             df[col] = df[col].astype(int)
-                    except:
+                    except (ValueError, TypeError):
                         pass  # Keep as object if conversion fails
 
             df.to_parquet(output_file, index=False)
-            self.logger.info(f"Saved {len(df)} production samples to {output_file}")
+            self.logger.info("Saved %d production samples to %s", len(df), output_file)
         except Exception as e:
-            self.logger.error(f"Failed to save production data: {e}")
+            self.logger.error("Failed to save production data: %s", e)
 
 
 # Singleton instance

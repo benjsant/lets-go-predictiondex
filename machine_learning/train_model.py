@@ -1,26 +1,36 @@
 #!/usr/bin/env python3
 """
 Train Battle Winner Prediction Model - Production Script
-=======================================================
+=========================================================
 
-Pipeline:
-1) Chargement des jeux train/test (parquet)
-2) Feature engineering (encodage, features derivees, normalisation)
-3) Entrainement XGBoost, avec option GridSearchCV
-4) Export du modele, des scalers et des metadonnees versionnees
+ML training pipeline for Pokémon battle winner prediction.
 
-Nouveautes:
-- Support d'un filtrage par scenario (colonne `scenario_type` si presente).
-- Option `--use-gridsearch` pour tester un petit espace d'hyperparametres.
-- Versionnage des artefacts via `--version` (v1 par defaut).
+Pipeline Steps:
+    1. Load train/test datasets (parquet format)
+    2. Feature engineering (encoding, derived features, normalization)
+    3. Train XGBoost classifier with optional GridSearchCV
+    4. Export versioned model, scalers, and metadata
+
+Features:
+    - Scenario filtering support (via `scenario_type` column if present)
+    - Optional GridSearchCV for hyperparameter tuning (--use-gridsearch)
+    - Artifact versioning via --version flag (default: v1)
+    - Comprehensive metrics logging (accuracy, precision, recall, F1, AUC)
 
 Usage:
-    python machine_learning/train_model.py [--use-gridsearch] [--version v2] [--scenario-type worst_case]
+    # Train with default settings
+    python machine_learning/train_model.py
 
-Sorties:
-    - models/battle_winner_model_<version>.pkl
-    - models/battle_winner_scalers_<version>.pkl
-    - models/battle_winner_metadata_<version>.pkl
+    # Train with GridSearch and specific scenario
+    python machine_learning/train_model.py --use-gridsearch --version v2 --scenario-type worst_case
+
+    # Train on all scenarios combined
+    python machine_learning/train_model.py --version v2 --scenario-type all
+
+Output Artifacts:
+    - models/battle_winner_model_<version>.pkl - Trained XGBoost model
+    - models/battle_winner_scalers_<version>.pkl - Feature scalers
+    - models/battle_winner_metadata_<version>.pkl - Model metadata
 """
 
 import argparse
@@ -510,6 +520,7 @@ def export_model(model, scalers, feature_columns, metrics, version: str, best_pa
     print(f"  Metadata: {metadata_path}")
 
     print(f"\n✅ Model artifacts exported to: {MODELS_DIR}")
+    return model_path
 
 
 def export_features(X_train, X_test, y_train, y_test):

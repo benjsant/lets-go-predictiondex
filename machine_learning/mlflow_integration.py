@@ -457,7 +457,6 @@ class MLflowTracker:
             metrics = ["test_accuracy", "test_f1", "test_roc_auc"]
 
         try:
-            import pandas as pd
             client = MlflowClient()
 
             # Get all versions

@@ -1100,7 +1100,7 @@ print(f"Win probability: {prediction['win_probability']:.2%}")  # 87.34%
 |------|------------|-------------------|-------|
 | **C9** | API REST exposant IA | FastAPI + XGBoost, Swagger, monitoring | ✅ 10/10 |
 | **C10** | Intégrer API dans app | Streamlit 8 pages, client HTTP, UX pro | ✅ 9/10 |
-| **C11** | Monitoring IA | Prometheus + Grafana + Evidently drift detection | ✅ 10/10 |
+| **C11** | Monitoring IA | Prometheus + Grafana + MLflow drift detection | ✅ 10/10 |
 | **C12** | Tests automatisés ML | 50 tests ML, validation accuracy > 80%, CI/CD | ✅ 10/10 |
 | **C13** | CI/CD MLOps | MLflow Registry + 4 workflows GitHub Actions | ✅ 10/10 |
 

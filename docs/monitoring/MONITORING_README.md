@@ -4,8 +4,9 @@
 
 ### Stack Complète (v1.0)
 - ✅ **Prometheus** : Collecte de métriques (API, Modèle, Système)
-- ✅ **Grafana** : 2 dashboards (API Performance + Model Performance)  
-- ✅ **Evidently 0.7** : Détection de drift des données (intégré à l'API)
+- ✅ **Grafana** : 2 dashboards (API Performance + Model Performance)
+- ✅ **MLflow** : Tracking des expériences ML et registry de modèles
+- ✅ **Production Data Collection** : Collecte automatique des features ML pour future analyse
 - ✅ **Node Exporter** : Métriques système (CPU, RAM, etc.)
 - ✅ **Alerting** : 8 règles d'alerte configurées
 
@@ -97,36 +98,33 @@ curl -X POST http://localhost:8000/predict/best-move \
 
 ---
 
-## 🔍 Détection de Drift (Evidently)
+## 💾 Collecte de Données de Production
 
 ### Fonctionnement Automatique
 
-Evidently génère des rapports **automatiquement toutes les heures** :
-- Buffer : 1000 prédictions max
-- Référence : 10k exemples d'entraînement (X_train.parquet)
-- Outputs : HTML + JSON
+Le système collecte automatiquement les features ML de chaque prédiction :
+- Buffer : 100 prédictions max
+- Référence : 10k exemples d'entraînement (X_train.parquet) chargés au démarrage
+- Output : Fichiers parquet avec 133 features ML
 
-### Localisation des Rapports
+### Localisation des Données
 
 ```bash
-ls -lh api_pokemon/monitoring/drift_reports/
+ls -lh api_pokemon/monitoring/drift_data/
 ```
 
 Fichiers générés :
 ```
-drift_report_20260125_160000.json       # Métriques JSON
-drift_dashboard_20260125_160000.html    # Dashboard interactif
-drift_summary_20260125_160000.json      # Résumé
+production_data_20260130_124717.parquet  # 100 prédictions × 133 features
 ```
 
-### Ouvrir un Rapport
+### Utilisation des Données
 
-```bash
-# Ouvrir le dernier rapport HTML
-firefox api_pokemon/monitoring/drift_reports/drift_dashboard_*.html
-```
-
-Ou copier le fichier HTML et l'ouvrir dans un navigateur.
+Ces données peuvent être utilisées pour :
+- Analyse manuelle de drift des données
+- Réentraînement du modèle avec données réelles
+- Validation de la qualité des prédictions
+- Debugging et amélioration du modèle
 
 ---
 
@@ -211,28 +209,26 @@ docker compose logs prometheus
 docker compose restart grafana
 ```
 
-### Evidently génère des erreurs
+### Collecte de données de production
 
 ```bash
-# Vérifier que X_train.parquet existe
+# Vérifier que X_train.parquet existe (référence)
 ls -lh data/datasets/X_train.parquet
 
-# Vérifier les logs de l'API
-docker compose logs -f api | grep -i drift
+# Vérifier les logs de collecte
+docker compose logs -f api | grep -i "production"
 
-# Vérifier la version d'Evidently
-docker compose exec api pip show evidently
+# Vérifier les fichiers de données collectées
+ls -lh api_pokemon/monitoring/drift_data/
 ```
 
 ---
 
 ## 📚 Documentation Complète
 
-- **Guide complet** : [MONITORING_GUIDE.md](MONITORING_GUIDE.md)
-- **Architecture** : [MONITORING_ARCHITECTURE.md](MONITORING_ARCHITECTURE.md)
 - **Prometheus** : https://prometheus.io/docs/
 - **Grafana** : https://grafana.com/docs/
-- **Evidently** : https://docs.evidentlyai.com/
+- **MLflow** : https://mlflow.org/docs/latest/index.html
 
 ---
 
@@ -246,6 +242,6 @@ docker compose exec api pip show evidently
 
 ---
 
-**Version** : 1.0  
-**Stack** : Prometheus + Grafana + Evidently 0.7 + Node Exporter  
-**Dernière MAJ** : 25 janvier 2026
+**Version** : 1.1
+**Stack** : Prometheus + Grafana + MLflow + Production Data Collection + Node Exporter
+**Dernière MAJ** : 30 janvier 2026

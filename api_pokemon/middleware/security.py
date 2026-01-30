@@ -1,5 +1,27 @@
 """
-Middleware de sécurité pour l'API - Authentification par API Key
+API Security Middleware - API Key Authentication
+=================================================
+
+Security middleware for FastAPI application implementing API key authentication.
+
+This module provides:
+    - API key validation via X-API-Key header
+    - Support for multiple API keys (comma-separated)
+    - Development mode bypass (DEV_MODE=true)
+    - SHA-256 hashing for secure key storage in memory
+    - Clear HTTP 403 responses for unauthorized access
+
+Environment Variables:
+    API_KEYS: Comma-separated list of valid API keys
+    DEV_MODE: Set to "true" to bypass authentication in development
+    API_KEY_REQUIRED: Set to "false" to disable authentication entirely
+
+Usage:
+    from api_pokemon.middleware.security import verify_api_key
+
+    @app.get("/protected")
+    def protected_route(api_key: str = Depends(verify_api_key)):
+        return {"message": "Access granted"}
 """
 import hashlib
 import os
@@ -9,45 +31,59 @@ from typing import Optional
 from fastapi import HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 
-# Header pour l'API Key
+# API Key header configuration
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
 def get_api_keys() -> set:
     """
-    Récupère les API keys valides depuis les variables d'environnement.
-    Support pour plusieurs clés séparées par des virgules.
+    Retrieve valid API keys from environment variables.
+
+    Supports multiple keys separated by commas. Keys are hashed with SHA-256
+    for secure in-memory storage.
 
     Returns:
-        set: Ensemble des API keys valides (hashées)
+        set: Set of valid hashed API keys
+
+    Raises:
+        RuntimeError: If API_KEYS not configured in production mode
+
+    Environment:
+        API_KEYS: Comma-separated API keys (e.g., "key1,key2,key3")
+        DEV_MODE: Set to "true" to skip validation in development
     """
     keys_str = os.getenv("API_KEYS", "")
     if not keys_str:
-        # En mode DEV sans API_KEYS configurées, on accepte tout
+        # DEV mode without configured API_KEYS accepts all requests
         dev_mode = os.getenv("DEV_MODE", "false").lower() == "true"
         if dev_mode:
-            return set()  # Pas de vérification en DEV
-        raise RuntimeError("API_KEYS non configurées en production")
+            return set()  # Skip validation in DEV mode
+        raise RuntimeError("API_KEYS not configured in production")
 
-    # Hash des clés pour sécurité (ne jamais stocker en clair en mémoire)
+    # Hash keys for security (never store plaintext in memory)
     return {hashlib.sha256(key.strip().encode()).hexdigest()
             for key in keys_str.split(",") if key.strip()}
 
 
 def verify_api_key(api_key: Optional[str] = Security(api_key_header)) -> str:
     """
-    Vérifie que l'API key fournie est valide.
+    Verify that provided API key is valid.
 
     Args:
-        api_key: Clé API fournie dans le header X-API-Key
+        api_key: API key provided in X-API-Key header
 
     Returns:
-        str: API key valide
+        str: Valid API key if authentication succeeds
 
     Raises:
-        HTTPException: Si la clé est manquante ou invalide
+        HTTPException: 403 if key is missing or invalid
+
+    Notes:
+        - In DEV mode without configured keys, bypasses validation
+        - Uses constant-time comparison to prevent timing attacks
+        - Returns clear error messages for better DX
     """
-    # Mode DEV : bypass si DEV_MODE=true et aucune API_KEYS configurée
+    # DEV mode: bypass if DEV_MODE=true and no API_KEYS configured
     dev_mode = os.getenv("DEV_MODE", "false").lower() == "true"
     keys_str = os.getenv("API_KEYS", "")
 

@@ -636,6 +636,7 @@ def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
         print("-" * 80)
         print(classification_report(y_test, y_test_pred, target_names=['B wins', 'A wins']))
 
+
         # Confusion matrix
         print("Confusion Matrix:")
         cm = confusion_matrix(y_test, y_test_pred)

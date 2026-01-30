@@ -1,4 +1,34 @@
-# api_pokemon/routes/pokemon_route.py
+"""
+Pokémon API Routes
+==================
+
+REST endpoints for querying Pokémon data from the database.
+
+This module provides comprehensive Pokémon information including:
+- Complete Pokémon listing with pagination and filters
+- Detailed Pokémon data (stats, types, abilities, moves)
+- Type effectiveness analysis (weaknesses/resistances)
+- Species-based search functionality
+
+Endpoints:
+    GET /pokemon/ - List all Pokémon with optional filters
+    GET /pokemon/{pokemon_id} - Get detailed Pokémon information
+    GET /pokemon/species/{species_name} - Search by species name
+
+All endpoints require API key authentication (if API_KEY_REQUIRED=true).
+
+Example:
+    ```python
+    # Get all Pokémon
+    GET /pokemon/
+
+    # Get Pikachu details
+    GET /pokemon/25
+
+    # Search for Charizard
+    GET /pokemon/species/Charizard
+    ```
+"""
 
 from typing import List
 

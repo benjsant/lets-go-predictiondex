@@ -157,6 +157,7 @@ services:
         condition: service_healthy
     environment:
       PYTHONPATH: /app
+      STREAMLIT_API_KEY: "BgQJ2_Ur4uYKBsw6Jf4TI_yfA6u0BFwb4a1YbOSmMVQ"
     volumes:
       - ./interface:/app/interface
       - ./core:/app/core

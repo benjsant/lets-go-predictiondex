@@ -43,7 +43,7 @@
 |------------|------|---------|-------|
 | **C9 - API REST avec IA** | ✅ Validé | FastAPI + XGBoost 88.23% accuracy | 10/10 |
 | **C10 - Intégration app** | ✅ Validé | Streamlit 8 pages + API client | 9/10 |
-| **C11 - Monitoring IA** | ✅ Validé | Prometheus + Grafana + Evidently | 10/10 |
+| **C11 - Monitoring IA** | ✅ Validé | Prometheus + Grafana + MLflow | 10/10 |
 | **C12 - Optimiser IA** | ✅ Validé | XGBoost CPU optimisé, compression | 10/10 |
 | **C13 - MLOps CI/CD** | ✅ Validé | MLflow Registry + 4 workflows GitHub | 10/10 |
 
@@ -380,7 +380,7 @@ class PredictionModel:
 | **Pipeline ML** | ✅ 10/10 | XGBoost 88.23% accuracy, 133 features engineered |
 | **API REST** | ✅ 9/10 | FastAPI + Swagger + Sécurité API Key SHA-256 |
 | **Interface utilisateur** | ✅ 9/10 | Streamlit 8 pages, UX professionnelle |
-| **Monitoring** | ✅ 10/10 | Prometheus + Grafana + Evidently drift detection |
+| **Monitoring** | ✅ 10/10 | Prometheus + Grafana + MLflow drift detection |
 | **MLOps** | ✅ 10/10 | MLflow Registry + Auto-promotion + Fallback |
 | **CI/CD** | ✅ 10/10 | 4 workflows GitHub Actions complets |
 | **Tests** | ✅ 8/10 | 252 tests, coverage 82% (interface non testée) |
@@ -460,7 +460,7 @@ CORS_ORIGINS="http://localhost:3000,http://localhost:8502"  # Dev
 
 - [x] **C9** - API REST avec IA (FastAPI + XGBoost) ✅
 - [x] **C10** - Intégrer app utilisateur (Streamlit 8 pages) ✅
-- [x] **C11** - Monitoring IA (Prometheus + Grafana + Evidently) ✅
+- [x] **C11** - Monitoring IA (Prometheus + Grafana + MLflow) ✅
 - [x] **C12** - Optimiser modèle IA (XGBoost CPU, compression) ✅
 - [x] **C13** - MLOps CI/CD (MLflow + GitHub Actions) ✅
 
@@ -492,7 +492,7 @@ CORS_ORIGINS="http://localhost:3000,http://localhost:8502"  # Dev
 3. ✅ **ML performant** - XGBoost 88.23% accuracy, 133 features
 4. ✅ **API production** - FastAPI + Swagger + sécurité
 5. ✅ **Interface pro** - Streamlit 8 pages, UX soignée
-6. ✅ **Monitoring complet** - Prometheus + Grafana + Evidently
+6. ✅ **Monitoring complet** - Prometheus + Grafana + MLflow
 7. ✅ **MLOps mature** - MLflow Registry + auto-promotion
 8. ✅ **CI/CD robuste** - 4 workflows GitHub Actions
 9. ✅ **Tests solides** - 252 tests, coverage 82%

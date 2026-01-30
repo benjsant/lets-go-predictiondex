@@ -1,12 +1,33 @@
 #!/usr/bin/env python3
 """
-Script pour peupler MLflow et Grafana avec des données de test RÉELLES.
+Populate Monitoring Stack with Real Test Data
+==============================================
 
-Ce script interroge l'API pour récupérer les VRAIS moves de chaque Pokémon
-avant de faire des prédictions, garantissant des données valides.
+This script generates realistic test predictions for MLflow and Grafana monitoring.
+
+The script queries the API to fetch REAL moves for each Pokémon before making
+predictions, ensuring valid and realistic data for monitoring validation.
+
+Features:
+    - Fetches actual Pokémon moves from the API
+    - Generates N battle predictions with real move combinations
+    - Populates Prometheus metrics via API calls
+    - Creates MLflow experiment runs with test metrics
+    - Validates monitoring stack functionality
 
 Usage:
-    python3 scripts/populate_monitoring_v2.py [--count 50]
+    # Generate 50 predictions (default)
+    python3 scripts/populate_monitoring_v2.py
+
+    # Generate custom number of predictions
+    python3 scripts/populate_monitoring_v2.py --count 100
+
+    # Skip MLflow experiment creation
+    python3 scripts/populate_monitoring_v2.py --count 50 --skip-mlflow
+
+Args:
+    --count: Number of predictions to generate (default: 50)
+    --skip-mlflow: Skip MLflow experiment creation
 """
 
 import argparse

@@ -1,16 +1,33 @@
 #!/usr/bin/env python3
 """
-Validateur de stack Docker
-==========================
+Docker Stack Validator
+======================
 
-Script pour valider que tous les services Docker sont correctement
-configurés et fonctionnels.
+Validation script to verify that all Docker services are properly
+configured and functional.
+
+This script performs comprehensive health checks on:
+    - PostgreSQL database connectivity
+    - FastAPI application endpoints
+    - Prometheus metrics collection
+    - Grafana dashboard availability
+    - MLflow tracking server
+    - Container status and resource usage
 
 Usage:
+    # Validate entire stack
     python scripts/validate_docker_stack.py
-    
-    # Mode verbeux
+
+    # Validate with verbose output
     python scripts/validate_docker_stack.py --verbose
+
+Exit Codes:
+    0: All services validated successfully
+    1: One or more services failed validation
+
+Output:
+    - Terminal: Colored validation results
+    - Optional: JSON report with detailed status
 """
 
 import argparse
@@ -63,39 +80,39 @@ SERVICES = {
 
 class DockerStackValidator:
     """Validateur de stack Docker."""
-    
+
     def __init__(self, verbose: bool = False):
         self.verbose = verbose
         self.results = {}
-    
+
     def check_service(self, name: str, config: Dict) -> Tuple[bool, str]:
         """
         Vérifie qu'un service est accessible.
-        
+
         Returns:
             (is_healthy, message)
         """
         if config["url"] is None:
             # Pas de health check HTTP (ex: postgres)
             return True, "N/A (pas de health check HTTP)"
-        
+
         try:
             response = requests.get(config["url"], timeout=5)
-            
+
             if response.status_code == 200:
                 return True, f"✅ Accessible (HTTP {response.status_code})"
             else:
                 return False, f"⚠️  HTTP {response.status_code}"
-        
+
         except requests.exceptions.ConnectionError:
             return False, "❌ Connexion refusée (service non démarré?)"
-        
+
         except requests.exceptions.Timeout:
             return False, "❌ Timeout (service lent ou non démarré?)"
-        
+
         except Exception as e:
             return False, f"❌ Erreur: {str(e)[:50]}"
-    
+
     def check_api_endpoints(self) -> Dict[str, bool]:
         """Vérifie les endpoints clés de l'API."""
         endpoints = {
@@ -106,25 +123,25 @@ class DockerStackValidator:
             "/types": "Liste types",
             "/moves": "Liste capacités"
         }
-        
+
         results = {}
-        
+
         for endpoint, description in endpoints.items():
             try:
                 response = requests.get(f"http://localhost:8080{endpoint}", timeout=5)
                 results[endpoint] = response.status_code == 200
-                
+
                 if self.verbose:
                     status = "✅" if results[endpoint] else "❌"
                     print(f"      {status} {endpoint:20s} - {description}")
-            
+
             except:
                 results[endpoint] = False
                 if self.verbose:
                     print(f"      ❌ {endpoint:20s} - {description}")
-        
+
         return results
-    
+
     def check_prometheus_targets(self) -> Dict[str, str]:
         """Vérifie les targets Prometheus."""
         try:
@@ -132,28 +149,28 @@ class DockerStackValidator:
                 "http://localhost:9090/api/v1/targets",
                 timeout=5
             )
-            
+
             if response.status_code != 200:
                 return {"error": "Impossible d'accéder aux targets"}
-            
+
             data = response.json()
             targets = {}
-            
+
             for target in data["data"]["activeTargets"]:
                 job = target["labels"]["job"]
                 health = target["health"]
                 targets[job] = health
-                
+
                 if self.verbose:
                     status = "✅" if health == "up" else "❌"
                     endpoint = target["scrapeUrl"]
                     print(f"      {status} {job:20s} - {endpoint}")
-            
+
             return targets
-        
+
         except Exception as e:
             return {"error": str(e)}
-    
+
     def check_grafana_datasources(self) -> Dict[str, bool]:
         """Vérifie les datasources Grafana."""
         try:
@@ -162,101 +179,101 @@ class DockerStackValidator:
                 "http://localhost:3000/api/datasources",
                 timeout=5
             )
-            
+
             if response.status_code != 200:
                 return {"error": "Impossible d'accéder aux datasources"}
-            
+
             datasources = response.json()
             results = {}
-            
+
             for ds in datasources:
                 name = ds["name"]
                 type_ = ds["type"]
                 results[name] = ds.get("basicAuth", False) or True
-                
+
                 if self.verbose:
                     print(f"      ✅ {name:20s} ({type_})")
-            
+
             return results
-        
+
         except Exception as e:
             return {"error": str(e)}
-    
+
     def run_validation(self):
         """Exécute la validation complète."""
         print("\n" + "=" * 80)
         print("🔍 Validation de la stack Docker")
         print("=" * 80)
-        
+
         all_healthy = True
-        
+
         # 1. Vérifier les services
         print("\n1️⃣ Services Docker")
         print("-" * 80)
-        
+
         for name, config in SERVICES.items():
             is_healthy, message = self.check_service(name, config)
             self.results[name] = is_healthy
-            
+
             status = "✅" if is_healthy else "❌"
             print(f"{status} {name:20s} [{config['port']:5d}] - {config['description']}")
-            
+
             if not is_healthy:
                 print(f"   {message}")
                 all_healthy = False
             elif self.verbose:
                 print(f"   {message}")
-        
+
         # 2. Vérifier endpoints API
         if self.results.get("api"):
             print("\n2️⃣ Endpoints API")
             print("-" * 80)
-            
+
             endpoints = self.check_api_endpoints()
             api_healthy = all(endpoints.values())
-            
+
             if not self.verbose:
                 working = sum(endpoints.values())
                 total = len(endpoints)
                 print(f"   {working}/{total} endpoints fonctionnels")
-            
+
             if not api_healthy:
                 all_healthy = False
-        
+
         # 3. Vérifier Prometheus targets
         if self.results.get("prometheus"):
             print("\n3️⃣ Prometheus Targets")
             print("-" * 80)
-            
+
             targets = self.check_prometheus_targets()
-            
+
             if "error" not in targets:
                 up_count = sum(1 for v in targets.values() if v == "up")
                 total_count = len(targets)
                 print(f"   {up_count}/{total_count} targets UP")
-                
+
                 if not self.verbose:
                     for job, health in targets.items():
                         status = "✅" if health == "up" else "❌"
                         print(f"      {status} {job}")
             else:
                 print(f"   ⚠️  {targets['error']}")
-        
+
         # 4. Vérifier Grafana datasources
         if self.results.get("grafana"):
             print("\n4️⃣ Grafana Datasources")
             print("-" * 80)
-            
+
             datasources = self.check_grafana_datasources()
-            
+
             if "error" not in datasources:
                 print(f"   {len(datasources)} datasource(s) configurée(s)")
             else:
                 print(f"   ⚠️  {datasources['error']}")
-        
+
         # 5. Résumé
         print("\n" + "=" * 80)
-        
+
         if all_healthy:
             print("✅ Tous les services sont opérationnels!")
             print("\n💡 URLs utiles:")
@@ -285,12 +302,12 @@ def main():
         action="store_true",
         help="Mode verbeux (afficher plus de détails)"
     )
-    
+
     args = parser.parse_args()
-    
+
     validator = DockerStackValidator(verbose=args.verbose)
     exit_code = validator.run_validation()
-    
+
     sys.exit(exit_code)
 
 
