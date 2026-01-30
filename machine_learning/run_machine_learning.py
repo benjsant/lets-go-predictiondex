@@ -84,57 +84,54 @@ except ImportError:
     MLFLOW_AVAILABLE = False
     print("⚠️  MLflow not available - tracking disabled")
 
+# Import new centralized modules (refactored for clean code)
+from machine_learning.config import (
+    XGBoostConfig,
+    GridSearchConfigFast,
+    GridSearchConfigExtended,
+    XGBOOST_PARAMS,
+    XGBOOST_PARAM_GRID_FAST,
+    XGBOOST_PARAM_GRID_EXTENDED,
+    RANDOM_SEED,
+)
+from machine_learning.constants import (
+    PROJECT_ROOT,
+    MODELS_DIR,
+    REPORTS_DIR,
+    get_data_dir,
+    get_raw_dir,
+    get_processed_dir,
+    get_features_dir,
+)
+from machine_learning.features import PokemonFeatureEngineer
+from machine_learning.evaluation import (
+    evaluate_model,
+    analyze_feature_importance,
+    compare_models,
+)
+from machine_learning.export import export_model, export_features
+
 # Add project root to path
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-# Paths (will be set based on --dataset-version)
-DATA_DIR_V1 = PROJECT_ROOT / "data" / "ml" / "battle_winner"
-DATA_DIR_V2 = PROJECT_ROOT / "data" / "ml" / "battle_winner_v2"
-MODELS_DIR = PROJECT_ROOT / "models"
-REPORTS_DIR = PROJECT_ROOT / "reports" / "ml"
-
-# Global paths (set by main based on args)
+# Global paths (set by main based on args) - kept for backward compatibility
 DATA_DIR = None
 RAW_DIR = None
 PROCESSED_DIR = None
 FEATURES_DIR = None
 
-# Random seed
-RANDOM_SEED = 42
+# Backward compatibility aliases (using new config system)
+DEFAULT_XGBOOST_PARAMS = XGBOOST_PARAMS
+XGBOOST_PARAM_GRID = XGBOOST_PARAM_GRID_FAST  # Default to fast grid
 
-# Default hyperparameters (optimized for CPU)
-DEFAULT_XGBOOST_PARAMS = {
-    'n_estimators': 100,
-    'max_depth': 8,
-    'learning_rate': 0.1,
-    'subsample': 0.8,
-    'colsample_bytree': 0.8,
-    'tree_method': 'hist',        # CPU-optimized histogram algorithm (faster than 'auto')
-    'predictor': 'cpu_predictor',  # Explicit CPU predictor
-    'random_state': RANDOM_SEED,
-    'n_jobs': -1,                 # Use all CPU cores
-    'eval_metric': 'logloss',
-}
-
+# RandomForest params (kept as-is, not refactored yet)
 DEFAULT_RF_PARAMS = {
-    'n_estimators': 50,  # Reduced from 100 (less trees = smaller model)
-    'max_depth': 12,     # Reduced from 15 (shallower trees = smaller model)
-    'min_samples_split': 10,  # Increased from 5 (prevents overfitting + smaller)
-    'min_samples_leaf': 4,    # Increased from 2 (fewer leaf nodes)
+    'n_estimators': 50,
+    'max_depth': 12,
+    'min_samples_split': 10,
+    'min_samples_leaf': 4,
     'random_state': RANDOM_SEED,
     'n_jobs': -1,
-}
-
-# Hyperparameter search space (optimized grid for CPU performance)
-# Reduced combinations but maintains quality: 2×3×2×1×1 = 12 combinations (vs 243 before)
-XGBOOST_PARAM_GRID = {
-    'n_estimators': [100, 200],           # 2 values: baseline + double
-    'max_depth': [6, 8, 10],              # 3 values: shallow, medium, deep
-    'learning_rate': [0.05, 0.1],         # 2 values: conservative + standard
-    'subsample': [0.8],                   # 1 value: optimal known value
-    'colsample_bytree': [0.8],            # 1 value: optimal known value
-    'tree_method': ['hist'],              # CPU-optimized method
 }
 
 
@@ -287,149 +284,11 @@ def filter_by_scenario(df_train: pd.DataFrame, df_test: pd.DataFrame, scenario_t
 # ================================================================
 # STEP 2: FEATURE ENGINEERING
 # ================================================================
-
-def engineer_features(df_train: pd.DataFrame, df_test: pd.DataFrame, verbose: bool = True) -> Tuple:
-    """
-    Feature engineering pipeline matching train_model.py exactly.
-
-    Steps:
-    1. One-hot encode categorical features (types)
-    2. Remove original categorical columns and IDs
-    3. Normalize numerical features with StandardScaler
-    4. Create 6 derived features using original values
-    5. Normalize derived features with a second StandardScaler
-
-    Validation: C12 (preprocessing pipeline tests)
-
-    Returns:
-        X_train, X_test, y_train, y_test, scalers_dict, feature_columns
-    """
-    if verbose:
-        print("\n" + "=" * 80)
-        print("STEP 2: FEATURE ENGINEERING")
-        print("=" * 80)
-
-    # Separate target
-    y_train = df_train['winner']
-    y_test = df_test['winner']
-
-    X_train_encoded = df_train.drop(columns=['winner']).copy()
-    X_test_encoded = df_test.drop(columns=['winner']).copy()
-
-    # One-hot encoding
-    if verbose:
-        print("\n1️⃣ One-hot encoding categorical features...")
-
-    categorical_features = ['a_type_1', 'a_type_2', 'b_type_1', 'b_type_2', 'a_move_type', 'b_move_type']
-
-    for feature in categorical_features:
-        if feature in X_train_encoded.columns:
-            train_dummies = pd.get_dummies(X_train_encoded[feature], prefix=feature, drop_first=False)
-            test_dummies = pd.get_dummies(X_test_encoded[feature], prefix=feature, drop_first=False)
-
-            # Align columns
-            train_dummies, test_dummies = train_dummies.align(test_dummies, join='left', axis=1, fill_value=0)
-
-            X_train_encoded = pd.concat([X_train_encoded, train_dummies], axis=1)
-            X_test_encoded = pd.concat([X_test_encoded, test_dummies], axis=1)
-
-    if verbose:
-        print(f"   After encoding: {X_train_encoded.shape[1]} columns")
-
-    # Remove categorical columns and IDs
-    id_features = ['pokemon_a_id', 'pokemon_b_id', 'pokemon_a_name', 'pokemon_b_name', 'a_move_name', 'b_move_name']
-    columns_to_drop = categorical_features + id_features
-    if 'scenario_type' in X_train_encoded.columns:
-        columns_to_drop.append('scenario_type')
-    columns_to_drop = [col for col in columns_to_drop if col in X_train_encoded.columns]
-
-    X_train_encoded.drop(columns=columns_to_drop, inplace=True)
-    X_test_encoded.drop(columns=columns_to_drop, inplace=True)
-
-    if verbose:
-        print(f"   After dropping categorical/IDs: {X_train_encoded.shape[1]} columns")
-
-    # Normalize numerical features
-    if verbose:
-        print("\n2️⃣ Normalizing numerical features...")
-
-    features_to_scale = [
-        'a_hp', 'a_attack', 'a_defense', 'a_sp_attack', 'a_sp_defense', 'a_speed',
-        'b_hp', 'b_attack', 'b_defense', 'b_sp_attack', 'b_sp_defense', 'b_speed',
-        'a_move_power', 'b_move_power',
-        'a_total_stats', 'b_total_stats',
-        'speed_diff', 'hp_diff'
-    ]
-    features_to_scale = [f for f in features_to_scale if f in X_train_encoded.columns]
-
-    scaler = StandardScaler()
-    X_train_encoded[features_to_scale] = scaler.fit_transform(X_train_encoded[features_to_scale])
-    X_test_encoded[features_to_scale] = scaler.transform(X_test_encoded[features_to_scale])
-
-    if verbose:
-        print(f"   {len(features_to_scale)} features normalized")
-
-    # Create derived features
-    if verbose:
-        print("\n3️⃣ Creating derived features...")
-
-    X_train_encoded['stat_ratio'] = df_train['a_total_stats'] / (df_train['b_total_stats'] + 1)
-    X_test_encoded['stat_ratio'] = df_test['a_total_stats'] / (df_test['b_total_stats'] + 1)
-
-    X_train_encoded['type_advantage_diff'] = df_train['a_move_type_mult'] - df_train['b_move_type_mult']
-    X_test_encoded['type_advantage_diff'] = df_test['a_move_type_mult'] - df_test['b_move_type_mult']
-
-    X_train_encoded['effective_power_a'] = (
-        df_train['a_move_power'] * df_train['a_move_stab'] * df_train['a_move_type_mult']
-    )
-    X_test_encoded['effective_power_a'] = (
-        df_test['a_move_power'] * df_test['a_move_stab'] * df_test['a_move_type_mult']
-    )
-
-    X_train_encoded['effective_power_b'] = (
-        df_train['b_move_power'] * df_train['b_move_stab'] * df_train['b_move_type_mult']
-    )
-    X_test_encoded['effective_power_b'] = (
-        df_test['b_move_power'] * df_test['b_move_stab'] * df_test['b_move_type_mult']
-    )
-
-    X_train_encoded['effective_power_diff'] = (
-        X_train_encoded['effective_power_a'] - X_train_encoded['effective_power_b']
-    )
-    X_test_encoded['effective_power_diff'] = (
-        X_test_encoded['effective_power_a'] - X_test_encoded['effective_power_b']
-    )
-
-    X_train_encoded['priority_advantage'] = df_train['a_move_priority'] - df_train['b_move_priority']
-    X_test_encoded['priority_advantage'] = df_test['a_move_priority'] - df_test['b_move_priority']
-
-    if verbose:
-        print(f"   After derived features: {X_train_encoded.shape[1]} columns")
-
-    # Normalize derived features
-    if verbose:
-        print("\n4️⃣ Normalizing derived features...")
-
-    new_features = [
-        'stat_ratio', 'type_advantage_diff',
-        'effective_power_a', 'effective_power_b',
-        'effective_power_diff', 'priority_advantage'
-    ]
-
-    scaler_new = StandardScaler()
-    X_train_encoded[new_features] = scaler_new.fit_transform(X_train_encoded[new_features])
-    X_test_encoded[new_features] = scaler_new.transform(X_test_encoded[new_features])
-
-    if verbose:
-        print(f"   {len(new_features)} derived features normalized")
-        print(f"\n✅ Final feature count: {X_train_encoded.shape[1]}")
-
-    scalers = {
-        'standard_scaler': scaler,
-        'standard_scaler_new_features': scaler_new
-    }
-
-    return X_train_encoded, X_test_encoded, y_train, y_test, scalers, X_train_encoded.columns.tolist()
+# NOTE: engineer_features() function has been REFACTORED
+# Now uses PokemonFeatureEngineer class from machine_learning.features.engineering
+# This eliminates 140+ lines of duplicated code between run_machine_learning.py
+# and train_model.py. See machine_learning/features/engineering.py for implementation.
+# ================================================================
 
 
 # ================================================================
@@ -576,273 +435,21 @@ def tune_hyperparameters(X_train: pd.DataFrame, y_train: pd.Series,
 # ================================================================
 # STEP 4: MODEL EVALUATION
 # ================================================================
-
-def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
-                   y_train: pd.Series, y_test: pd.Series,
-                   model_name: str = "Model",
-                   verbose: bool = True) -> Dict[str, float]:
-    """
-    Comprehensive model evaluation.
-
-    Validation: C12 (evaluation tests)
-
-    Returns:
-        Dictionary of metrics
-    """
-    if verbose:
-        print("\n" + "=" * 80)
-        print(f"STEP 4: MODEL EVALUATION - {model_name}")
-        print("=" * 80)
-
-    # Predictions
-    y_train_pred = model.predict(X_train)
-    y_test_pred = model.predict(X_test)
-
-    # Probabilities for ROC-AUC
-    y_train_proba = model.predict_proba(X_train)[:, 1]
-    y_test_proba = model.predict_proba(X_test)[:, 1]
-
-    # Calculate metrics
-    metrics = {
-        'model_name': model_name,
-        'train_accuracy': accuracy_score(y_train, y_train_pred),
-        'test_accuracy': accuracy_score(y_test, y_test_pred),
-        'test_precision': precision_score(y_test, y_test_pred),
-        'test_recall': recall_score(y_test, y_test_pred),
-        'test_f1': f1_score(y_test, y_test_pred),
-        'test_roc_auc': roc_auc_score(y_test, y_test_proba),
-        'train_samples': len(y_train),
-        'test_samples': len(y_test),
-    }
-
-    # Overfitting check
-    overfitting = metrics['train_accuracy'] - metrics['test_accuracy']
-    metrics['overfitting'] = overfitting
-
-    if verbose:
-        print("\n📊 PERFORMANCE METRICS")
-        print("-" * 80)
-        print(f"Train Accuracy:  {metrics['train_accuracy']:.4f}")
-        print(f"Test Accuracy:   {metrics['test_accuracy']:.4f}")
-        print(f"Test Precision:  {metrics['test_precision']:.4f}")
-        print(f"Test Recall:     {metrics['test_recall']:.4f}")
-        print(f"Test F1-Score:   {metrics['test_f1']:.4f}")
-        print(f"Test ROC-AUC:    {metrics['test_roc_auc']:.4f}")
-        print(f"\nOverfitting:     {overfitting:.4f} ({overfitting*100:.2f}%)")
-
-        # Classification report
-        print("\n" + "-" * 80)
-        print("CLASSIFICATION REPORT (Test Set)")
-        print("-" * 80)
-        print(classification_report(y_test, y_test_pred, target_names=['B wins', 'A wins']))
-
-
-        # Confusion matrix
-        print("Confusion Matrix:")
-        cm = confusion_matrix(y_test, y_test_pred)
-        print(cm)
-        print(f"\nTrue Negatives:  {cm[0, 0]}")
-        print(f"False Positives: {cm[0, 1]}")
-        print(f"False Negatives: {cm[1, 0]}")
-        print(f"True Positives:  {cm[1, 1]}")
-
-    return metrics
-
-
-def analyze_feature_importance(model: Any, feature_columns: List[str],
-                               top_n: int = 20,
-                               verbose: bool = True) -> pd.DataFrame:
-    """
-    Analyze and display feature importance.
-
-    Validation: C12 (feature analysis tests)
-
-    Returns:
-        DataFrame with feature importances
-    """
-    if verbose:
-        print("\n" + "=" * 80)
-        print("FEATURE IMPORTANCE ANALYSIS")
-        print("=" * 80)
-
-    # Get feature importances
-    if hasattr(model, 'feature_importances_'):
-        importances = model.feature_importances_
-    else:
-        if verbose:
-            print("\n⚠️  Model does not support feature_importances_")
-        return pd.DataFrame()
-
-    # Create DataFrame
-    importance_df = pd.DataFrame({
-        'feature': feature_columns,
-        'importance': importances
-    }).sort_values('importance', ascending=False)
-
-    if verbose:
-        print(f"\nTop {top_n} Most Important Features:")
-        print("-" * 80)
-        for i, row in importance_df.head(top_n).iterrows():
-            print(f"{row['feature']:40s} {row['importance']:.6f}")
-
-    return importance_df
+# Note: evaluate_model() and analyze_feature_importance() are now imported
+#       from machine_learning.evaluation
 
 
 # ================================================================
 # STEP 5: MODEL COMPARISON
 # ================================================================
-
-def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
-                   y_train: pd.Series, y_test: pd.Series,
-                   models_to_compare: List[str] = ['xgboost', 'random_forest'],
-                   verbose: bool = True) -> Tuple[Any, str, Dict]:
-    """
-    Train and compare multiple models.
-
-    Validation: C12 (model comparison tests)
-
-    Returns:
-        best_model, best_model_name, all_metrics
-    """
-    if verbose:
-        print("\n" + "=" * 80)
-        print("STEP 5: MODEL COMPARISON")
-        print("=" * 80)
-        print(f"\nComparing models: {', '.join(models_to_compare)}")
-
-    results = []
-    trained_models = {}
-
-    for model_type in models_to_compare:
-        if verbose:
-            print(f"\n{'─' * 80}")
-            print(f"Training {model_type}...")
-
-        # Train model
-        model = train_model(X_train, y_train, model_type=model_type, verbose=False)
-        trained_models[model_type] = model
-
-        # Evaluate model
-        metrics = evaluate_model(model, X_train, X_test, y_train, y_test,
-                                 model_name=model_type, verbose=False)
-        results.append(metrics)
-
-        if verbose:
-            print(f"✅ {model_type}: Test Accuracy = {metrics['test_accuracy']:.4f}")
-
-    # Create comparison DataFrame
-    results_df = pd.DataFrame(results)
-
-    if verbose:
-        print("\n" + "=" * 80)
-        print("COMPARISON RESULTS")
-        print("=" * 80)
-        print("\n", results_df[['model_name', 'test_accuracy', 'test_f1',
-              'test_roc_auc', 'overfitting']].to_string(index=False))
-
-    # Select best model
-    best_idx = results_df['test_accuracy'].idxmax()
-    best_model_name = results_df.loc[best_idx, 'model_name']
-    best_model = trained_models[best_model_name]
-
-    if verbose:
-        print(f"\n🏆 BEST MODEL: {best_model_name}")
-        print(f"   Test Accuracy: {results_df.loc[best_idx, 'test_accuracy']:.4f}")
-        print(f"   Test ROC-AUC:  {results_df.loc[best_idx, 'test_roc_auc']:.4f}")
-
-    return best_model, best_model_name, results_df.to_dict('records')
+# Note: compare_models() is now imported from machine_learning.evaluation
 
 
 # ================================================================
 # STEP 6: MODEL EXPORT
 # ================================================================
-
-def export_model(model: Any, scalers: Dict, feature_columns: List[str],
-                 metrics: Dict, hyperparams: Optional[Dict] = None,
-                 version: str = "v1", verbose: bool = True):
-    """
-    Export trained model, scalers, and metadata.
-
-    Validation: C13 (model packaging)
-    """
-    if verbose:
-        print("\n" + "=" * 80)
-        print("STEP 6: MODEL EXPORT")
-        print("=" * 80)
-
-    MODELS_DIR.mkdir(parents=True, exist_ok=True)
-
-    # Export model (use joblib compression for RandomForest, pickle for others)
-    model_path = MODELS_DIR / f"battle_winner_model_{version}.pkl"
-    model_type_name = type(model).__name__
-
-    if model_type_name == 'RandomForestClassifier':
-        # Use joblib with aggressive compression for RandomForest (5-10x smaller)
-        joblib.dump(model, model_path, compress=('zlib', 9))
-        if verbose:
-            print(f"\n✅ Model exported (joblib compressed): {model_path}")
-    else:
-        # XGBoost and others use standard pickle
-        with open(model_path, 'wb') as f:
-            pickle.dump(model, f)
-        if verbose:
-            print(f"\n✅ Model exported: {model_path}")
-
-    # Export scalers
-    scalers_path = MODELS_DIR / f"battle_winner_scalers_{version}.pkl"
-    with open(scalers_path, 'wb') as f:
-        pickle.dump(scalers, f)
-    if verbose:
-        print(f"✅ Scalers exported: {scalers_path}")
-
-    # Export metadata
-    metadata = {
-        'model_type': type(model).__name__,
-        'version': version,
-        'trained_at': datetime.now().isoformat(),
-        'feature_columns': feature_columns,
-        'n_features': len(feature_columns),
-        'hyperparameters': hyperparams or {},
-        'metrics': metrics,
-        'random_seed': RANDOM_SEED,
-    }
-
-    metadata_path = MODELS_DIR / f"battle_winner_metadata_{version}.pkl"
-    with open(metadata_path, 'wb') as f:
-        pickle.dump(metadata, f)
-    if verbose:
-        print(f"✅ Metadata exported: {metadata_path}")
-
-    # Export metadata as JSON for readability
-    metadata_json = metadata.copy()
-    metadata_json['feature_columns'] = feature_columns[:10] + ['...'] if len(feature_columns) > 10 else feature_columns
-
-    metadata_json_path = MODELS_DIR / f"battle_winner_metadata_{version}.json"
-    with open(metadata_json_path, 'w') as f:
-        json.dump(metadata_json, f, indent=2)
-    if verbose:
-        print(f"✅ Metadata (JSON) exported: {metadata_json_path}")
-        print(f"\n✅ All artifacts exported to: {MODELS_DIR}")
-
-    return str(model_path)  # Return path for MLflow logging
-
-
-def export_features(X_train: pd.DataFrame, X_test: pd.DataFrame,
-                    y_train: pd.Series, y_test: pd.Series,
-                    verbose: bool = True):
-    """Export feature-engineered datasets for reproducibility."""
-    if verbose:
-        print("\nExporting feature-engineered datasets...")
-
-    FEATURES_DIR.mkdir(parents=True, exist_ok=True)
-
-    X_train.to_parquet(FEATURES_DIR / "X_train.parquet", index=False, engine='pyarrow')
-    X_test.to_parquet(FEATURES_DIR / "X_test.parquet", index=False, engine='pyarrow')
-    y_train.to_frame('winner').to_parquet(FEATURES_DIR / "y_train.parquet", index=False, engine='pyarrow')
-    y_test.to_frame('winner').to_parquet(FEATURES_DIR / "y_test.parquet", index=False, engine='pyarrow')
-
-    if verbose:
-        print(f"✅ Features exported to: {FEATURES_DIR}")
+# Note: export_model() and export_features() are now imported
+#       from machine_learning.export
 
 
 # ================================================================
@@ -944,12 +551,12 @@ Examples:
     args = parser.parse_args()
     verbose = not args.quiet
 
-    # Set global paths based on dataset version
+    # Set global paths based on dataset version (using helper functions from constants.py)
     global DATA_DIR, RAW_DIR, PROCESSED_DIR, FEATURES_DIR
-    DATA_DIR = DATA_DIR_V2 if args.dataset_version == 'v2' else DATA_DIR_V1
-    RAW_DIR = DATA_DIR / "raw"
-    PROCESSED_DIR = DATA_DIR / "processed"
-    FEATURES_DIR = DATA_DIR / "features"
+    DATA_DIR = get_data_dir(args.dataset_version)
+    RAW_DIR = get_raw_dir(args.dataset_version)
+    PROCESSED_DIR = get_processed_dir(args.dataset_version)
+    FEATURES_DIR = get_features_dir(args.dataset_version)
 
     # Initialize MLflow tracker (C13 - MLOps)
     tracker = None
@@ -1027,8 +634,9 @@ Examples:
         # Optional scenario filtering
         df_train, df_test = filter_by_scenario(df_train, df_test, args.scenario_type, verbose=verbose)
 
-        # STEP 2: Feature engineering
-        X_train, X_test, y_train, y_test, scalers, feature_columns = engineer_features(
+        # STEP 2: Feature engineering (using refactored class)
+        feature_engineer = PokemonFeatureEngineer()
+        X_train, X_test, y_train, y_test, scalers, feature_columns = feature_engineer.fit_transform(
             df_train, df_test, verbose=verbose
         )
 
@@ -1089,7 +697,7 @@ Examples:
                                   metadata={'feature_columns': feature_columns})
 
             if not args.skip_export_features:
-                export_features(X_train, X_test, y_train, y_test, verbose=verbose)
+                export_features(X_train, X_test, y_train, y_test, FEATURES_DIR, verbose=verbose)
 
         # STEP 5: Compare multiple models
         elif args.mode == 'compare':
@@ -1137,7 +745,7 @@ Examples:
                         tracker.promote_to_production(model_name, version_number)
 
             if not args.skip_export_features:
-                export_features(X_train, X_test, y_train, y_test, verbose=verbose)
+                export_features(X_train, X_test, y_train, y_test, FEATURES_DIR, verbose=verbose)
 
         # STEP 6: Complete pipeline
         elif args.mode == 'all':
@@ -1210,7 +818,7 @@ Examples:
                             print(f"   Manual promotion: mlflow models transition-to-staging/production")
 
             if not args.skip_export_features:
-                export_features(X_train, X_test, y_train, y_test, verbose=verbose)
+                export_features(X_train, X_test, y_train, y_test, FEATURES_DIR, verbose=verbose)
 
         # Final summary
         if verbose:

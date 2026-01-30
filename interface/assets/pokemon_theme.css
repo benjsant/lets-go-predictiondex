@@ -1,0 +1,186 @@
+/*
+Pokemon Theme Styles
+====================
+
+Custom CSS for Pokémon-themed Streamlit interface.
+Uses CSS variables for easy customization.
+*/
+
+/* CSS Variables - can be overridden via inline styles */
+:root {
+    --color-primary: #FFCC00;
+    --color-primary-alt: #CD853F;
+    --color-secondary: #3B4CCA;
+    --color-accent: #FF0000;
+
+    --color-success: #4CAF50;
+    --color-warning: #FF9800;
+    --color-error: #F44336;
+    --color-info: #2196F3;
+
+    --bg-main: #FFFAF0;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #FFF8DC;
+    --bg-hover: #FFEFD5;
+
+    --text-primary: #2C3E50;
+    --text-secondary: #8B4513;
+    --text-light: #A0826D;
+}
+
+/* Global adjustments */
+.stApp {
+    background: linear-gradient(135deg, var(--bg-main) 0%, var(--bg-secondary) 100%);
+    color: var(--text-primary);
+}
+
+/* Header styling */
+h1 {
+    color: var(--text-primary);
+    font-weight: 700;
+    border-bottom: 3px solid var(--color-primary);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+h2 {
+    color: var(--color-secondary);
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+h3 {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+p {
+    color: var(--text-primary);
+}
+
+/* Button styling */
+.stButton > button {
+    border-radius: 12px;
+    font-weight: 600;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background-color: var(--bg-hover);
+}
+
+.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-alt) 100%);
+    color: #2C3E50;
+    border: 2px solid var(--color-primary);
+}
+
+.stButton > button[kind="primary"]:hover {
+    background: linear-gradient(135deg, var(--color-primary-alt) 0%, var(--color-primary) 100%);
+}
+
+/* Metric styling */
+[data-testid="stMetricValue"] {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-secondary);
+}
+
+[data-testid="stMetricLabel"] {
+    color: var(--text-secondary);
+}
+
+/* Info boxes */
+.stAlert {
+    border-radius: 12px;
+    border-left: 4px solid;
+    background-color: var(--bg-card);
+}
+
+/* Expander */
+.streamlit-expanderHeader {
+    border-radius: 8px;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+}
+
+[data-testid="stSidebar"] * {
+    color: var(--text-primary);
+}
+
+/* Divider */
+hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--color-primary) 50%, transparent 100%);
+    margin: 30px 0;
+}
+
+/* Select boxes */
+.stSelectbox label, .stMultiSelect label {
+    color: var(--text-primary);
+}
+
+.stSelectbox > div > div {
+    border-radius: 8px;
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+}
+
+/* Multiselect */
+.stMultiSelect > div {
+    border-radius: 8px;
+    background-color: var(--bg-card);
+}
+
+/* Progress bar */
+.stProgress > div > div {
+    background: linear-gradient(90deg, var(--color-success) 0%, #8BC34A 100%);
+    border-radius: 10px;
+}
+
+/* DataFrames */
+.dataframe {
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+}
+
+/* Text inputs */
+.stTextInput > div > div {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+}
+
+/* Success/Error/Warning/Info messages */
+.stSuccess {
+    background-color: var(--bg-card);
+    border-left-color: var(--color-success);
+}
+
+.stError {
+    background-color: var(--bg-card);
+    border-left-color: var(--color-error);
+}
+
+.stWarning {
+    background-color: var(--bg-card);
+    border-left-color: var(--color-warning);
+}
+
+.stInfo {
+    background-color: var(--bg-card);
+    border-left-color: var(--color-info);
+}

@@ -33,7 +33,6 @@ from __future__ import annotations
 
 import csv
 from decimal import Decimal
-from typing import Optional
 
 # Ensure all SQLAlchemy models are registered
 import core.models  # noqa: F401
@@ -49,111 +48,10 @@ from core.models import (
     PokemonSpecies,
     TypeEffectiveness,
 )
+from etl_pokemon.utils.constants import get_priority_from_damage_type
+from etl_pokemon.utils.normalizers import normalize_bool, normalize_int, normalize_key
 
 DATA_PATH = "etl_pokemon/data/csv"
-
-
-# ---------------------------------------------------------------------
-# Normalization Helpers
-# ---------------------------------------------------------------------
-def normalize_bool(value: Optional[str]) -> bool:
-    """
-    Normalize boolean-like CSV values.
-
-    Accepted truthy values: 1, true, yes, oui (case-insensitive).
-
-    Args:
-        value: Raw CSV value.
-
-    Returns:
-        Boolean representation.
-    """
-    return str(value).strip().lower() in {"1", "true", "yes", "oui"}
-
-
-def normalize_int(value: Optional[str]) -> Optional[int]:
-    """
-    Convert optional integer CSV values.
-
-    Empty strings or None are converted to None.
-
-    Args:
-        value: Raw CSV value.
-
-    Returns:
-        Integer value or None.
-    """
-    return int(value) if value not in ("", None) else None
-
-
-def normalize_key(value: str) -> str:
-    """
-    Normalize string keys for consistent lookups.
-
-    Args:
-        value: Raw string value.
-
-    Returns:
-        Normalized lowercase key.
-    """
-    return value.strip().lower()
-
-
-# ---------------------------------------------------------------------
-# Priority Mapping from damage_type
-# ---------------------------------------------------------------------
-PRIORITY_FROM_DAMAGE_TYPE = {
-    # +2: Extreme priority
-    "protection_change_plusieur": 2,
-    "prioritaire_deux": 2,
-
-    # +1: High priority
-    "prioritaire": 1,
-    "prioritaire_conditionnel": 1,
-    "prioritaire_critique": 1,
-
-    # 0: Normal priority
-    "offensif": 0,
-    "statut": 0,
-    "multi_coups": 0,
-    "double_degats": 0,
-    "fixe_niveau": 0,
-    "fixe_degat_20": 0,
-    "fixe_degat_40": 0,
-    "fixe_moitie_degats": 0,
-    "ko_en_un_coup": 0,
-    "soin": 0,
-    "variable_degats_poids": 0,
-    "sommeil_requis": 0,
-    "attk_adversaire": 0,
-    "degat_aleatoire": 0,
-    "inutile": 0,
-    "critique_100": 0,
-    "absorption": 0,
-    "piege": 0,
-    "deux_tours": 0,
-
-    # -5: Counter moves
-    "renvoi_degat_double_physique": -5,
-    "renvoi_degat_double_special": -5,
-    "renvoi_degat_double_deux_tours": -5,
-}
-
-
-def get_priority_from_damage_type(damage_type: Optional[str]) -> int:
-    """
-    Derive move priority from the damage_type field.
-
-    Args:
-        damage_type: Raw damage_type value from CSV.
-
-    Returns:
-        Priority value (default: 0).
-    """
-    if not damage_type:
-        return 0
-    return PRIORITY_FROM_DAMAGE_TYPE.get(damage_type.strip().lower(), 0)
-
 
 # ---------------------------------------------------------------------
 # Load TYPES

@@ -72,165 +72,50 @@ TYPE_ICONS = {
 
 
 def load_custom_css():
-    """Load custom CSS for Pokémon theme."""
+    """
+    Load custom CSS for Pokémon theme from external file.
+
+    Loads CSS from interface/assets/pokemon_theme.css and injects
+    color variables from POKEMON_COLORS dictionary.
+    """
+    from pathlib import Path
+
+    # Get path to CSS file
+    css_path = Path(__file__).parent.parent / "assets" / "pokemon_theme.css"
+
+    # Load CSS from file
+    try:
+        with open(css_path, 'r', encoding='utf-8') as f:
+            css_content = f.read()
+    except FileNotFoundError:
+        css_content = ""
+        st.warning("⚠️ CSS file not found at interface/assets/pokemon_theme.css")
+
+    # Inject CSS with color variables from POKEMON_COLORS
     st.markdown(f"""
     <style>
-    /* Global adjustments */
-    .stApp {{
-        background: linear-gradient(135deg, {POKEMON_COLORS['bg_main']} 0%, {POKEMON_COLORS['bg_secondary']} 100%);
-        color: {POKEMON_COLORS['text_primary']};
+    :root {{
+        --color-primary: {POKEMON_COLORS['primary']};
+        --color-primary-alt: {POKEMON_COLORS['primary_alt']};
+        --color-secondary: {POKEMON_COLORS['secondary']};
+        --color-accent: {POKEMON_COLORS['accent']};
+
+        --color-success: {POKEMON_COLORS['success']};
+        --color-warning: {POKEMON_COLORS['warning']};
+        --color-error: {POKEMON_COLORS['error']};
+        --color-info: {POKEMON_COLORS['info']};
+
+        --bg-main: {POKEMON_COLORS['bg_main']};
+        --bg-card: {POKEMON_COLORS['bg_card']};
+        --bg-secondary: {POKEMON_COLORS['bg_secondary']};
+        --bg-hover: {POKEMON_COLORS['bg_hover']};
+
+        --text-primary: {POKEMON_COLORS['text_primary']};
+        --text-secondary: {POKEMON_COLORS['text_secondary']};
+        --text-light: {POKEMON_COLORS['text_light']};
     }}
 
-    /* Header styling */
-    h1 {{
-        color: {POKEMON_COLORS['text_primary']};
-        font-weight: 700;
-        border-bottom: 3px solid {POKEMON_COLORS['primary']};
-        padding-bottom: 10px;
-        margin-bottom: 20px;
-    }}
-
-    h2 {{
-        color: {POKEMON_COLORS['secondary']};
-        font-weight: 600;
-        margin-top: 20px;
-    }}
-
-    h3 {{
-        color: {POKEMON_COLORS['text_primary']};
-        font-weight: 600;
-    }}
-
-    p {{
-        color: {POKEMON_COLORS['text_primary']};
-    }}
-
-    /* Button styling */
-    .stButton > button {{
-        border-radius: 12px;
-        font-weight: 600;
-        border: 2px solid transparent;
-        transition: all 0.3s ease;
-        background-color: {POKEMON_COLORS['bg_card']};
-        color: {POKEMON_COLORS['text_primary']};
-    }}
-
-    .stButton > button:hover {{
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        background-color: {POKEMON_COLORS['bg_hover']};
-    }}
-
-    .stButton > button[kind="primary"] {{
-        background: linear-gradient(135deg, {POKEMON_COLORS['primary']} 0%, {POKEMON_COLORS['primary_alt']} 100%);
-        color: #2C3E50;
-        border: 2px solid {POKEMON_COLORS['primary']};
-    }}
-
-    .stButton > button[kind="primary"]:hover {{
-        background: linear-gradient(135deg, {POKEMON_COLORS['primary_alt']} 0%, {POKEMON_COLORS['primary']} 100%);
-    }}
-
-    /* Metric styling */
-    [data-testid="stMetricValue"] {{
-        font-size: 2rem;
-        font-weight: 700;
-        color: {POKEMON_COLORS['secondary']};
-    }}
-
-    [data-testid="stMetricLabel"] {{
-        color: {POKEMON_COLORS['text_secondary']};
-    }}
-
-    /* Info boxes */
-    .stAlert {{
-        border-radius: 12px;
-        border-left: 4px solid;
-        background-color: {POKEMON_COLORS['bg_card']};
-    }}
-
-    /* Expander */
-    .streamlit-expanderHeader {{
-        border-radius: 8px;
-        background-color: {POKEMON_COLORS['bg_secondary']};
-        color: {POKEMON_COLORS['text_primary']};
-        font-weight: 600;
-    }}
-
-    /* Sidebar */
-    [data-testid="stSidebar"] {{
-        background: linear-gradient(180deg, {POKEMON_COLORS['bg_card']} 0%, {POKEMON_COLORS['bg_secondary']} 100%);
-    }}
-
-    [data-testid="stSidebar"] * {{
-        color: {POKEMON_COLORS['text_primary']};
-    }}
-
-    /* Divider */
-    hr {{
-        border: none;
-        height: 2px;
-        background: linear-gradient(90deg, transparent 0%, {POKEMON_COLORS['primary']} 50%, transparent 100%);
-        margin: 30px 0;
-    }}
-
-    /* Select boxes */
-    .stSelectbox label, .stMultiSelect label {{
-        color: {POKEMON_COLORS['text_primary']};
-    }}
-
-    .stSelectbox > div > div {{
-        border-radius: 8px;
-        background-color: {POKEMON_COLORS['bg_card']};
-        color: {POKEMON_COLORS['text_primary']};
-    }}
-
-    /* Multiselect */
-    .stMultiSelect > div {{
-        border-radius: 8px;
-        background-color: {POKEMON_COLORS['bg_card']};
-    }}
-
-    /* Progress bar */
-    .stProgress > div > div {{
-        background: linear-gradient(90deg, {POKEMON_COLORS['success']} 0%, #8BC34A 100%);
-        border-radius: 10px;
-    }}
-
-    /* DataFrames */
-    .dataframe {{
-        border-radius: 8px;
-        overflow: hidden;
-        background-color: {POKEMON_COLORS['bg_card']};
-        color: {POKEMON_COLORS['text_primary']};
-    }}
-
-    /* Text inputs */
-    .stTextInput > div > div {{
-        background-color: {POKEMON_COLORS['bg_card']};
-        color: {POKEMON_COLORS['text_primary']};
-    }}
-
-    /* Success/Error messages */
-    .stSuccess {{
-        background-color: {POKEMON_COLORS['bg_card']};
-        border-left-color: {POKEMON_COLORS['success']};
-    }}
-
-    .stError {{
-        background-color: {POKEMON_COLORS['bg_card']};
-        border-left-color: {POKEMON_COLORS['error']};
-    }}
-
-    .stWarning {{
-        background-color: {POKEMON_COLORS['bg_card']};
-        border-left-color: {POKEMON_COLORS['warning']};
-    }}
-
-    .stInfo {{
-        background-color: {POKEMON_COLORS['bg_card']};
-        border-left-color: {POKEMON_COLORS['info']};
-    }}
+    {css_content}
     </style>
     """, unsafe_allow_html=True)
 

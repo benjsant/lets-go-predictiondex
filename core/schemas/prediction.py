@@ -50,8 +50,8 @@ class PredictBestMoveRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "pokemon_a_id": 25,
-                "pokemon_b_id": 6,
-                "available_moves": ["Tonnerre", "Vive-Attaque", "Charge", "Fatal-Foudre"],
+                "pokemon_b_id": 7,
+                "available_moves": ["Tonnerre", "Vive-Attaque", "Fatal-Foudre"],
                 "available_moves_b": ["Surf", "Hydrocanon"]
             }
         }

@@ -13,16 +13,18 @@ from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
 
 from api_pokemon.services import prediction_service
+from api_pokemon.services.model_loader import PredictionModel
 from api_pokemon.services.prediction_service import (
-    PredictionModel,
     get_pokemon_with_details,
     get_type_multiplier,
     load_type_effectiveness,
     calculate_effective_power,
     select_best_move_for_matchup,
+    predict_best_move,
+)
+from api_pokemon.services.feature_engineering import (
     prepare_features_for_prediction,
     apply_feature_engineering,
-    predict_best_move,
 )
 
 
@@ -39,15 +41,21 @@ class TestPredictionModel:
         instance2 = PredictionModel()
         assert instance1 is instance2
 
+    @patch('api_pokemon.services.model_loader.load_model_from_registry')
+    @patch('api_pokemon.services.model_loader.joblib.load')
+    @patch('pathlib.Path.exists')
     @patch('builtins.open')
     @patch('pickle.load')
-    def test_load_model_artifacts(self, mock_pickle_load, mock_open):
+    def test_load_model_artifacts(self, mock_pickle_load, mock_open, mock_path_exists, mock_joblib_load, mock_registry):
         """Test loading model artifacts from disk."""
         # Reset singleton
         PredictionModel._instance = None
         PredictionModel._model = None
         PredictionModel._scalers = None
         PredictionModel._metadata = None
+
+        # Mock registry returns None (fallback to local)
+        mock_registry.return_value = None
 
         # Mock model artifacts
         mock_model = Mock()
@@ -59,7 +67,10 @@ class TestPredictionModel:
             'feature_columns': ['feature1', 'feature2']
         }
 
-        mock_pickle_load.side_effect = [mock_model, mock_scalers, mock_metadata]
+        # Mock file system
+        mock_path_exists.return_value = True
+        mock_joblib_load.return_value = mock_model
+        mock_pickle_load.side_effect = [mock_scalers, mock_metadata]
 
         instance = PredictionModel()
         instance.load()
@@ -67,7 +78,6 @@ class TestPredictionModel:
         assert instance._model == mock_model
         assert instance._scalers == mock_scalers
         assert instance._metadata == mock_metadata
-        assert mock_open.call_count == 3
 
     def test_model_property_lazy_loading(self):
         """Test that model property triggers lazy loading."""
@@ -516,9 +526,8 @@ class TestFeaturePreparation:
 class TestFeatureEngineering:
     """Tests for feature engineering pipeline."""
 
-    @patch.object(prediction_service.PredictionModel, '_scalers')
-    @patch.object(prediction_service.PredictionModel, '_metadata')
-    def test_apply_feature_engineering(self, mock_metadata, mock_scalers):
+    @patch('api_pokemon.services.feature_engineering.prediction_model')
+    def test_apply_feature_engineering(self, mock_model_instance):
         """Test feature engineering pipeline."""
         # Mock scalers - they should return the input unchanged (identity transform)
         mock_scaler = Mock()
@@ -527,15 +536,14 @@ class TestFeatureEngineering:
         mock_scaler_new = Mock()
         mock_scaler_new.transform = Mock(side_effect=lambda x: x)
 
-        mock_scalers.__getitem__ = Mock(side_effect=lambda key: {
+        # Mock the prediction_model instance
+        mock_model_instance.scalers = {
             'standard_scaler': mock_scaler,
             'standard_scaler_new_features': mock_scaler_new
-        }[key])
-
-        # Mock metadata
-        mock_metadata.__getitem__ = Mock(side_effect=lambda key: {
+        }
+        mock_model_instance.metadata = {
             'feature_columns': ['a_hp', 'a_attack', 'a_type_1_Feu']
-        }[key])
+        }
 
         # Create raw features
         df_raw = pd.DataFrame([{
@@ -577,12 +585,10 @@ class TestFeatureEngineering:
         assert isinstance(features_final, pd.DataFrame)
         assert len(features_final) == 1
 
-    @patch.object(prediction_service.PredictionModel, '_scalers')
-    @patch.object(prediction_service.PredictionModel, '_metadata')
+    @patch('api_pokemon.services.feature_engineering.prediction_model')
     def test_apply_feature_engineering_adds_missing_columns(
         self,
-        mock_metadata,
-        mock_scalers
+        mock_model_instance
     ):
         """Test that missing feature columns are added with 0."""
         # Mock scalers - they should return the input unchanged (identity transform)
@@ -592,15 +598,15 @@ class TestFeatureEngineering:
         mock_scaler_new = Mock()
         mock_scaler_new.transform = Mock(side_effect=lambda x: x)
 
-        mock_scalers.__getitem__ = Mock(side_effect=lambda key: {
+        # Mock the prediction_model instance
+        mock_model_instance.scalers = {
             'standard_scaler': mock_scaler,
             'standard_scaler_new_features': mock_scaler_new
-        }[key])
-
+        }
         # Mock metadata with columns that don't exist in input
-        mock_metadata.__getitem__ = Mock(side_effect=lambda key: {
+        mock_model_instance.metadata = {
             'feature_columns': ['a_hp', 'missing_col_1', 'missing_col_2']
-        }[key])
+        }
 
         df_raw = pd.DataFrame([{
             'a_hp': 35,
@@ -652,22 +658,22 @@ class TestFeatureEngineering:
 class TestPredictionPipeline:
     """Integration tests for the full prediction pipeline."""
 
-    @patch.object(prediction_service.PredictionModel, '_model')
-    @patch.object(prediction_service.PredictionModel, '_scalers')
-    @patch.object(prediction_service.PredictionModel, '_metadata')
+    @patch('api_pokemon.services.prediction_service.prediction_model')
+    @patch('api_pokemon.services.feature_engineering.prediction_model')
     def test_predict_best_move_success(
         self,
-        mock_metadata,
-        mock_scalers,
-        mock_model,
+        mock_model_fe,
+        mock_model_pred,
         db_session,
         sample_pokemon,
         sample_type_effectiveness
     ):
         """Test successful prediction of best move."""
         # Mock model
-        mock_model.predict = Mock(return_value=[1])  # A wins
-        mock_model.predict_proba = Mock(return_value=[[0.2, 0.8]])  # 80% win prob
+        mock_ml_model = Mock()
+        mock_ml_model.predict = Mock(return_value=[1])  # A wins
+        mock_ml_model.predict_proba = Mock(return_value=[[0.2, 0.8]])  # 80% win prob
+        mock_model_pred.model = mock_ml_model
 
         # Mock scalers
         mock_scaler = Mock()
@@ -675,11 +681,6 @@ class TestPredictionPipeline:
 
         mock_scaler_new = Mock()
         mock_scaler_new.transform = Mock(side_effect=lambda x: x)
-
-        mock_scalers.__getitem__ = Mock(side_effect=lambda key: {
-            'standard_scaler': mock_scaler,
-            'standard_scaler_new_features': mock_scaler_new
-        }[key])
 
         # Mock metadata
         feature_cols = [
@@ -692,9 +693,13 @@ class TestPredictionPipeline:
             'effective_power_a', 'effective_power_b', 'effective_power_diff',
             'priority_advantage'
         ]
-        mock_metadata.__getitem__ = Mock(side_effect=lambda key: {
-            'feature_columns': feature_cols
-        }[key])
+
+        # Both feature_engineering and prediction_service modules use prediction_model
+        mock_model_fe.scalers = {
+            'standard_scaler': mock_scaler,
+            'standard_scaler_new_features': mock_scaler_new
+        }
+        mock_model_fe.metadata = {'feature_columns': feature_cols}
 
         result = predict_best_move(
             db_session,
@@ -713,14 +718,12 @@ class TestPredictionPipeline:
         assert 'all_moves' in result
         assert len(result['all_moves']) >= 1
 
-    @patch.object(prediction_service.PredictionModel, '_model')
-    @patch.object(prediction_service.PredictionModel, '_scalers')
-    @patch.object(prediction_service.PredictionModel, '_metadata')
+    @patch('api_pokemon.services.prediction_service.prediction_model')
+    @patch('api_pokemon.services.feature_engineering.prediction_model')
     def test_predict_best_move_ranks_by_win_probability(
         self,
-        mock_metadata,
-        mock_scalers,
-        mock_model,
+        mock_model_fe,
+        mock_model_pred,
         db_session,
         sample_pokemon,
         sample_type_effectiveness
@@ -736,8 +739,10 @@ class TestPredictionPipeline:
             else:
                 return [[0.1, 0.9]]  # Second move: 90% win prob
 
-        mock_model.predict = Mock(return_value=[1])
-        mock_model.predict_proba = mock_predict_proba
+        mock_ml_model = Mock()
+        mock_ml_model.predict = Mock(return_value=[1])
+        mock_ml_model.predict_proba = mock_predict_proba
+        mock_model_pred.model = mock_ml_model
 
         # Mock scalers
         mock_scaler = Mock()
@@ -745,11 +750,6 @@ class TestPredictionPipeline:
 
         mock_scaler_new = Mock()
         mock_scaler_new.transform = Mock(side_effect=lambda x: x)
-
-        mock_scalers.__getitem__ = Mock(side_effect=lambda key: {
-            'standard_scaler': mock_scaler,
-            'standard_scaler_new_features': mock_scaler_new
-        }[key])
 
         # Mock metadata
         feature_cols = [
@@ -762,9 +762,12 @@ class TestPredictionPipeline:
             'effective_power_a', 'effective_power_b', 'effective_power_diff',
             'priority_advantage'
         ]
-        mock_metadata.__getitem__ = Mock(side_effect=lambda key: {
-            'feature_columns': feature_cols
-        }[key])
+
+        mock_model_fe.scalers = {
+            'standard_scaler': mock_scaler,
+            'standard_scaler_new_features': mock_scaler_new
+        }
+        mock_model_fe.metadata = {'feature_columns': feature_cols}
 
         result = predict_best_move(
             db_session,

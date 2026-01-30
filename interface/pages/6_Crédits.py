@@ -128,9 +128,9 @@ section_header("Statistiques du Projet", "📈")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.metric("🎮 Pokémon", "187", help="Tous les Pokémon de Kanto + formes Alola")
+    st.metric("🎮 Pokémon", "188", help="Tous les Pokémon de Kanto + formes Alola")
 with col2:
-    st.metric("💥 Capacités", "225", help="Toutes les attaques disponibles")
+    st.metric("💥 Capacités", "226", help="Toutes les attaques disponibles")
 with col3:
     st.metric("⚔️ Combats simulés", "898,612", help="Dataset d'entraînement ML")
 with col4:
@@ -147,7 +147,7 @@ with col2:
 with col3:
     st.metric("🌈 Types", "18", help="Types élémentaires Pokémon")
 with col4:
-    st.metric("🎯 Affinités", "323", help="Combinaisons de types (18×18 - certaines neutres)")
+    st.metric("🎯 Affinités", "324", help="Combinaisons de types (18×18 - certaines neutres)")
 
 pokeball_divider()
 
@@ -197,9 +197,9 @@ with col1:
         <li style='margin-bottom:16px;'>
             <strong>Source 1 : CSV manuels</strong>
             <ul style='list-style-type:none;padding-left:0;margin-top:6px;'>
-                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– 187 Pokémon : noms (FR/EN), types, formes (Alola, Mega)</li>
-                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– 225 capacités : noms, type, puissance, précision, PP</li>
-                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– 323 affinités de types : multiplicateurs de dégâts</li>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– 188 Pokémon : noms (FR/EN), types, formes (Alola, Mega)</li>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– 226 capacités : noms, type, puissance, précision, PP</li>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– 324 affinités de types : multiplicateurs de dégâts</li>
             </ul>
         </li>
         <li style='margin-bottom:16px;'>
@@ -408,7 +408,7 @@ with col1:
         <li style='margin-bottom:16px;'>
             <strong>1. CSV manuels (3 fichiers)</strong>
             <ul style='list-style-type:none;padding-left:0;margin-top:6px;'>
-                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– 225 capacités + 187 Pokémon + 323 affinités de types</li>
+                <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– 226 capacités + 188 Pokémon + 324 affinités de types</li>
                 <li style='color:{POKEMON_COLORS['text_secondary']};font-size:0.85rem;line-height:1.6;'>– Compilés depuis sources communautaires Pokémon</li>
             </ul>
         </li>

@@ -27,7 +27,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from machine_learning.mlflow_integration import MLflowTracker, load_model_from_registry
-from api_pokemon.services.prediction_service import PredictionModel
+from api_pokemon.services.model_loader import PredictionModel
 
 
 @pytest.fixture
@@ -73,7 +73,7 @@ def sample_feature_columns():
 class TestMLflowToAPIIntegration:
     """Test integration between MLflow Registry and API."""
     
-    @patch('api_pokemon.services.prediction_service.load_model_from_registry')
+    @patch('api_pokemon.services.model_loader.load_model_from_registry')
     @patch.dict('os.environ', {'USE_MLFLOW_REGISTRY': 'true'})
     def test_api_loads_from_registry(self, mock_load_registry, sample_trained_model, sample_scalers, sample_feature_columns):
         """Test API successfully loads model from MLflow Registry."""
@@ -110,8 +110,8 @@ class TestMLflowToAPIIntegration:
         assert call_kwargs.get('model_name') == 'battle_winner_predictor' or \
                'battle_winner_predictor' in str(mock_load_registry.call_args)
     
-    @patch('api_pokemon.services.prediction_service.load_model_from_registry')
-    @patch('api_pokemon.services.prediction_service.joblib')
+    @patch('api_pokemon.services.model_loader.load_model_from_registry')
+    @patch('api_pokemon.services.model_loader.joblib')
     @patch('builtins.open', create=True)
     @patch.dict('os.environ', {'USE_MLFLOW_REGISTRY': 'true'})
     def test_api_fallback_to_local_files(
@@ -152,7 +152,7 @@ class TestMLflowToAPIIntegration:
             assert mock_joblib.load.called or mock_open.called
     
     @patch.dict('os.environ', {'USE_MLFLOW_REGISTRY': 'false'})
-    @patch('api_pokemon.services.prediction_service.joblib')
+    @patch('api_pokemon.services.model_loader.joblib')
     @patch('builtins.open', create=True)
     def test_api_loads_local_when_registry_disabled(
         self, mock_open, mock_joblib, sample_trained_model, sample_scalers, sample_feature_columns
@@ -187,7 +187,7 @@ class TestEndToEndWorkflow:
     
     @patch('machine_learning.mlflow_integration.MlflowClient')
     @patch('machine_learning.mlflow_integration.mlflow')
-    @patch('api_pokemon.services.prediction_service.load_model_from_registry')
+    @patch('api_pokemon.services.model_loader.load_model_from_registry')
     def test_train_register_load_predict(
         self, mock_api_load_registry, mock_mlflow, mock_client,
         sample_trained_model, sample_scalers, sample_feature_columns
@@ -328,7 +328,7 @@ class TestRollbackScenario:
     """Test model rollback scenario."""
     
     @patch('machine_learning.mlflow_integration.MlflowClient')
-    @patch('api_pokemon.services.prediction_service.load_model_from_registry')
+    @patch('api_pokemon.services.model_loader.load_model_from_registry')
     def test_rollback_to_previous_version(
         self, mock_api_load_registry, mock_client, sample_trained_model, sample_scalers
     ):
@@ -406,7 +406,7 @@ class TestRollbackScenario:
 class TestConcurrentAccess:
     """Test concurrent access scenarios."""
     
-    @patch('api_pokemon.services.prediction_service.load_model_from_registry')
+    @patch('api_pokemon.services.model_loader.load_model_from_registry')
     def test_multiple_api_instances_load_same_model(
         self, mock_load_registry, sample_trained_model, sample_scalers
     ):
@@ -447,8 +447,8 @@ class TestConcurrentAccess:
 class TestErrorHandling:
     """Test error handling in integration scenarios."""
     
-    @patch('api_pokemon.services.prediction_service.load_model_from_registry')
-    @patch('api_pokemon.services.prediction_service.joblib')
+    @patch('api_pokemon.services.model_loader.load_model_from_registry')
+    @patch('api_pokemon.services.model_loader.joblib')
     def test_registry_timeout_fallback(self, mock_joblib, mock_load_registry, sample_trained_model, sample_scalers):
         """Test fallback when registry times out."""
         model, X, y = sample_trained_model
@@ -477,7 +477,7 @@ class TestErrorHandling:
                     except TimeoutError:
                         pytest.fail("Should have fallen back to local files")
     
-    @patch('api_pokemon.services.prediction_service.load_model_from_registry')
+    @patch('api_pokemon.services.model_loader.load_model_from_registry')
     @patch('pathlib.Path.exists')
     def test_no_model_available_error(self, mock_exists, mock_load_registry):
         """Test error when no model available (registry and local)."""
