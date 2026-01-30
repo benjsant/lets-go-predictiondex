@@ -1,25 +1,63 @@
-#docker/Dockerfile.streamlit
+# Base image
+# ----------
+# Use the official Python 3.11 slim image to provide a lightweight runtime
+# suitable for running a Streamlit web application.
 FROM python:3.11-slim
 
+# Working directory
+# -----------------
+# All application files will be located and executed from /app.
 WORKDIR /app
+
+# Environment configuration
+# -------------------------
+# PYTHONDONTWRITEBYTECODE prevents Python from writing .pyc files.
+# PYTHONUNBUFFERED ensures real-time log output (important for containers).
+# PYTHONPATH allows the application to import internal project modules.
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
 
+# System dependencies
+# -------------------
+# Install minimal system-level packages required for:
+# - Building Python dependencies with native extensions
+# - PostgreSQL client libraries (via libpq-dev)
+#
+# --no-install-recommends is used to keep the image lightweight.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential libpq-dev \
+    build-essential \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Python tooling
+# --------------
+# Upgrade pip, setuptools, and wheel to ensure compatibility with
+# modern Python packages and smoother dependency installation.
 RUN pip install --upgrade pip setuptools wheel
 
-# Install Streamlit dependencies
+# Streamlit dependencies
+# ----------------------
+# Copy Streamlit-specific requirements separately to take advantage
+# of Docker layer caching.
 COPY interface/requirements_streamlit.txt ./streamlit_requirements.txt
 RUN pip install --no-cache-dir -r streamlit_requirements.txt
 
-# Copy application code
+# Application source code
+# -----------------------
+# Copy the Streamlit interface and shared core logic into the container.
 COPY interface ./interface
 COPY core ./core
 
+# Network configuration
+# ---------------------
+# Expose the default Streamlit port.
 EXPOSE 8501
 
-CMD ["streamlit", "run", "interface/app.py", "--server.address=0.0.0.0", "--server.port=8501", "--server.runOnSave=true"]
+# Default command
+# ---------------
+# Launch the Streamlit application:
+# - Bind to all network interfaces for container accessibility
+# - Use port 8501
+# - Enable automatic reload on file changes
+CMD ["streamlit","run","interface/app.py","--server.address=0.0.0.0","--server.port=8501","--server.runOnSave=true"]

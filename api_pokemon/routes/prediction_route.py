@@ -83,17 +83,16 @@ def predict_best_move(
             win_prob=result['win_probability']
         )
 
-        # Add prediction to drift detector (using simplified features for now)
-        # In production, you would extract the full feature vector used for prediction
+        # Add prediction to production data collector with full ML feature vector
+        features = result.get('best_move_features', {})
         drift_detector.add_prediction(
-            features={
-                'pokemon_a_id': request.pokemon_a_id,
-                'pokemon_b_id': request.pokemon_b_id,
-                'recommended_move': result['recommended_move']
-            },
+            features=features,
             prediction=1 if result['win_probability'] > 0.5 else 0,
             probability=result['win_probability']
         )
+
+        # Remove internal features before returning to user
+        result.pop('best_move_features', None)
 
         return result
 

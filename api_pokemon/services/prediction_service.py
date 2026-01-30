@@ -603,7 +603,8 @@ def predict_best_move(
             'priority': move_a_info['priority'],
             'score': move_a_info['score'],
             'win_probability': float(win_prob),
-            'predicted_winner': 'A' if prediction == 1 else 'B'
+            'predicted_winner': 'A' if prediction == 1 else 'B',
+            'features': features_final  # Store features for drift detection
         })
 
     if not move_results:
@@ -614,6 +615,21 @@ def predict_best_move(
 
     best_move = move_results[0]
 
+    # Extract features from best move for drift detection
+    best_move_features = best_move.pop('features')  # Remove from move result to keep API clean
+
+    # Convert numpy array to dict for drift detection
+    # features_final is a DataFrame with 1 row, extract as dict
+    import pandas as pd
+    if isinstance(best_move_features, pd.DataFrame):
+        features_dict = best_move_features.iloc[0].to_dict()
+    else:
+        features_dict = {}
+
+    # Also remove features from all_moves to keep API response clean
+    for move in move_results:
+        move.pop('features', None)
+
     return {
         'pokemon_a_id': pokemon_a_id,
         'pokemon_a_name': pokemon_a.species.name_fr if pokemon_a.species.name_fr else pokemon_a.species.name_en,
@@ -621,5 +637,6 @@ def predict_best_move(
         'pokemon_b_name': pokemon_b.species.name_fr if pokemon_b.species.name_fr else pokemon_b.species.name_en,
         'recommended_move': best_move['move_name'],
         'win_probability': best_move['win_probability'],
-        'all_moves': move_results
+        'all_moves': move_results,
+        'best_move_features': features_dict  # Features for drift detection
     }

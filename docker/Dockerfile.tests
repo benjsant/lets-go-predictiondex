@@ -1,37 +1,77 @@
+# Base image
+# ----------
+# Use the official Python 3.11 slim image to keep the container lightweight
+# while still providing a fully functional Python runtime.
 FROM python:3.11-slim
 
+# Metadata
+# --------
+# Maintainer and description labels for documentation, traceability,
+# and container registry visibility.
 LABEL maintainer="Let's Go PredictionDex Team"
 LABEL description="Test runner container for integration and system tests"
 
+# Working directory
+# -----------------
+# All application code and test execution will take place in /app.
 WORKDIR /app
 
-# Install system dependencies
+# System dependencies
+# -------------------
+# Install minimal system-level dependencies required for:
+# - HTTP requests and debugging (curl, wget)
+# - PostgreSQL connectivity for integration/system tests
+#
+# The APT cache is cleaned afterward to reduce image size.
 RUN apt-get update && apt-get install -y \
     curl \
     wget \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy all requirements files
+# Python dependencies
+# -------------------
+# Copy all requirement files separately to leverage Docker layer caching.
+# This ensures dependencies are only reinstalled when requirements change.
 COPY tests/requirements.txt /app/tests/
 COPY api_pokemon/requirements.txt /app/api_requirements.txt
 COPY machine_learning/requirements.txt /app/ml_requirements.txt
 
-# Install Python dependencies
+# Install Python packages
+# -----------------------
+# - Upgrade pip to the latest version
+# - Install dependencies for:
+#   * test framework
+#   * API layer
+#   * machine learning components
+#
+# --no-cache-dir is used to keep the final image size small.
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r /app/tests/requirements.txt && \
     pip install --no-cache-dir -r /app/api_requirements.txt && \
     pip install --no-cache-dir -r /app/ml_requirements.txt
 
-# Copy source code
+# Application source code
+# -----------------------
+# Copy all relevant project modules into the container so that
+# integration and system tests can execute against real code.
 COPY core/ /app/core/
 COPY api_pokemon/ /app/api_pokemon/
 COPY machine_learning/ /app/machine_learning/
 COPY tests/ /app/tests/
 
-# Set Python path
+# Environment configuration
+# -------------------------
+# PYTHONPATH ensures all project modules are importable.
+# PYTHONUNBUFFERED ensures logs are flushed immediately,
+# which is critical for CI/CD and container logs.
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
-# Default command: run integration tests
+# Default command
+# ---------------
+# By default, the container runs integration tests using pytest:
+# - Verbose output
+# - Short traceback format
+# - Colored output for better readability in CI logs
 CMD ["pytest", "tests/integration/", "-v", "--tb=short", "--color=yes"]

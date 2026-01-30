@@ -1,35 +1,26 @@
 """
-Data Drift Detection using Evidently AI 0.7
-===========================================
+Production Data Collector
+==========================
 
-Detects distribution shifts in model inputs and predictions.
-Generates periodic drift reports and alerts.
+Collects ML predictions for future analysis and model retraining.
+Stores prediction features and outcomes in parquet files.
 """
 
-import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import pandas as pd
 
-try:
-    from evidently import DataDefinition, Dataset, Report
-    from evidently.presets import DataDriftPreset
-except ImportError:
-    raise ImportError(
-        "Evidently AI is not installed. "
-        "Install it with: pip install 'evidently>=0.7.0,<0.8.0'"
-    )
-
 
 class DriftDetector:
     """
-    Singleton class for drift detection using Evidently AI 0.7.x
+    Singleton class for collecting production prediction data.
 
-    Uses a reference dataset from training data to detect distribution shifts
-    in production predictions. Generates periodic HTML and JSON reports.
+    Collects ML features and predictions from production traffic
+    and periodically saves them for future analysis, drift detection,
+    or model retraining.
     """
 
     _instance = None
@@ -48,31 +39,24 @@ class DriftDetector:
 
         # Directories
         self.monitoring_dir = Path(__file__).parent
-        self.drift_reports_dir = self.monitoring_dir / "drift_reports"
         self.drift_data_dir = self.monitoring_dir / "drift_data"
 
         # Create directories
-        self.drift_reports_dir.mkdir(parents=True, exist_ok=True)
         self.drift_data_dir.mkdir(parents=True, exist_ok=True)
 
-        # Reference data (Evidently Dataset)
-        self.reference_data: Optional[Dataset] = None
+        # Production data buffer
         self.production_buffer: List[Dict] = []
-        self.max_buffer_size = 1000
-        self.report_frequency = timedelta(hours=1)
-        self.last_report_time = datetime.now()
+        self.max_buffer_size = 100  # Save every 100 predictions
 
-        # Data definition for Evidently 0.7
-        self.data_definition = DataDefinition()
-
-        # Load reference data from training set
+        # Reference data (for future drift detection if needed)
+        self.reference_data: Optional[pd.DataFrame] = None
         self._load_reference_data()
 
     def _load_reference_data(self):
         """
         Load reference data from training set.
 
-        Samples 10,000 examples from X_train.parquet for drift comparison.
+        Samples 10,000 examples from X_train.parquet for future drift analysis.
         """
         try:
             # Try to load from data/datasets/
@@ -84,20 +68,14 @@ class DriftDetector:
             if not ref_file.exists():
                 self.logger.warning(
                     f"Reference data file not found: {ref_file}. "
-                    "Drift detection will be disabled until training data is available."
+                    "This is optional for production data collection."
                 )
                 return
 
             # Load and sample reference data
             reference_df = pd.read_parquet(ref_file)
-            sampled_df = reference_df.sample(n=min(10000, len(reference_df)), random_state=42)
-
-            # Create Evidently Dataset from pandas DataFrame
-            self.reference_data = Dataset.from_pandas(
-                sampled_df,
-                data_definition=self.data_definition
-            )
-            self.logger.info(f"Loaded reference data: {sampled_df.shape}")
+            self.reference_data = reference_df.sample(n=min(10000, len(reference_df)), random_state=42)
+            self.logger.info(f"Loaded reference data: {self.reference_data.shape}")
 
         except Exception as e:
             self.logger.error(f"Failed to load reference data: {e}")
@@ -113,142 +91,40 @@ class DriftDetector:
         Add a new prediction to the production buffer.
 
         Args:
-            features: Dictionary of input features
+            features: Dictionary of ML input features (133 features)
             prediction: Predicted class (0 or 1)
             probability: Prediction probability
         """
-        if self.reference_data is None:
-            # Drift detection disabled without reference data
+        if not features:
             return
 
-        # Add metadata
-        prediction_data = {
-            **features,
-            'predicted_winner': prediction,
-            'win_probability': probability,
-            'timestamp': datetime.now().isoformat()
-        }
+        # Store ML features for future analysis
+        self.production_buffer.append(features.copy())
 
-        self.production_buffer.append(prediction_data)
-
-        # Check if buffer is full
+        # Save buffer when it reaches max size
         if len(self.production_buffer) >= self.max_buffer_size:
             self.logger.info(f"Buffer full ({self.max_buffer_size}). Saving production data.")
             self.save_production_data()
             self.production_buffer = []
 
-        # Check if it's time to generate a report
-        if datetime.now() - self.last_report_time >= self.report_frequency:
-            if len(self.production_buffer) > 0:
-                self.generate_drift_report()
-
-    def generate_drift_report(self) -> Dict:
-        """
-        Generate drift report using Evidently AI 0.7.
-
-        Compares production data buffer against reference dataset.
-        Saves HTML dashboard and JSON report.
-
-        Returns:
-            Dictionary with drift summary metrics
-        """
-        if self.reference_data is None:
-            self.logger.warning("Cannot generate drift report: no reference data loaded")
-            return {}
-
-        if len(self.production_buffer) == 0:
-            self.logger.info("No production data to analyze for drift")
-            return {}
-
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-        try:
-            # Create DataFrame from buffer
-            production_df = pd.DataFrame(self.production_buffer)
-
-            # Create Evidently Dataset for production data
-            production_dataset = Dataset.from_pandas(
-                production_df,
-                data_definition=self.data_definition
-            )
-
-            # Create and run Evidently Report with DataDriftPreset
-            report = Report([DataDriftPreset()])
-            report.run(production_dataset, self.reference_data)
-
-            # Save report as JSON
-            report_file = self.drift_reports_dir / f"drift_report_{timestamp}.json"
-
-            # Save as JSON
-            with open(report_file, 'w') as f:
-                f.write(report.json())
-
-            # Generate HTML dashboard
-            dashboard_file = self.drift_reports_dir / f"drift_dashboard_{timestamp}.html"
-            report.save_html(str(dashboard_file))
-
-            self.logger.info(f"Drift report generated: {dashboard_file}")
-
-            # Extract drift summary from report
-            drift_dict = report.as_dict()
-
-            # Navigate the new Evidently 0.7 structure
-            metrics_data = drift_dict.get('metrics', [])
-
-            # Find DatasetDriftMetric in metrics list
-            drift_result = {}
-            for metric in metrics_data:
-                if 'DatasetDriftMetric' in str(type(metric)):
-                    drift_result = metric.get('result', {})
-                    break
-
-            drift_summary = {
-                'timestamp': timestamp,
-                'n_features': drift_result.get('number_of_columns', 0),
-                'n_drifted_features': drift_result.get('number_of_drifted_columns', 0),
-                'share_drifted_features': drift_result.get('share_of_drifted_columns', 0),
-                'dataset_drift': drift_result.get('dataset_drift', False),
-            }
-
-            # Save summary
-            summary_file = self.drift_reports_dir / f"drift_summary_{timestamp}.json"
-            with open(summary_file, 'w') as f:
-                json.dump(drift_summary, f, indent=2)
-
-            # Update last report time
-            self.last_report_time = datetime.now()
-
-            self.logger.info(
-                f"Drift detected: {drift_summary['n_drifted_features']}/{drift_summary['n_features']} features "
-                f"({drift_summary['share_drifted_features']:.1%})"
-            )
-
-            return drift_summary
-
-        except Exception as e:
-            self.logger.error(f"Failed to generate drift report: {e}", exc_info=True)
-            return {}
-
     def get_drift_status(self) -> Dict:
         """
-        Get current drift status summary.
+        Get current buffer status.
 
         Returns:
-            Dictionary with current drift metrics
+            Dictionary with current buffer metrics
         """
         return {
             'reference_data_loaded': self.reference_data is not None,
             'buffer_size': len(self.production_buffer),
             'max_buffer_size': self.max_buffer_size,
-            'last_report_time': self.last_report_time.isoformat(),
-            'next_report_due': (self.last_report_time + self.report_frequency).isoformat(),
         }
 
     def save_production_data(self):
         """
         Save production buffer to parquet file.
 
-        Useful for debugging and retraining.
+        Useful for future drift detection, model retraining, and analysis.
         """
         if len(self.production_buffer) == 0:
             return
@@ -258,6 +134,22 @@ class DriftDetector:
 
         try:
             df = pd.DataFrame(self.production_buffer)
+
+            # Convert all object/boolean columns to appropriate types for parquet
+            # One-hot encoded features are stored as booleans by the ML model
+            for col in df.columns:
+                # Check if column contains boolean values
+                if df[col].dtype == bool or df[col].dtype == 'bool':
+                    df[col] = df[col].astype(int)
+                elif df[col].dtype == object:
+                    # Try to convert object columns that might contain booleans
+                    try:
+                        # If all values are True/False, convert to int
+                        if df[col].dropna().isin([True, False]).all():
+                            df[col] = df[col].astype(int)
+                    except:
+                        pass  # Keep as object if conversion fails
+
             df.to_parquet(output_file, index=False)
             self.logger.info(f"Saved {len(df)} production samples to {output_file}")
         except Exception as e:

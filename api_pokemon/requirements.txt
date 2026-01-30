@@ -29,5 +29,4 @@ pyarrow==22.0.0
 # --- Monitoring & Observability ---
 prometheus-client==0.22.1
 psutil==7.2.1
-evidently==0.7.20
 mlflow==3.8.1

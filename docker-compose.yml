@@ -8,9 +8,8 @@ services:
       POSTGRES_PASSWORD: letsgo_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # Port 5432 non exposé sur l'hôte (accès uniquement via réseau backend)
-    expose:
-      - "5432"
+    ports:
+      - "5432:5432"  # Exposé sur localhost pour notebooks locaux
     networks:
       - backend
     healthcheck:
@@ -161,6 +160,7 @@ services:
     volumes:
       - ./interface:/app/interface
       - ./core:/app/core
+      - ./api_pokemon/monitoring/drift_reports:/app/drift_reports:ro
     ports:
       - "8502:8501"  # Port modifié : 8502 sur l'hôte → 8501 dans le container
     networks:

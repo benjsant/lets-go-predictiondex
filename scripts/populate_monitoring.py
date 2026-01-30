@@ -78,11 +78,15 @@ def generate_predictions(n=50):
     print_header("GÉNÉRATION DE PRÉDICTIONS")
     print(f"📊 Génération de {n} prédictions...")
 
-    # Pokémon populaires pour les tests
-    popular_ids = [1, 4, 7, 25, 6, 9, 3, 35, 36, 39, 40, 94, 65, 59, 68, 130, 131, 144, 145, 146, 150, 151]
+    # Pokémon populaires pour les tests (seulement ceux avec moves disponibles dans LGPE)
+    popular_ids = [1, 4, 7, 25, 6, 9, 35, 36, 39, 40, 94, 65, 59, 68, 131, 144, 145, 146, 150]
+
+    # Moves communs comme fallback (noms anglais lowercase avec tirets)
+    default_moves = ["tackle", "scratch", "pound", "quick-attack"]
 
     success = 0
     errors = 0
+    skipped = 0
 
     headers = {
         "X-API-Key": API_KEY,
@@ -99,13 +103,18 @@ def generate_predictions(n=50):
         moves = get_pokemon_moves(pokemon_a_id, headers)
 
         if not moves or len(moves) < 2:
-            # Si pas assez de moves, utiliser des moves par défaut
-            moves = ["Charge", "Griffe", "Flammèche", "Pistolet à O"][:4]
+            # Si pas assez de moves, essayer avec moves par défaut
+            moves = default_moves
+
+        # Vérifier qu'on a au moins 2 moves
+        if len(moves) < 2:
+            skipped += 1
+            continue
 
         payload = {
             "pokemon_a_id": pokemon_a_id,
             "pokemon_b_id": pokemon_b_id,
-            "available_moves": moves
+            "available_moves": moves[:4]  # Max 4 moves
         }
 
         try:
@@ -119,24 +128,30 @@ def generate_predictions(n=50):
             if response.status_code == 200:
                 success += 1
                 if (i + 1) % 10 == 0:
-                    print(f"   {i+1}/{n} prédictions effectuées...")
+                    print(f"   {i+1}/{n} prédictions effectuées... ({success} succès)")
             else:
                 errors += 1
-                if errors <= 3:  # Afficher seulement les 3 premières erreurs
-                    print(f"⚠️  Erreur {response.status_code} : {response.text[:100]}")
+                if errors <= 5:  # Afficher les 5 premières erreurs
+                    error_msg = response.text[:150] if response.text else f"HTTP {response.status_code}"
+                    print(f"⚠️  Erreur {response.status_code}: {error_msg}")
+                    # Afficher le payload qui a causé l'erreur pour debug
+                    if errors <= 2:
+                        print(f"   Payload: pokemon_a={payload['pokemon_a_id']}, moves={payload['available_moves'][:2]}...")
         except Exception as e:
             errors += 1
-            if errors <= 3:
-                print(f"⚠️  Exception : {str(e)[:100]}")
+            if errors <= 5:
+                print(f"⚠️  Exception : {str(e)[:150]}")
 
     duration = time.time() - start_time
 
     print(f"\n✅ Prédictions générées : {success}/{n} succès")
-    print(f"   Durée : {duration:.1f}s")
-    print(f"   Throughput : {n/duration:.1f} req/s")
-
+    if skipped > 0:
+        print(f"⏭️  {skipped} prédictions sautées (pas assez de moves)")
     if errors > 0:
-        print(f"⚠️  {errors} erreurs (vérifiez que l'API Key est valide)")
+        print(f"⚠️  {errors} erreurs")
+    print(f"   Durée : {duration:.1f}s")
+    if success > 0:
+        print(f"   Throughput : {success/duration:.1f} req/s")
 
     return success
 
