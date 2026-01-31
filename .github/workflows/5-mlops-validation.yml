@@ -6,6 +6,8 @@ name: 5️⃣ MLOps Model Validation (C13)
 # → Tests de performance et qualité
 
 on:
+  push:
+    branches: [ nettoyage_clean_code_final ]
   workflow_run:
     workflows: ["2️⃣ Unit Tests (C12)"]
     types:

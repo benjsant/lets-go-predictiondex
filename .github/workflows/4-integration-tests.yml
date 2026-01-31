@@ -8,6 +8,8 @@ name: 4️⃣ Integration Tests (C12 + C13)
 # → Tests automatisés déclenchés dans la chaîne
 
 on:
+  push:
+    branches: [ nettoyage_clean_code_final ]
   workflow_run:
     workflows: ["3️⃣ Docker Build (C13)"]
     types:
