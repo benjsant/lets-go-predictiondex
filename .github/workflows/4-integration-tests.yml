@@ -19,7 +19,7 @@ jobs:
   integration-tests:
     name: Integration Tests (Essential Services Only)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 12
     # Ne s'exécute que si le workflow précédent a réussi (ou si déclenché manuellement)
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     

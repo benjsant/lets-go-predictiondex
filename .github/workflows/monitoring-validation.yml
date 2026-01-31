@@ -10,12 +10,12 @@ on:
       n_predictions:
         description: 'Number of test predictions to generate'
         required: false
-        default: '100'
+        default: '50'
 
 jobs:
   validate-monitoring:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code

@@ -29,7 +29,7 @@ jobs:
   e1-data-validation:
     name: E1 - Collecte et Traitement des Données
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 12
     
     services:
       postgres:
@@ -142,7 +142,7 @@ jobs:
   e3-c9-api-rest:
     name: E3-C9 - API REST exposant IA
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 8
     needs: e1-data-validation
     
     services:
@@ -226,7 +226,7 @@ jobs:
   e3-c10-integration:
     name: E3-C10 - Intégration dans une application
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 8
     needs: e3-c9-api-rest
     
     steps:
@@ -283,7 +283,7 @@ jobs:
   e3-c11-monitoring:
     name: E3-C11 - Monitoring du modèle IA
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 8
     needs: e3-c10-integration
     
     steps:
@@ -348,7 +348,7 @@ jobs:
   e3-c12-c13-mlops:
     name: E3-C12/C13 - Tests ML et MLOps CI/CD
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 12
     needs: [e1-data-validation, e3-c9-api-rest, e3-c10-integration, e3-c11-monitoring]
     
     services:
@@ -476,7 +476,7 @@ jobs:
   docker-deployment:
     name: Déploiement Docker Complet
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     needs: e3-c12-c13-mlops
     if: github.event.inputs.deploy_services == 'true' || github.ref == 'refs/heads/main'
     
