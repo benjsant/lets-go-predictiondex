@@ -189,7 +189,7 @@ jobs:
       - name: ✅ C9 - Tester API REST avec IA
         run: |
           echo "🎯 Validation Compétence C9: API REST exposant un modèle d'IA"
-          pytest tests/api/test_prediction_api.py -v --tb=short
+          pytest tests/api/test_prediction_route.py -v --tb=short
           echo "✓ FastAPI avec endpoint /predict/battle"
           echo "✓ Validation Pydantic des entrées"
           echo "✓ Modèle XGBoost chargé et opérationnel"
