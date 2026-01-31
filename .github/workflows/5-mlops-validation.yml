@@ -20,73 +20,73 @@ jobs:
     timeout-minutes: 15
     # Ne s'exécute que si les tests unitaires ont réussi
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-      
+
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      
+
       - name: 📦 Install ML dependencies
         run: |
           pip install -r machine_learning/requirements.txt
           pip install pytest
-      
+
       - name: 📊 Validate model metadata
         run: |
           echo "📊 Checking model metadata..."
           if [ -f "models/battle_winner_metadata_v2.json" ]; then
-            python -c '
-import json
-with open("models/battle_winner_metadata_v2.json") as f:
-    metadata = json.load(f)
-    print("✅ Model version:", metadata.get("version"))
-    print("✅ Model type:", metadata.get("model_type"))
-    print("✅ Trained at:", metadata.get("trained_at"))
-    print("✅ Features:", metadata.get("n_features"))
-    
-    # Validation des métriques
-    metrics = metadata.get("metrics", {})
-    test_acc = metrics.get("test_accuracy", 0)
-    print("📈 Test Accuracy: {:.4f}".format(test_acc))
-    
-    # Critères de qualité minimum
-    assert test_acc >= 0.85, "Accuracy too low: {:.4f}".format(test_acc)
-    print("✅ Model quality validated!")
-            '
+            python << 'PYTHON_SCRIPT'
+          import json
+          with open("models/battle_winner_metadata_v2.json") as f:
+              metadata = json.load(f)
+              print("✅ Model version:", metadata.get("version"))
+              print("✅ Model type:", metadata.get("model_type"))
+              print("✅ Trained at:", metadata.get("trained_at"))
+              print("✅ Features:", metadata.get("n_features"))
+
+              # Validation des métriques
+              metrics = metadata.get("metrics", {})
+              test_acc = metrics.get("test_accuracy", 0)
+              print("📈 Test Accuracy: {:.4f}".format(test_acc))
+
+              # Critères de qualité minimum
+              assert test_acc >= 0.85, "Accuracy too low: {:.4f}".format(test_acc)
+              print("✅ Model quality validated!")
+          PYTHON_SCRIPT
           else
             echo "⚠️ Model metadata not found (OK for CI without trained model)"
           fi
-      
+
       - name: 🧪 Run model validation tests
         run: |
           echo "🧪 Running model-specific tests..."
           pytest tests/ml/test_model_inference.py \
             -v -k "metadata or scalers" \
             --tb=short || echo "⚠️ Some tests skipped (model not available in CI)"
-      
+
       - name: 📦 Validate model artifacts structure
         run: |
           echo "📦 Checking model artifacts..."
           ls -la models/ || echo "No models directory"
-          
+
           # Vérifier structure attendue
           echo "Expected artifacts:"
           echo "- battle_winner_model_v2.pkl (model file)"
           echo "- battle_winner_metadata_v2.json (metadata)"
           echo "- *.joblib (scalers)"
-      
+
       - name: 🔍 Check model size and integrity
         run: |
           echo "🔍 Validating model file properties..."
           if [ -f "models/battle_winner_model_v2.pkl" ]; then
             FILE_SIZE=$(stat -f%z "models/battle_winner_model_v2.pkl" 2>/dev/null || stat -c%s "models/battle_winner_model_v2.pkl")
             echo "Model size: $((FILE_SIZE / 1024 / 1024)) MB"
-            
+
             # Vérifier que le modèle n'est pas trop gros (< 100MB)
             if [ $FILE_SIZE -gt 104857600 ]; then
               echo "⚠️ Model size exceeds 100MB"
@@ -96,22 +96,22 @@ with open("models/battle_winner_metadata_v2.json") as f:
           else
             echo "⚠️ Model file not found (OK for CI)"
           fi
-      
+
       - name: 📊 MLflow integration check
         run: |
           echo "📊 Checking MLflow integration..."
-          python -c '
-import os
-print("MLflow integration files:")
-for root, dirs, files in os.walk("machine_learning"):
-    for file in files:
-        if "mlflow" in file.lower():
-            print("  - " + os.path.join(root, file))
-          '
-          
+          python << 'PYTHON_SCRIPT'
+          import os
+          print("MLflow integration files:")
+          for root, dirs, files in os.walk("machine_learning"):
+              for file in files:
+                  if "mlflow" in file.lower():
+                      print("  - " + os.path.join(root, file))
+          PYTHON_SCRIPT
+
           # Vérifier que le code d'intégration MLflow existe
           grep -r "mlflow" machine_learning/mlflow_integration.py && echo "✅ MLflow integration code found"
-      
+
       - name: ✅ MLOps Validation Summary
         if: success()
         run: |
