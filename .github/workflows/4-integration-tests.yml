@@ -22,8 +22,8 @@ jobs:
     name: Integration Tests (Full Docker Stack)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # Ne s'exécute que si le workflow précédent a réussi
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    # Ne s'exécute que si le workflow précédent a réussi (ou si déclenché par push/dispatch)
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
     
     steps:
       - name: 📥 Checkout code
