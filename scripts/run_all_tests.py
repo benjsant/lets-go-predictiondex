@@ -5,6 +5,7 @@ Usage: python3 scripts/run_all_tests.py [--local] [--build]
 
 Par défaut, lance les tests dans un conteneur Docker isolé (recommandé).
 """
+import os
 import sys
 import time
 import argparse
@@ -277,15 +278,24 @@ Exemples:
         if not services_running:
             print_warning("Services Docker non démarrés")
 
-            response = input(f"\n{YELLOW}Démarrer les services maintenant? (o/N): {RESET}")
-            if response.lower() in ['o', 'oui', 'y', 'yes']:
+            # En environnement CI (GitHub Actions), démarrer automatiquement
+            is_ci = os.getenv('CI') == 'true' or os.getenv('GITHUB_ACTIONS') == 'true'
+            
+            if is_ci:
+                print_info("🔄 Environnement CI détecté - démarrage automatique des services...")
                 if not start_services(compose_cmd):
                     print_error("\n❌ Impossible de démarrer les services")
                     return 1
             else:
-                print_error("\n❌ Les tests nécessitent que les services soient lancés")
-                print_info("Lancez manuellement: docker compose up -d")
-                return 1
+                response = input(f"\n{YELLOW}Démarrer les services maintenant? (o/N): {RESET}")
+                if response.lower() in ['o', 'oui', 'y', 'yes']:
+                    if not start_services(compose_cmd):
+                        print_error("\n❌ Impossible de démarrer les services")
+                        return 1
+                else:
+                    print_error("\n❌ Les tests nécessitent que les services soient lancés")
+                    print_info("Lancez manuellement: docker compose up -d")
+                    return 1
 
     # 4. Lancer les tests
     exit_code = run_tests_in_docker(compose_cmd, build=args.build)
