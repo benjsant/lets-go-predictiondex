@@ -53,9 +53,9 @@ jobs:
           echo "🐳 Launching tests in Docker..."
 
           if [ "${{ github.event.inputs.build }}" = "true" ]; then
-            python3 scripts/run_all_tests.py --build --no-start
+            python3 scripts/run_all_tests.py --build
           else
-            python3 scripts/run_all_tests.py --no-start
+            python3 scripts/run_all_tests.py
           fi
 
           EXIT_CODE=$?
