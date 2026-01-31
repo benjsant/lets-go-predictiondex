@@ -297,7 +297,7 @@ class TestAPIEnrichment:
         # Verify enriched
         loaded = temp_db_session.query(Pokemon).first()
         assert loaded.name_pokeapi == 'bulbasaur'
-        assert loaded.height_m == 0.7
+        assert float(loaded.height_m) == 0.7
 
 
 # ============================================================
