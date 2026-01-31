@@ -94,6 +94,7 @@ class TestMLflowTracker:
             tracker = MLflowTracker(experiment_name="test_experiment")
             assert tracker.experiment_name == "test_experiment"
     
+    @pytest.mark.slow
     def test_tracker_without_mlflow(self):
         """Test tracker gracefully handles missing MLflow."""
         # Create tracker that will check if MLflow is available
