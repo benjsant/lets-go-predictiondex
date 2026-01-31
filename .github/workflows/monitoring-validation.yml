@@ -1,8 +1,9 @@
 name: Monitoring Validation
 
 on:
-  push:
-    branches: [ main, monitoring_grafana_evidently, develop, nettoyage_clean_code_final ]
+  # Désactivé sur push car redondant avec certification-e1-e3.yml (C11)
+  # push:
+  #   branches: [ main, monitoring_grafana_evidently, develop, nettoyage_clean_code_final ]
   pull_request:
     branches: [ main, monitoring_grafana_evidently ]
   workflow_dispatch:
