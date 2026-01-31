@@ -1,7 +1,7 @@
 {
   "model_type": "XGBClassifier",
   "version": "v2",
-  "trained_at": "2026-01-30T17:40:37.344287",
+  "trained_at": "2026-01-31T14:33:37.530380",
   "feature_columns": [
     "pokemon_a_id",
     "pokemon_b_id",

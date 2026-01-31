@@ -76,12 +76,12 @@ jobs:
         run: |
           echo "🎯 Validation Compétence E1.1: Collecter les données"
           echo "Sources: PokéAPI + Pokepedia scraper + CSV"
-          pytest tests/etl/ -v -k "test_pokemon_fetcher or test_pokepedia_scraper" --tb=short
+          pytest tests/etl/ -v -k "TestCSVLoading or TestAPIEnrichment or TestWebScraping" --tb=short
       
       - name: ✅ E1.2 - Tester nettoyage des données
         run: |
           echo "🎯 Validation Compétence E1.2: Nettoyer et normaliser les données"
-          pytest tests/etl/ -v -k "test_data_cleaning or test_normalization" --tb=short
+          pytest tests/etl/ -v -k "TestDataAggregation" --tb=short
           echo "Validation: Pas de valeurs NULL, types cohérents, duplicates removed"
       
       - name: ✅ E1.3 - Valider structure BDD
@@ -96,7 +96,7 @@ jobs:
       - name: ✅ E1.4 - Tester exploitation des données
         run: |
           echo "🎯 Validation Compétence E1.4: Exploiter les données"
-          pytest tests/ml/test_features.py -v --tb=short
+          pytest tests/ml/test_preprocessing.py -v --tb=short
           echo "✓ Feature engineering: 133+ features calculées"
           echo "✓ Agrégation statistiques (mean, std, min, max)"
           echo "✓ Calculs derived features (ratios, différences)"
