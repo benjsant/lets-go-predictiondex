@@ -25,7 +25,7 @@ def format_pokemon_selector(pokemons: List[Dict]) -> List[PokemonSelectItem]:
             continue
 
         species = p.get("species", {})
-        form = p.get("form", {})
+        p.get("form", {})
 
         # Nom FR + forme
         name = species.get("name_fr", "Inconnu")

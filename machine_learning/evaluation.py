@@ -112,8 +112,8 @@ def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
 
 
 def analyze_feature_importance(model: Any, feature_columns: List[str],
-                                top_n: int = 20,
-                                verbose: bool = True) -> pd.DataFrame:
+                               top_n: int = 20,
+                               verbose: bool = True) -> pd.DataFrame:
     """
     Analyze and display feature importance.
 

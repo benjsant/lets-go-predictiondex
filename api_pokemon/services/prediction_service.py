@@ -18,7 +18,6 @@ separate modules for better code organization.
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 
-import pandas as pd
 from sqlalchemy.orm import Session, joinedload
 
 from core.models import (

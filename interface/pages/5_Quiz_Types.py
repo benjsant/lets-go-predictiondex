@@ -31,6 +31,8 @@ for key, default in {
 # ======================================================
 # Load Type Affinities & Types
 # ======================================================
+
+
 @st.cache_data(ttl=3600)
 def load_types_and_affinities():
     types_list = get_all_types()
@@ -46,6 +48,7 @@ def load_types_and_affinities():
         for a in affinities_raw
     ]
     return affinities
+
 
 affinities = load_types_and_affinities()
 
@@ -70,9 +73,12 @@ TYPE_COLORS = {
 # ======================================================
 # Helper Functions
 # ======================================================
+
+
 def normalize_type(name: str) -> str:
     """Normalize type names for mapping (remove accents, lowercase)."""
     return name.lower().replace("é", "e").replace("è", "e").replace("ê", "e")
+
 
 def format_type_badge(type_name: str) -> str:
     """Display a type as a colored badge with icon."""
@@ -80,6 +86,7 @@ def format_type_badge(type_name: str) -> str:
     icon = TYPE_ICONS.get(key, "")
     color = TYPE_COLORS.get(key, "#999")
     return f"<span style='background:{color};color:white;padding:8px 16px;border-radius:12px;font-size:1.2rem;font-weight:600;display:inline-block;margin:4px;'>{icon} {type_name.capitalize()}</span>"
+
 
 def generate_question() -> dict:
     """Select a random type matchup that is not neutral."""
@@ -90,6 +97,7 @@ def generate_question() -> dict:
         "defending_type": q["defending_type"],
         "correct_multiplier": q["multiplier"]
     }
+
 
 def check_answer(user_choice: str, correct_multiplier: float) -> bool:
     """Check if the selected category matches the multiplier."""
@@ -103,12 +111,17 @@ def check_answer(user_choice: str, correct_multiplier: float) -> bool:
         correct_category = "strong"
     return user_choice == correct_category
 
+
 def get_feedback_text(multiplier: float) -> str:
     """Return a descriptive string for a multiplier."""
-    if multiplier == 0: return "🛡️ **Immunisé (×0)** - Aucun dégât !"
-    if multiplier < 1: return f"🔵 **Peu efficace (×{multiplier})** - Dégâts réduits"
-    if multiplier == 1: return "⚪ **Normal (×1)** - Dégâts standards"
+    if multiplier == 0:
+        return "🛡️ **Immunisé (×0)** - Aucun dégât !"
+    if multiplier < 1:
+        return f"🔵 **Peu efficace (×{multiplier})** - Dégâts réduits"
+    if multiplier == 1:
+        return "⚪ **Normal (×1)** - Dégâts standards"
     return f"🔴 **Super efficace (×{multiplier})** - Dégâts augmentés !"
+
 
 def handle_answer(user_choice: str):
     """Process a user's answer."""
@@ -120,11 +133,13 @@ def handle_answer(user_choice: str):
     st.session_state.last_answer_correct = is_correct
     st.rerun()
 
+
 def new_question():
     """Generate a new question."""
     st.session_state.current_question = generate_question()
     st.session_state.answered = False
     st.session_state.last_answer_correct = None
+
 
 # ======================================================
 # Page Header
@@ -166,10 +181,28 @@ if st.session_state.current_question and not st.session_state.answered:
 
     st.markdown("### 🤔 C'est...")
     col1, col2, col3, col4 = st.columns(4)
-    with col1: st.button("🛡️ Immunisé\n(×0)", key="immune", use_container_width=True, on_click=handle_answer, args=("immune",))
-    with col2: st.button("🔵 Peu efficace\n(×0.5)", key="weak", use_container_width=True, on_click=handle_answer, args=("weak",))
-    with col3: st.button("⚪ Normal\n(×1)", key="normal", use_container_width=True, on_click=handle_answer, args=("normal",))
-    with col4: st.button("🔴 Super efficace\n(×2 ou ×4)", key="strong", use_container_width=True, on_click=handle_answer, args=("strong",))
+    with col1:
+        st.button("🛡️ Immunisé\n(×0)", key="immune", use_container_width=True, on_click=handle_answer, args=("immune",))
+    with col2:
+        st.button(
+            "🔵 Peu efficace\n(×0.5)",
+            key="weak",
+            use_container_width=True,
+            on_click=handle_answer,
+            args=(
+                "weak",
+            ))
+    with col3:
+        st.button("⚪ Normal\n(×1)", key="normal", use_container_width=True, on_click=handle_answer, args=("normal",))
+    with col4:
+        st.button(
+            "🔴 Super efficace\n(×2 ou ×4)",
+            key="strong",
+            use_container_width=True,
+            on_click=handle_answer,
+            args=(
+                "strong",
+            ))
 
 # ======================================================
 # Answer Feedback
@@ -193,9 +226,11 @@ if st.session_state.answered and st.session_state.last_answer_correct is not Non
 st.divider()
 col1, col2 = st.columns(2)
 with col1:
-    st.button("🔄 Recommencer à Zéro", use_container_width=True, on_click=lambda: [st.session_state.update({k: 0 if "score" in k or "total" in k else None for k in st.session_state}), st.rerun()])
+    st.button("🔄 Recommencer à Zéro", use_container_width=True, on_click=lambda: [st.session_state.update(
+        {k: 0 if "score" in k or "total" in k else None for k in st.session_state}), st.rerun()])
 with col2:
-    st.button("🏆 Réinitialiser Record", use_container_width=True, on_click=lambda: [st.session_state.update({"quiz_high_score":0}), st.rerun()])
+    st.button("🏆 Réinitialiser Record", use_container_width=True, on_click=lambda: [
+              st.session_state.update({"quiz_high_score": 0}), st.rerun()])
 
 # ======================================================
 # Tips Section

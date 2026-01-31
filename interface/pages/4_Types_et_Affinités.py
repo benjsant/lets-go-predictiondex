@@ -2,7 +2,7 @@
 from typing import Optional
 import pandas as pd
 import streamlit as st
-from interface.utils.pokemon_theme import TYPE_COLORS, load_custom_css, page_header, type_badge
+from interface.utils.pokemon_theme import load_custom_css, page_header, type_badge
 from interface.services.api_client import get_all_types, get_type_affinities
 
 # ======================================================
@@ -14,21 +14,31 @@ load_custom_css()
 # ======================================================
 # Helper Functions
 # ======================================================
+
+
 def clean_text(t: Optional[str]) -> str:
     return t.replace("\n", "").replace("\r", "").strip() if t else ""
+
 
 def normalize_type(t: str) -> str:
     return clean_text(t).lower().replace("é", "e").replace("è", "e")
 
+
 def format_multiplier(m: float) -> str:
     return {0.0: "0", 0.25: "¼", 0.5: "½", 1.0: "1", 2.0: "2", 4.0: "4"}.get(m, str(m))
 
+
 def multiplier_color(m: float) -> str:
-    if m == 0: return "#1f77b4"
-    if m < 1: return "#2ca02c"
-    if m == 1: return "#888888"
-    if m <= 2: return "#ff7f0e"
+    if m == 0:
+        return "#1f77b4"
+    if m < 1:
+        return "#2ca02c"
+    if m == 1:
+        return "#888888"
+    if m <= 2:
+        return "#ff7f0e"
     return "#d62728"
+
 
 def display_affinities_grouped(title: str, affinities: list, type_key: str):
     """Display affinities in grouped sections: super effective, weak, neutral, immune."""
@@ -48,16 +58,14 @@ def display_affinities_grouped(title: str, affinities: list, type_key: str):
             st.markdown(
                 f"{type_badge(a[type_key])} "
                 f"<span style='color:{multiplier_color(a['multiplier'])}; font-weight:700;'>×{format_multiplier(a['multiplier'])}</span>",
-                unsafe_allow_html=True
-            )
+                unsafe_allow_html=True)
     if weak:
         st.markdown("**💚 Peu Efficace (×½ ou ×¼)**")
         for a in sorted(weak, key=lambda x: x['multiplier']):
             st.markdown(
                 f"{type_badge(a[type_key])} "
                 f"<span style='color:{multiplier_color(a['multiplier'])}; font-weight:700;'>×{format_multiplier(a['multiplier'])}</span>",
-                unsafe_allow_html=True
-            )
+                unsafe_allow_html=True)
     if immune:
         st.markdown("**🛡️ Sans Effet (×0)**")
         for a in immune:
@@ -70,6 +78,8 @@ def display_affinities_grouped(title: str, affinities: list, type_key: str):
 # ======================================================
 # Load Data
 # ======================================================
+
+
 @st.cache_data(ttl=3600)
 def load_types_data():
     types_list = get_all_types()
@@ -82,6 +92,7 @@ def load_types_data():
         for a in affinities_raw
     ]
     return types_list, affinities
+
 
 types_list, affinities = load_types_data()
 
@@ -128,11 +139,15 @@ matrix = pd.DataFrame(
      for def_ in type_names_sorted} for att in type_names_sorted}
 ).T
 
+
 def style_matrix(val):
     val_clean = val.replace("¼", "0.25").replace("½", "0.5")
-    try: m = float(val_clean)
-    except: m = 1.0
+    try:
+        m = float(val_clean)
+    except BaseException:
+        m = 1.0
     return f'background-color:{multiplier_color(m)}; color:white; font-weight:600; text-align:center;'
+
 
 st.dataframe(matrix.style.applymap(style_matrix), use_container_width=True, height=700)
 
@@ -140,8 +155,8 @@ st.dataframe(matrix.style.applymap(style_matrix), use_container_width=True, heig
 # Legend
 # ======================================================
 st.markdown("### 📖 Légende")
-for mult, desc, color in [(0,"Sans Effet","#1f77b4"), (0.5,"Peu efficace","#2ca02c"),
-                          (1,"Neutre","#888888"), (2,"Efficace","#ff7f0e")]:
+for mult, desc, color in [(0, "Sans Effet", "#1f77b4"), (0.5, "Peu efficace", "#2ca02c"),
+                          (1, "Neutre", "#888888"), (2, "Efficace", "#ff7f0e")]:
     st.markdown(
         f"<div style='background:{color}; color:white; padding:6px; border-radius:8px; text-align:center;'>"
         f"×{mult} - {desc}</div>", unsafe_allow_html=True

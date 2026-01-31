@@ -1,6 +1,5 @@
 # interface/app.py
 import streamlit as st
-import requests
 from utils.pokemon_theme import (
     POKEMON_COLORS,
     feature_card,
@@ -11,7 +10,6 @@ from utils.pokemon_theme import (
     pokeball_divider,
     section_header,
 )
-from interface.config.settings import API_BASE_URL, API_KEY
 
 st.set_page_config(
     page_title="Let's Go PredictionDex",

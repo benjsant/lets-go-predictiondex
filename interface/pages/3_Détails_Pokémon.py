@@ -6,7 +6,7 @@ import streamlit as st
 
 from interface.services.pokemon_service import get_pokemon_detail
 from interface.formatters.ui.pokemon_ui import PokemonSelectItem
-from interface.utils.pokemon_theme import TYPE_COLORS, load_custom_css, page_header, type_badge
+from interface.utils.pokemon_theme import load_custom_css, page_header, type_badge
 from interface.utils.ui_helpers import (
     get_pokemon_by_id,
     get_pokemon_options,
@@ -184,7 +184,8 @@ if selected.stats:
         st.caption(f"🔢 Total des stats : **{int(selected.total_stats)}**")
         all_totals = [p.total_stats for p in pokemon_options if p.total_stats]
         all_totals_sorted = sorted(all_totals, reverse=True)
-        rank = all_totals_sorted.index(selected.total_stats) + 1 if selected.total_stats in all_totals_sorted else len(pokemon_options)
+        rank = all_totals_sorted.index(selected.total_stats) + \
+            1 if selected.total_stats in all_totals_sorted else len(pokemon_options)
         st.caption(f"🏆 Classement: #{rank}/{len(pokemon_options)}")
 
 st.divider()

@@ -56,6 +56,8 @@ DATA_PATH = "etl_pokemon/data/csv"
 # ---------------------------------------------------------------------
 # Load TYPES
 # ---------------------------------------------------------------------
+
+
 def load_types(session) -> None:
     """
     Load Pokémon elemental types from liste_pokemon.csv.

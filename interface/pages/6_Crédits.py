@@ -5,7 +5,6 @@ from utils.pokemon_theme import (
     info_box,
     load_custom_css,
     page_header,
-    pikachu_eevee_mascots,
     pokeball_divider,
     section_header,
 )

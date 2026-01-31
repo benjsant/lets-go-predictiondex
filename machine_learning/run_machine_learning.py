@@ -50,31 +50,18 @@ Validation:
 """
 
 import argparse
-import json
 import os
-import pickle
 import subprocess
 import sys
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import joblib  # For RandomForest model compression
 import numpy as np
 import pandas as pd
 import xgboost as xgb
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
-    confusion_matrix,
-    f1_score,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-)
 from sklearn.model_selection import GridSearchCV
-from sklearn.preprocessing import StandardScaler
 
 # MLflow integration (C13 - MLOps)
 try:
@@ -86,18 +73,13 @@ except ImportError:
 
 # Import new centralized modules (refactored for clean code)
 from machine_learning.config import (
-    XGBoostConfig,
-    GridSearchConfigFast,
-    GridSearchConfigExtended,
     XGBOOST_PARAMS,
     XGBOOST_PARAM_GRID_FAST,
-    XGBOOST_PARAM_GRID_EXTENDED,
     RANDOM_SEED,
 )
 from machine_learning.constants import (
     PROJECT_ROOT,
     MODELS_DIR,
-    REPORTS_DIR,
     get_data_dir,
     get_raw_dir,
     get_processed_dir,

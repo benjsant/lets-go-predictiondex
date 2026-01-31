@@ -34,25 +34,13 @@ Output Artifacts:
 """
 
 import argparse
-import pickle
 import sys
 from datetime import datetime
-from pathlib import Path
 
 import joblib  # For RandomForest compression
 import pandas as pd
 import xgboost as xgb
-from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
-    confusion_matrix,
-    f1_score,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-)
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
-from sklearn.preprocessing import StandardScaler
 
 # MLflow Model Registry
 try:
@@ -71,7 +59,6 @@ from machine_learning.config import (
 )
 from machine_learning.constants import (
     PROJECT_ROOT,
-    MODELS_DIR,
     get_data_dir,
     get_processed_dir,
     get_features_dir,

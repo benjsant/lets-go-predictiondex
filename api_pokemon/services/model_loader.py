@@ -12,7 +12,7 @@ This module handles:
 
 import pickle
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import joblib
 
