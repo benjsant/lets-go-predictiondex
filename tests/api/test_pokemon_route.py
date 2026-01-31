@@ -105,7 +105,9 @@ class TestSearchPokemon:
     """Tests for searching Pokemon by name."""
 
     @patch('api_pokemon.routes.pokemon_route.search_pokemon_by_species_name')
-    @patch('api_pokemon.routes.pokemon_route.get_db')    @pytest.mark.xfail(reason="Mock objects incomplete - needs fixture refactor")    def test_search_pokemon_success(self, mock_get_db, mock_search, client):
+    @patch('api_pokemon.routes.pokemon_route.get_db')
+    @pytest.mark.xfail(reason="Mock objects incomplete - needs fixture refactor")
+    def test_search_pokemon_success(self, mock_get_db, mock_search, client):
         """Test successful Pokemon search."""
         # Mock database
         mock_db = Mock()

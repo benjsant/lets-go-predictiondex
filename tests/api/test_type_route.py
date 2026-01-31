@@ -94,7 +94,9 @@ class TestGetTypeAffinities:
     """Tests for retrieving type affinities."""
 
     @patch('api_pokemon.routes.type_route.get_type_affinities_by_name')
-    @patch('api_pokemon.routes.type_route.get_db')    @pytest.mark.xfail(reason="Mock objects incomplete - needs fixture refactor")    def test_get_affinities_no_filters(self, mock_get_db, mock_get_affinities, client):
+    @patch('api_pokemon.routes.type_route.get_db')
+    @pytest.mark.xfail(reason="Mock objects incomplete - needs fixture refactor")
+    def test_get_affinities_no_filters(self, mock_get_db, mock_get_affinities, client):
         """Test retrieval of all type affinities."""
         # Mock database
         mock_db = Mock()
