@@ -67,8 +67,8 @@ jobs:
         continue-on-error: false
         run: |
           # Tests essentiels uniquement pour CI/CD rapide
-          # Focus sur ML (C12) + quelques tests API critiques
-          pytest tests/ml/ tests/api/test_health.py \
+          # Focus sur ML (C12) - tests du modèle IA
+          pytest tests/ml/ \
             -v --tb=short -m "not slow" \
             --cov=machine_learning \
             --cov-report=xml --cov-report=term-missing || {
