@@ -177,7 +177,9 @@ class TestSearchPokemon:
         assert response.status_code == 422  # Validation error
 
     @patch('api_pokemon.routes.pokemon_route.search_pokemon_by_species_name')
-    @patch('api_pokemon.routes.pokemon_route.get_db')    @pytest.mark.xfail(reason="Mock objects incomplete - needs fixture refactor")    def test_search_pokemon_with_lang_parameter(self, mock_get_db, mock_search, client):
+    @patch('api_pokemon.routes.pokemon_route.get_db')
+    @pytest.mark.xfail(reason="Mock objects incomplete - needs fixture refactor")
+    def test_search_pokemon_with_lang_parameter(self, mock_get_db, mock_search, client):
         """Test search with language parameter."""
         # Mock database
         mock_db = Mock()

@@ -128,7 +128,9 @@ class TestGetTypeAffinities:
         assert data[0]['multiplier'] == 2.0
 
     @patch('api_pokemon.routes.type_route.get_type_affinities_by_name')
-    @patch('api_pokemon.routes.type_route.get_db')    @pytest.mark.xfail(reason="Mock objects incomplete - needs fixture refactor")    def test_get_affinities_with_attacking_type(self, mock_get_db, mock_get_affinities, client):
+    @patch('api_pokemon.routes.type_route.get_db')
+    @pytest.mark.xfail(reason="Mock objects incomplete - needs fixture refactor")
+    def test_get_affinities_with_attacking_type(self, mock_get_db, mock_get_affinities, client):
         """Test retrieval of affinities filtered by attacking type."""
         # Mock database
         mock_db = Mock()
@@ -160,7 +162,9 @@ class TestGetTypeAffinities:
         )
 
     @patch('api_pokemon.routes.type_route.get_type_affinities_by_name')
-    @patch('api_pokemon.routes.type_route.get_db')    @pytest.mark.xfail(reason="Mock objects incomplete - needs fixture refactor")    def test_get_affinities_with_defending_type(self, mock_get_db, mock_get_affinities, client):
+    @patch('api_pokemon.routes.type_route.get_db')
+    @pytest.mark.xfail(reason="Mock objects incomplete - needs fixture refactor")
+    def test_get_affinities_with_defending_type(self, mock_get_db, mock_get_affinities, client):
         """Test retrieval of affinities filtered by defending type."""
         # Mock database
         mock_db = Mock()
@@ -191,7 +195,9 @@ class TestGetTypeAffinities:
         )
 
     @patch('api_pokemon.routes.type_route.get_type_affinities_by_name')
-    @patch('api_pokemon.routes.type_route.get_db')    @pytest.mark.xfail(reason="Mock objects incomplete - needs fixture refactor")    def test_get_affinities_with_both_filters(self, mock_get_db, mock_get_affinities, client):
+    @patch('api_pokemon.routes.type_route.get_db')
+    @pytest.mark.xfail(reason="Mock objects incomplete - needs fixture refactor")
+    def test_get_affinities_with_both_filters(self, mock_get_db, mock_get_affinities, client):
         """Test retrieval of affinities with both filters."""
         # Mock database
         mock_db = Mock()
