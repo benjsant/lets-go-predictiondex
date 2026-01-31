@@ -1,18 +1,24 @@
-name: Unit Tests
+name: 2️⃣ Unit Tests (C12 + C18)
+
+# Compétence C12: Programmer les tests unitaires, d'intégration et de 
+# performance d'un modèle d'intelligence artificielle
+# → Tests unitaires rapides sans Docker
+#
+# Compétence C18: Automatiser les phases de tests lors de la mise en 
+# production d'une solution applicative
+# → Intégration continue des tests
 
 on:
   push:
-    branches: [ main, monitoring_grafana_evidently, develop, prototype_final_v1 , nettoyage_clean_code_final ]
+    branches: [ main, monitoring_grafana_evidently, develop, prototype_final_v1, nettoyage_clean_code_final ]
   pull_request:
     branches: [ main, monitoring_grafana_evidently ]
 
-# This workflow runs only UNIT tests (fast, no Docker Compose needed)
-# For complete integration tests, see complete-tests.yml
-
 jobs:
   unit-tests:
+    name: Fast Unit Tests (No Docker)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
 
     services:
       postgres:
@@ -34,30 +40,23 @@ jobs:
         python-version: ['3.11']
     
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: 🐍 Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
       
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pytest pytest-cov pytest-asyncio httpx
           pip install -r api_pokemon/requirements.txt
           pip install -r machine_learning/requirements.txt
       
-      - name: Set environment variables
+      - name: 🔧 Set environment variables
         run: |
           echo "POSTGRES_HOST=localhost" >> $GITHUB_ENV
           echo "POSTGRES_PORT=5432" >> $GITHUB_ENV
@@ -66,12 +65,15 @@ jobs:
           echo "POSTGRES_PASSWORD=letsgo_password" >> $GITHUB_ENV
           echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
       
-      - name: Run unit tests
+      - name: 🧪 Run unit tests (fast)
         run: |
-          # Run only unit tests (exclude integration tests and slow MLflow tests)
-          pytest tests/api/ tests/ml/ tests/monitoring/ tests/mlflow/ -v --tb=short -m "not slow" --cov=api_pokemon --cov=core --cov=machine_learning --cov-report=xml --cov-report=term-missing
+          # Tests unitaires uniquement - pas de tests lents ni d'intégration Docker
+          pytest tests/api/ tests/ml/ tests/monitoring/ tests/mlflow/ \
+            -v --tb=short -m "not slow" \
+            --cov=api_pokemon --cov=core --cov=machine_learning \
+            --cov-report=xml --cov-report=term-missing
       
-      - name: Upload coverage to Codecov
+      - name: 📊 Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
@@ -79,18 +81,23 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
       
-      - name: Generate coverage badge
-        if: github.ref == 'refs/heads/main'
-        run: |
-          pip install coverage-badge
-          coverage-badge -o coverage.svg -f
-      
-      - name: Archive test results
+      - name: 📦 Archive test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-unit
           path: |
             coverage.xml
             .coverage
           retention-days: 30
+      
+      - name: ✅ Summary
+        if: success()
+        run: |
+          echo "## ✅ Unit Tests Passed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Coverage Report:**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          coverage report >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

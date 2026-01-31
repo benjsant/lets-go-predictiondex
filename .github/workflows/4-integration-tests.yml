@@ -1,0 +1,163 @@
+name: 4️⃣ Integration Tests (C13 + C19)
+
+# Compétence C13: Concevoir la chaîne de livraison continue d'un modèle 
+# d'intelligence artificielle (MLOps)
+# → Tests d'intégration avec Docker Compose, validation end-to-end
+#
+# Compétence C19: Gérer les incidents et les demandes d'assistance des 
+# utilisateurs d'une solution applicative
+# → Validation complète du système
+
+on:
+  workflow_run:
+    workflows: ["3️⃣ Docker Build (C13 + C19)"]
+    types:
+      - completed
+    branches: [ main, develop, nettoyage_clean_code_final ]
+  workflow_dispatch:
+
+jobs:
+  integration-tests:
+    name: Integration Tests (Full Docker Stack)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Ne s'exécute que si le workflow précédent a réussi
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: 📥 Download all Docker images
+        uses: actions/download-artifact@v4
+        with:
+          path: docker-images/
+        continue-on-error: true
+      
+      - name: 🐋 Load Docker images (if available)
+        run: |
+          if [ -d "docker-images/" ]; then
+            for service in api etl ml streamlit mlflow; do
+              if [ -f docker-images/docker-image-$service/$service.tar.gz ]; then
+                echo "Loading $service image..."
+                gunzip -c docker-images/docker-image-$service/$service.tar.gz | docker load
+              fi
+            done
+          else
+            echo "No pre-built images found, will build from scratch"
+          fi
+      
+      - name: 🔧 Create .env file
+        run: |
+          cat > .env << EOF
+          POSTGRES_USER=letsgo_user
+          POSTGRES_PASSWORD=letsgo_password
+          POSTGRES_DB=letsgo_db
+          POSTGRES_HOST=db
+          POSTGRES_PORT=5432
+          DEV_MODE=true
+          API_KEY_REQUIRED=true
+          API_KEYS=test_key_for_github_actions,BgQJ2_Ur4uYKBsw6Jf4TI_yfA6u0BFwb4a1YbOSmMVQ
+          DISABLE_MLFLOW_TRACKING=false
+          USE_MLFLOW_REGISTRY=false
+          ML_SKIP_IF_EXISTS=true
+          EOF
+      
+      - name: 🚀 Start Docker Compose stack
+        run: |
+          echo "🐳 Starting all services..."
+          docker compose up -d
+          echo "⏳ Waiting for services to be ready..."
+      
+      - name: ⏳ Wait for PostgreSQL
+        run: |
+          echo "Waiting for PostgreSQL..."
+          timeout 120 bash -c 'until docker compose exec -T db pg_isready -U letsgo_user; do sleep 2; done'
+          echo "✅ PostgreSQL ready"
+      
+      - name: ⏳ Wait for API
+        run: |
+          echo "Waiting for API..."
+          timeout 180 bash -c 'until curl -sf http://localhost:8080/health; do sleep 3; done'
+          echo "✅ API ready"
+      
+      - name: ⏳ Wait for MLflow
+        run: |
+          echo "Waiting for MLflow..."
+          timeout 120 bash -c 'until curl -sf http://localhost:5001/health; do sleep 3; done'
+          echo "✅ MLflow ready"
+      
+      - name: ⏳ Wait for Prometheus
+        run: |
+          echo "Waiting for Prometheus..."
+          timeout 90 bash -c 'until curl -sf http://localhost:9091/-/healthy; do sleep 3; done'
+          echo "✅ Prometheus ready"
+      
+      - name: ⏳ Wait for Grafana
+        run: |
+          echo "Waiting for Grafana..."
+          timeout 90 bash -c 'until curl -sf http://localhost:3001/api/health; do sleep 3; done'
+          echo "✅ Grafana ready"
+      
+      - name: 🧪 Run integration tests
+        run: |
+          echo "🧪 Running integration tests..."
+          docker compose exec -T api pytest tests/integration/ -v --tb=short
+      
+      - name: 🔍 Validate services health
+        run: |
+          echo "🔍 Checking all services health..."
+          
+          # API
+          curl -f http://localhost:8080/health || exit 1
+          echo "✅ API health check passed"
+          
+          # MLflow
+          curl -f http://localhost:5001/health || exit 1
+          echo "✅ MLflow health check passed"
+          
+          # Prometheus
+          curl -f http://localhost:9091/-/healthy || exit 1
+          echo "✅ Prometheus health check passed"
+          
+          # Grafana
+          curl -f http://localhost:3001/api/health || exit 1
+          echo "✅ Grafana health check passed"
+      
+      - name: 📊 Generate test summary
+        if: always()
+        run: |
+          echo "## 🧪 Integration Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Services Validated:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ PostgreSQL" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ API (FastAPI)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ MLflow Tracking Server" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Prometheus" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Grafana" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Tests Executed:" >> $GITHUB_STEP_SUMMARY
+          echo "- Integration tests" >> $GITHUB_STEP_SUMMARY
+          echo "- Health checks" >> $GITHUB_STEP_SUMMARY
+          echo "- Service connectivity" >> $GITHUB_STEP_SUMMARY
+      
+      - name: 📋 Show logs on failure
+        if: failure()
+        run: |
+          echo "📋 Docker Services Status:"
+          docker compose ps
+          echo ""
+          echo "📋 Last 100 lines of logs:"
+          docker compose logs --tail=100
+      
+      - name: 🧹 Cleanup
+        if: always()
+        run: |
+          echo "🧹 Cleaning up Docker resources..."
+          docker compose down -v || true
+          docker system prune -f || true

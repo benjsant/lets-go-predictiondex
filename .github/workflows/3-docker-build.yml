@@ -1,0 +1,63 @@
+name: 3️⃣ Docker Build (C13 + C19)
+
+# Compétence C13: Concevoir la chaîne de livraison continue d'un modèle 
+# d'intelligence artificielle (MLOps)
+# → Construction et packaging des images Docker
+#
+# Compétence C19: Gérer les incidents et les demandes d'assistance des 
+# utilisateurs d'une solution applicative
+# → Assurer la fiabilité du déploiement
+
+on:
+  push:
+    branches: [ main, monitoring_grafana_evidently, develop, nettoyage_clean_code_final ]
+  pull_request:
+    branches: [ main, monitoring_grafana_evidently ]
+  workflow_dispatch:
+
+jobs:
+  build-images:
+    name: Build Docker Image - ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [api, etl, ml, streamlit, mlflow]
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🐋 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: 💾 Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ matrix.service }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.service }}-
+      
+      - name: 🔨 Build ${{ matrix.service }} image
+        run: |
+          docker compose build ${{ matrix.service }}
+      
+      - name: 💾 Save image as artifact
+        run: |
+          docker save lets-go-predictiondex-${{ matrix.service }} | gzip > ${{ matrix.service }}.tar.gz
+      
+      - name: 📤 Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-${{ matrix.service }}
+          path: ${{ matrix.service }}.tar.gz
+          retention-days: 1
+      
+      - name: ✅ Build success
+        run: |
+          echo "✅ Image ${{ matrix.service }} built successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          docker images | grep lets-go-predictiondex-${{ matrix.service }} >> $GITHUB_STEP_SUMMARY || true
