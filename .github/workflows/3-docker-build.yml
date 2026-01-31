@@ -7,9 +7,9 @@ name: 3️⃣ Docker Build (C13)
 
 on:
   push:
-    branches: [ main, monitoring_grafana_evidently, develop, nettoyage_clean_code_final ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, monitoring_grafana_evidently ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:

@@ -8,9 +8,9 @@ name: 2️⃣ Unit Tests (C12)
 
 on:
   push:
-    branches: [ main, monitoring_grafana_evidently, develop, prototype_final_v1, nettoyage_clean_code_final ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, monitoring_grafana_evidently ]
+    branches: [ main ]
 
 jobs:
   unit-tests:

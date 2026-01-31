@@ -35,4 +35,3 @@ pyarrow==22.0.0
 
 # Monitoring
 prometheus-client==0.22.1
-evidently==0.7.20

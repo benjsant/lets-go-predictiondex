@@ -161,7 +161,6 @@ services:
     volumes:
       - ./interface:/app/interface
       - ./core:/app/core
-      - ./api_pokemon/monitoring/drift_reports:/app/drift_reports:ro
     ports:
       - "8502:8501"  # Port modifié : 8502 sur l'hôte → 8501 dans le container
     networks:

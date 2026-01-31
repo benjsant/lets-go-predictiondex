@@ -2,7 +2,7 @@
 Monitoring Module
 ================
 
-Provides Prometheus metrics collection and Evidently data drift monitoring.
+Provides Prometheus metrics collection and production data logging.
 """
 
 from .metrics import (

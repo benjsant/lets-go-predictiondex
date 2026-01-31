@@ -7,9 +7,9 @@ name: 1️⃣ Lint & Quality
 
 on:
   push:
-    branches: [ main, monitoring_grafana_evidently, develop, nettoyage_clean_code_final ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, monitoring_grafana_evidently ]
+    branches: [ main ]
 
 jobs:
   lint-and-format:
