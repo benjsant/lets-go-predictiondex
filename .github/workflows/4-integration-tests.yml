@@ -8,8 +8,6 @@ name: 4️⃣ Integration Tests (C12 + C13)
 # → Tests automatisés déclenchés dans la chaîne
 
 on:
-  push:
-    branches: [ nettoyage_clean_code_final ]
   workflow_run:
     workflows: ["3️⃣ Docker Build (C13)"]
     types:
@@ -22,8 +20,8 @@ jobs:
     name: Integration Tests (Full Docker Stack)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # Ne s'exécute que si le workflow précédent a réussi (ou si déclenché par push/dispatch)
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
+    # Ne s'exécute que si le workflow précédent a réussi (ou si déclenché manuellement)
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     
     steps:
       - name: 📥 Checkout code

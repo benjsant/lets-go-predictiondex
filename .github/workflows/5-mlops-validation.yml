@@ -6,8 +6,6 @@ name: 5️⃣ MLOps Model Validation (C13)
 # → Tests de performance et qualité
 
 on:
-  push:
-    branches: [ nettoyage_clean_code_final ]
   workflow_run:
     workflows: ["2️⃣ Unit Tests (C12)"]
     types:
@@ -20,8 +18,8 @@ jobs:
     name: MLOps Model Validation
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Ne s'exécute que si les tests unitaires ont réussi (ou si déclenché par push/dispatch)
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
+    # Ne s'exécute que si le workflow précédent a réussi (ou si déclenché manuellement)
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: 📥 Checkout code
