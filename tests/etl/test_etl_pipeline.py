@@ -80,15 +80,15 @@ class TestDatabaseInitialization:
         expected_tables = [
             'pokemon_species',
             'pokemon',
-            'pokemon_stats',
-            'pokemon_types',
-            'pokemon_moves',
-            'types',
+            'pokemon_stat',
+            'pokemon_type',
+            'pokemon_move',
+            'type',
             'type_effectiveness',
-            'moves',
-            'move_categories',
-            'forms',
-            'learn_methods'
+            'move',
+            'move_category',
+            'form',
+            'learn_method'
         ]
 
         for table in expected_tables:
@@ -113,10 +113,10 @@ class TestDatabaseInitialization:
         assert 'pokemon_species' in fk_tables, \
                "Pokemon missing FK to pokemon_species"
 
-        # Pokemon_types should have FK to types
-        fks = inspector.get_foreign_keys('pokemon_types')
+        # Pokemon_type should have FK to type
+        fks = inspector.get_foreign_keys('pokemon_type')
         fk_tables = [fk['referred_table'] for fk in fks]
-        assert 'types' in fk_tables, "Pokemon_types missing FK to types"
+        assert 'type' in fk_tables, "Pokemon_type missing FK to type"
 
 
 # ============================================================
