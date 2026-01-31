@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [api, etl, ml, streamlit, mlflow]
+        service: [api, etl, ml_builder, streamlit, mlflow]
     
     steps:
       - name: 📥 Checkout code
