@@ -136,9 +136,9 @@ class TestCSVLoading:
         """Test loading types from CSV to database."""
         # Create sample types
         types_data = [
-            Type(id=1, name='Normal', color='#A8A878'),
-            Type(id=2, name='Feu', color='#F08030'),
-            Type(id=3, name='Eau', color='#6890F0'),
+            Type(id=1, name='Normal'),
+            Type(id=2, name='Feu'),
+            Type(id=3, name='Eau'),
         ]
 
         for type_obj in types_data:
@@ -286,6 +286,7 @@ class TestAPIEnrichment:
             species_id=1,
             form_id=1,
             name_pokeapi=data['name'],
+            name_pokepedia='Bulbizarre',
             height_m=data['height'] / 10,
             weight_kg=data['weight'] / 10,
             sprite_url=data['sprites']['front_default']
