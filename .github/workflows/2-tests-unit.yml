@@ -64,14 +64,21 @@ jobs:
           echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
       
       - name: 🧪 Run unit tests (fast)
+        continue-on-error: false
         run: |
           # Tests unitaires uniquement - pas de tests lents ni d'intégration Docker
           pytest tests/api/ tests/ml/ tests/monitoring/ tests/mlflow/ \
             -v --tb=short -m "not slow" \
             --cov=api_pokemon --cov=core --cov=machine_learning \
-            --cov-report=xml --cov-report=term-missing
+            --cov-report=xml --cov-report=term-missing || {
+            # Créer fichiers coverage vides si tests échouent
+            echo '<?xml version="1.0" ?><coverage version="7.0"><packages/></coverage>' > coverage.xml
+            touch .coverage
+            exit 1
+          }
       
       - name: 📊 Upload coverage to Codecov
+        if: always()
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
@@ -88,6 +95,7 @@ jobs:
             coverage.xml
             .coverage
           retention-days: 30
+          if-no-files-found: warn
       
       - name: ✅ Summary
         if: success()
