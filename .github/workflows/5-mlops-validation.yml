@@ -10,7 +10,7 @@ on:
     workflows: ["2️⃣ Unit Tests (C12)"]
     types:
       - completed
-    branches: [ main, develop ]
+    branches: [ main, develop, nettoyage_clean_code_final ]
   workflow_dispatch:
 
 jobs:
