@@ -88,7 +88,7 @@ jobs:
       - name: ✅ E1.3 - Valider structure BDD
         run: |
           echo "🎯 Validation Compétence E1.3: Structurer la base de données"
-          pytest tests/core/db/ -v --tb=short
+          pytest tests/etl/ -v -k "TestDatabaseInitialization" --tb=short
           echo "✓ 11 tables PostgreSQL"
           echo "✓ Normalisation 3NF"
           echo "✓ Contraintes d'intégrité référentielle (FK)"
