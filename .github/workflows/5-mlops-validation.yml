@@ -40,24 +40,24 @@ jobs:
         run: |
           echo "📊 Checking model metadata..."
           if [ -f "models/battle_winner_metadata_v2.json" ]; then
-            python -c "
+            python -c '
 import json
-with open('models/battle_winner_metadata_v2.json') as f:
+with open("models/battle_winner_metadata_v2.json") as f:
     metadata = json.load(f)
-    print(f'✅ Model version: {metadata.get(\"version\")}')
-    print(f'✅ Model type: {metadata.get(\"model_type\")}')
-    print(f'✅ Trained at: {metadata.get(\"trained_at\")}')
-    print(f'✅ Features: {metadata.get(\"n_features\")}')
+    print("✅ Model version:", metadata.get("version"))
+    print("✅ Model type:", metadata.get("model_type"))
+    print("✅ Trained at:", metadata.get("trained_at"))
+    print("✅ Features:", metadata.get("n_features"))
     
     # Validation des métriques
-    metrics = metadata.get('metrics', {})
-    test_acc = metrics.get('test_accuracy', 0)
-    print(f'📈 Test Accuracy: {test_acc:.4f}')
+    metrics = metadata.get("metrics", {})
+    test_acc = metrics.get("test_accuracy", 0)
+    print("📈 Test Accuracy: {:.4f}".format(test_acc))
     
     # Critères de qualité minimum
-    assert test_acc >= 0.85, f'Accuracy too low: {test_acc}'
-    print('✅ Model quality validated!')
-            "
+    assert test_acc >= 0.85, "Accuracy too low: {:.4f}".format(test_acc)
+    print("✅ Model quality validated!")
+            '
           else
             echo "⚠️ Model metadata not found (OK for CI without trained model)"
           fi
@@ -100,14 +100,14 @@ with open('models/battle_winner_metadata_v2.json') as f:
       - name: 📊 MLflow integration check
         run: |
           echo "📊 Checking MLflow integration..."
-          python -c "
+          python -c '
 import os
-print('MLflow integration files:')
-for root, dirs, files in os.walk('machine_learning'):
+print("MLflow integration files:")
+for root, dirs, files in os.walk("machine_learning"):
     for file in files:
-        if 'mlflow' in file.lower():
-            print(f'  - {os.path.join(root, file)}')
-          "
+        if "mlflow" in file.lower():
+            print("  - " + os.path.join(root, file))
+          '
           
           # Vérifier que le code d'intégration MLflow existe
           grep -r "mlflow" machine_learning/mlflow_integration.py && echo "✅ MLflow integration code found"
