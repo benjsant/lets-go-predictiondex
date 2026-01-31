@@ -133,17 +133,25 @@ def check_services_running(compose_cmd):
 def start_services(compose_cmd):
     """Démarre tous les services Docker"""
     print_info("Démarrage des services Docker...")
+    
+    # Timeout plus long en environnement CI (GitHub Actions plus lent)
+    is_ci = os.getenv('CI') == 'true' or os.getenv('GITHUB_ACTIONS') == 'true'
+    timeout_seconds = 600 if is_ci else 180
+    
+    if is_ci:
+        print_info(f"Environnement CI - Timeout étendu à {timeout_seconds}s pour le build des images...")
 
     try:
         result = subprocess.run(
             compose_cmd + ["up", "-d"],
-            timeout=180
+            timeout=timeout_seconds
         )
 
         if result.returncode == 0:
             print_success("Services démarrés")
-            print_info("Attente de 30 secondes pour que les services soient prêts...")
-            time.sleep(30)
+            wait_time = 45 if is_ci else 30
+            print_info(f"Attente de {wait_time} secondes pour que les services soient prêts...")
+            time.sleep(wait_time)
             return True
         else:
             print_error("Échec du démarrage des services")
