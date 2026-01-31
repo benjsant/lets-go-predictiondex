@@ -1,16 +1,15 @@
-name: 4️⃣ Integration Tests (C13 + C19)
+name: 4️⃣ Integration Tests (C12 + C13)
 
-# Compétence C13: Concevoir la chaîne de livraison continue d'un modèle 
-# d'intelligence artificielle (MLOps)
-# → Tests d'intégration avec Docker Compose, validation end-to-end
+# Compétence C12 (E3): Programmer les tests automatisés d'un modèle IA
+# → Tests d'intégration couvrant validation du modèle
 #
-# Compétence C19: Gérer les incidents et les demandes d'assistance des 
-# utilisateurs d'une solution applicative
-# → Validation complète du système
+# Compétence C13 (E3): Créer la chaîne de livraison continue MLOps
+# → Validation end-to-end avec Docker Compose
+# → Tests automatisés déclenchés dans la chaîne
 
 on:
   workflow_run:
-    workflows: ["3️⃣ Docker Build (C13 + C19)"]
+    workflows: ["3️⃣ Docker Build (C13)"]
     types:
       - completed
     branches: [ main, develop, nettoyage_clean_code_final ]

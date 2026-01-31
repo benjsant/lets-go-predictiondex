@@ -1,8 +1,8 @@
-name: 1️⃣ Lint & Format (C18)
+name: 1️⃣ Lint & Format
 
-# Compétence C18: Automatiser les phases de tests lors de la mise en 
-# production d'une solution applicative avec un outil d'intégration continue
-# → Vérification qualité du code (formatage, linting, sécurité)
+# Qualité de code et sécurité
+# → Vérification formatage, linting, sécurité
+# → Support pour E3 (C9-C13) et E4 (C14-C19)
 
 on:
   push:

@@ -1,12 +1,9 @@
-name: 3️⃣ Docker Build (C13 + C19)
+name: 3️⃣ Docker Build (C13)
 
-# Compétence C13: Concevoir la chaîne de livraison continue d'un modèle 
+# Compétence C13 (E3): Créer une chaîne de livraison continue d'un modèle 
 # d'intelligence artificielle (MLOps)
 # → Construction et packaging des images Docker
-#
-# Compétence C19: Gérer les incidents et les demandes d'assistance des 
-# utilisateurs d'une solution applicative
-# → Assurer la fiabilité du déploiement
+# → Étape de packaging dans la chaîne MLOps
 
 on:
   push:

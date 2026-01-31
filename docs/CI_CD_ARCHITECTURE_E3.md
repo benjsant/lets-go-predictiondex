@@ -27,7 +27,7 @@ La chaîne CI/CD a été restructurée en **4 workflows spécialisés** pour ré
          ┌─────────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
          │ 1️⃣ Lint    │ │ 2️⃣ Unit │ │ 3️⃣ Docker│ │ ML      │
          │  & Format  │ │  Tests  │ │  Build   │ │ Pipeline │
-         │   (C18)    │ │(C12+C18)│ │(C13+C19) │ │(C12+C13)│
+         │  (Support) │ │  (C12)  │ │  (C13)   │ │(C12+C13)│
          │   ~10min   │ │  ~15min │ │  ~20min  │ │ ~25min  │
          └─────────────┘ └─────────┘ └────┬─────┘ └─────────┘
                                           │
@@ -37,7 +37,7 @@ La chaîne CI/CD a été restructurée en **4 workflows spécialisés** pour ré
                                  ┌─────────────────┐
                                  │ 4️⃣ Integration │
                                  │     Tests      │
-                                 │   (C13+C19)    │
+                                 │   (C12+C13)    │
                                  │    ~30min      │
                                  └─────────────────┘
 ```
@@ -48,7 +48,7 @@ La chaîne CI/CD a été restructurée en **4 workflows spécialisés** pour ré
 
 ### 1️⃣ Lint & Format (`1-lint-and-format.yml`)
 
-**Compétence E3** : **C18** - Automatiser les phases de tests lors de la mise en production
+**Compétences concernées** : Support qualité code pour E3 (C9-C13) et E4 (C18)
 
 **Durée** : ~10 minutes
 
@@ -95,12 +95,12 @@ La chaîne CI/CD a été restructurée en **4 workflows spécialisés** pour ré
 
 ### 3️⃣ Docker Build (`3-docker-build.yml`)
 
-**Compétences E3** : **C13** (Chaîne MLOps) + **C19** (Fiabilité déploiement)
+**Compétence E3** : **C13** - Créer la chaîne de livraison continue MLOps
 
 **Durée** : ~20 minutes (parallélisé)
 
 **Responsabilités** :
-- ✅ Build parallèle de 5 images Docker :
+- ✅ Build parallèle de 5 images Docker (packaging) :
   - `api` (FastAPI + modèle ML)
   - `etl` (Pokepedia scraper)
   - `ml` (Machine learning training)
@@ -108,6 +108,7 @@ La chaîne CI/CD a été restructurée en **4 workflows spécialisés** pour ré
   - `mlflow` (Tracking & Registry)
 - ✅ Cache Docker Buildx pour accélérer
 - ✅ Sauvegarde artifacts pour workflow 4️⃣
+- ✅ Étape de packaging dans la chaîne MLOps
 
 **Stratégie** :
 ```yaml
@@ -129,20 +130,21 @@ strategy:
 ---
 
 ### 4️⃣ Integration Tests (`4-integration-tests.yml`)
-
-**Compétences E3** : **C13** (Validation chaîne MLOps) + **C19** (Validation système)
+2** (Tests automatisés) + **C13** (Validation chaîne MLOps)
 
 **Durée** : ~30 minutes
 
 **Responsabilités** :
 - ✅ Démarrage stack Docker Compose complète
-- ✅ Tests d'intégration end-to-end
+- ✅ Tests d'intégration end-to-end du modèle IA
 - ✅ Health checks de tous les services :
   - PostgreSQL
-  - API FastAPI
-  - MLflow
+  - API FastAPI (C9)
+  - MLflow (C11)
   - Prometheus
   - Grafana
+- ✅ Validation connectivité inter-services
+- ✅ Tests automatisés déclenchés dans la chaîne MLOp
 - ✅ Validation connectivité inter-services
 
 **Déclenchement** :
@@ -176,6 +178,57 @@ if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name =
 ---
 
 ## 🎓 Alignement Certification E3
+9 : Développer API exposant modèle IA
+
+✅ **Implémentation** :
+- API FastAPI dans `api_pokemon/` avec routes de prédiction
+- Authentification par clé API
+- Documentation OpenAPI automatique
+- Tests couvrant tous les endpoints
+
+✅ **Critères E3 validés** :
+- API restreint accès au modèle avec authentification
+- API permet accès aux fonctions du modèle selon specs
+- Recommandations sécurité OWASP intégrées
+- Sources versionnées sur Git
+- Tests couvrent tous les points de terminaison
+
+---
+
+### Compétence C10 : Intégrer API IA dans application
+
+✅ **Implémentation** :
+- Interface Streamlit (`interface/`) utilisant l'API
+- Communication avec API via client HTTP
+- Intégration des endpoints de prédiction
+- Tests d'intégration complets
+
+✅ **Critères E3 validés** :
+- Communication avec API fonctionnelle
+- Authentification correctement intégrée
+- Tous les endpoints concernés intégrés
+- Tests d'intégration couvrent tous les endpoints
+- Sources versionnées sur Git
+
+---
+
+### Compétence C11 : Monitorer modèle IA
+
+✅ **Implémentation** :
+- Prometheus pour collecte métriques
+- Grafana pour visualisation temps réel
+- Métriques API : latence, erreurs, prédictions
+- Dashboard temps réel
+
+✅ **Critères E3 validés** :
+- Métriques expliquées sans erreur
+- Outils adaptés au contexte (Prometheus/Grafana)
+- Dashboard temps réel opérationnel
+- Chaîne testée en environnement de test
+- Sources versionnées sur Git
+- Documentation technique complète
+
+---
 
 ### Compétence C12 : Tests automatisés du modèle IA
 
@@ -184,11 +237,13 @@ if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name =
 - `4️⃣ 4-integration-tests.yml` : Tests d'intégration complets
 - `ml-pipeline.yml` : Tests spécifiques ML (training, evaluation)
 
-✅ **Critères validés** :
-- Framework de tests cohérent (pytest)
-- Coverage définie et mesurée
-- Tests versionnés sur Git
-- Exécution automatique en CI
+✅ **Critères E3 validés** :
+- Cas à tester listés et définis
+- Framework cohérent avec environnement (pytest)
+- Tests intégrés respectant couverture souhaitée
+- Tests s'exécutent sans problème
+- Sources versionnées sur Git
+- Documentation couvre installation et exécution
 
 ---
 
@@ -199,40 +254,14 @@ if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name =
 - `4️⃣ 4-integration-tests.yml` : Validation chaîne complète
 - `ml-pipeline.yml` : Entraînement et validation modèles
 
-✅ **Critères validés** :
-- Configuration reconnue par système (GitHub Actions)
-- Étape de données de test intégrée
-- Étapes train/validate fonctionnelles
-- Déclenchement automatique (push, PR)
-- Registry MLflow pour versioning modèles
-
----
-
-### Compétence C18 : Intégration continue
-
-✅ **Workflows concernés** :
-- `1️⃣ 1-lint-and-format.yml` : Qualité code
-- `2️⃣ 2-tests-unit.yml` : Tests unitaires
-- Tous les workflows (déclenchés sur push/PR)
-
-✅ **Critères validés** :
-- Automatisation complète
-- Déclenchement sur versioning Git
-- Feedback rapide (<15min pour lint+unit tests)
-- Rapports de qualité et tests
-
----
-
-### Compétence C19 : Gestion incidents et fiabilité
-
-✅ **Workflows concernés** :
-- `3️⃣ 3-docker-build.yml` : Assure builds reproductibles
-- `4️⃣ 4-integration-tests.yml` : Validation système complète
-
-✅ **Critères validés** :
-- Tests d'intégration couvrant tous les services
-- Health checks automatiques
-- Logs détaillés en cas d'échec
+✅ **Critères E3 validés** :
+- Documentation couvre toutes les étapes/tâches/déclencheurs
+- Déclencheurs intégrés (push, PR, workflow_dispatch)
+- Fichiers configuration reconnus et exécutés par système
+- Étape de test des données intégrée et fonctionnelle
+- Étapes test/entraînement/validation du modèle intégrées
+- Sources versionnées sur Git
+- Documentation complète (installation, config, test)
 - Cleanup automatique des ressources
 
 ---
@@ -308,31 +337,49 @@ gh workflow run "3️⃣ Docker Build (C13 + C19)"
 2. Tester localement avec `act` (si possible)
 3. Push et vérifier sur GitHub Actions
 
-### Déboguer un échec
+### D9 - API exposant modèle IA
+- [x] API restreint accès avec authentification
+- [x] API permet accès aux fonctions du modèle
+- [x] Sécurité OWASP intégrée
+- [x] Sources versionnées sur Git
+- [x] Tests couvrent tous les endpoints
+- [x] Documentation OpenAPI complète
 
-```bash
-# Voir les logs du workflow
-gh run list
-gh run view <run_id> --log
+### C10 - Intégration API IA
+- [x] Application (Streamlit) fonctionnelle
+- [x] Communication avec API opérationnelle
+- [x] Authentification intégrée correctement
+- [x] Tous les endpoints intégrés
+- [x] Tests d'intégration complets
+- [x] Sources versionnées sur Git
 
-# Télécharger les artifacts
-gh run download <run_id>
+### C11 - Monitoring modèle IA
+- [x] Métriques définies et expliquées
+- [x] Outils adaptés (Prometheus/Grafana)
+- [x] Dashboard temps réel opérationnel
+- [x] Chaîne testée en environnement test
+- [x] Sources versionnées sur Git
+- [x] Documentation technique complète
 
-# Relancer un workflow échoué
-gh run rerun <run_id>
-```
+### C12 - Tests automatisés modèle IA
+- [x] Cas à tester listés et définis
+- [x] Framework cohérent (pytest)
+- [x] Tests unitaires automatisés (`2-tests-unit.yml`)
+- [x] Tests d'intégration automatisés (`4-integration-tests.yml`)
+- [x] Coverage mesurée et reportée
+- [x] Tests versionnés sur Git
+- [x] Documentation installation/exécution
 
----
-
-## 📚 Ressources
-
-- [Documentation GitHub Actions](https://docs.github.com/en/actions)
-- [Certification RNCP - Compétences E3](../A_VALIDER_POUR_CERTIF.md)
-- [Docker Compose Documentation](https://docs.docker.com/compose/)
-- [Pytest Documentation](https://docs.pytest.org/)
-- [MLflow Documentation](https://mlflow.org/)
-
----
+### C13 - Chaîne MLOps
+- [x] Documentation couvre étapes/tâches/déclencheurs
+- [x] Déclencheurs intégrés (push, PR, dispatch)
+- [x] Configuration CI/CD reconnue (GitHub Actions)
+- [x] Étape test données intégrée (`4-integration-tests.yml`)
+- [x] Étapes train/validate fonctionnelles (`ml-pipeline.yml`)
+- [x] Packaging automatisé (`3-docker-build.yml`)
+- [x] Registry modèles (MLflow)
+- [x] Sources versionnées sur Git
+- [x] Documentation complète
 
 ## ✅ Checklist Certification E3
 

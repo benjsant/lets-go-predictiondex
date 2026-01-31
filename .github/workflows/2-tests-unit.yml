@@ -1,12 +1,10 @@
-name: 2️⃣ Unit Tests (C12 + C18)
+name: 2️⃣ Unit Tests (C12)
 
-# Compétence C12: Programmer les tests unitaires, d'intégration et de 
-# performance d'un modèle d'intelligence artificielle
+# Compétence C12 (E3): Programmer les tests automatisés d'un modèle 
+# d'intelligence artificielle
 # → Tests unitaires rapides sans Docker
-#
-# Compétence C18: Automatiser les phases de tests lors de la mise en 
-# production d'une solution applicative
-# → Intégration continue des tests
+# → Tests de validation des jeux de données, préparation, entraînement, 
+#    évaluation et validation du modèle
 
 on:
   push:
