@@ -106,8 +106,7 @@ jobs:
         run: |
           echo "🎯 Validation Compétence E1.5: Documenter le processus"
           echo "Documentation E1 vérifiée:"
-          ls -lh docs/certification/E1_*.md || true
-          ls -lh etl_pokemon/README.md
+          ls -lh docs/certification/E1_*.md
           ls -lh README.md
           echo "✓ README complet avec architecture"
           echo "✓ Diagrammes MCD/MLD"
