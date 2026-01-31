@@ -2,7 +2,7 @@ name: Monitoring Validation
 
 on:
   push:
-    branches: [ main, monitoring_grafana_evidently, develop ]
+    branches: [ main, monitoring_grafana_evidently, develop, nettoyage_clean_code_final ]
   pull_request:
     branches: [ main, monitoring_grafana_evidently ]
   workflow_dispatch:
