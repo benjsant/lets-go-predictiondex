@@ -8,6 +8,7 @@ services:
       POSTGRES_PASSWORD: letsgo_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql
     ports:
       - "5432:5432"  # Exposé sur localhost pour notebooks locaux
     networks:
@@ -248,7 +249,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      MLFLOW_BACKEND_STORE_URI: postgresql://letsgo_user:letsgo_password@db:5432/letsgo_db
+      MLFLOW_BACKEND_STORE_URI: postgresql://letsgo_user:letsgo_password@db:5432/mlflow_db
       MLFLOW_DEFAULT_ARTIFACT_ROOT: /app/mlruns
       MLFLOW_TRACKING_URI: http://mlflow:5001
     volumes:
@@ -260,7 +261,7 @@ services:
       mlflow server
       --host 0.0.0.0
       --port 5001
-      --backend-store-uri postgresql://letsgo_user:letsgo_password@db:5432/letsgo_db
+      --backend-store-uri postgresql://letsgo_user:letsgo_password@db:5432/mlflow_db
       --default-artifact-root /app/mlruns
       --allowed-hosts *
     networks:

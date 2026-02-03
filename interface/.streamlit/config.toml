@@ -17,3 +17,13 @@ enableXsrfProtection = true
 
 [browser]
 gatherUsageStats = false
+
+[client]
+# Désactiver le bouton Deploy et la banderole
+showErrorDetails = false
+toolbarMode = "minimal"
+
+[ui]
+# Cacher les éléments inutiles pour une démo pro
+hideTopBar = false
+hideSidebarNav = false

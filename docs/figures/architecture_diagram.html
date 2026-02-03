@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PredictionDex - Architecture</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        h1 { color: #2C3E50; }
+        .mermaid { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <h1>🏗️ Architecture Technique - PredictionDex</h1>
+    <div class="mermaid">
+flowchart TB
+    subgraph Sources["📥 Sources de Données"]
+        PA[PokéAPI]
+        PP[Pokepedia]
+        CSV[Fichiers CSV]
+    end
+    
+    subgraph ETL["🔄 Pipeline ETL"]
+        EXT[Extraction]
+        TRANS[Transformation]
+        LOAD[Chargement]
+    end
+    
+    subgraph Storage["💾 Stockage"]
+        PG[(PostgreSQL)]
+        MLF[(MLflow)]
+    end
+    
+    subgraph ML["🤖 Machine Learning"]
+        TRAIN[Entraînement]
+        MODEL[XGBoost v2]
+    end
+    
+    subgraph API["🔌 API REST"]
+        FAST[FastAPI]
+        PRED[/predict]
+        DATA[/pokemon]
+    end
+    
+    subgraph Frontend["🖥️ Interface"]
+        ST[Streamlit]
+    end
+    
+    subgraph Monitoring["📊 Monitoring"]
+        PROM[Prometheus]
+        GRAF[Grafana]
+        DRIFT[Drift Detection]
+    end
+    
+    PA --> EXT
+    PP --> EXT
+    CSV --> EXT
+    EXT --> TRANS
+    TRANS --> LOAD
+    LOAD --> PG
+    
+    PG --> TRAIN
+    TRAIN --> MODEL
+    TRAIN --> MLF
+    MODEL --> FAST
+    
+    PG --> DATA
+    MODEL --> PRED
+    
+    FAST --> ST
+    FAST --> PROM
+    PROM --> GRAF
+    FAST --> DRIFT
+    
+    style MODEL fill:#FF6B6B,color:white
+    style PG fill:#336791,color:white
+    style FAST fill:#009688,color:white
+    style ST fill:#FF4B4B,color:white
+    style GRAF fill:#F46800,color:white
+
+    </div>
+    <script>mermaid.initialize({startOnLoad:true, theme:'default'});</script>
+</body>
+</html>

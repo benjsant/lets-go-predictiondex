@@ -184,3 +184,52 @@ hr {
     background-color: var(--bg-card);
     border-left-color: var(--color-info);
 }
+
+/* ====================================================== */
+/* MASQUER ÉLÉMENTS STREAMLIT INUTILES POUR DÉMO PRO     */
+/* ====================================================== */
+
+/* Masquer le bouton "Deploy" en haut à droite */
+[data-testid="stToolbar"],
+.stDeployButton,
+button[kind="header"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Masquer le menu hamburger (3 lignes) en haut à droite */
+[data-testid="stHeader"] button[kind="header"] {
+    display: none !important;
+}
+
+/* Masquer "Made with Streamlit" dans le footer */
+footer,
+.stFooter,
+footer[data-testid="stFooter"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Masquer le menu "⋮" (3 points) dans les graphiques */
+[data-testid="stDecoration"] {
+    display: none !important;
+}
+
+/* Optionnel : Masquer le lien "View fullscreen" sur les images */
+[data-testid="StyledFullScreenButton"] {
+    display: none !important;
+}
+
+/* Nettoyer l'espace du header */
+header[data-testid="stHeader"] {
+    background-color: transparent !important;
+    height: 0px !important;
+}
+
+/* Masquer le badge "Streamlit" */
+.css-1dp5vir,
+.st-emotion-cache-1dp5vir {
+    display: none !important;
+}
+
+/* Interface épurée et professionnelle pour la certification */

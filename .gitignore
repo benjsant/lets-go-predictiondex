@@ -218,4 +218,11 @@ __marimo__/API_KEYS_PRIVATE.md
 
 # Monitoring reports (generated files)
 monitoring_validation_report.*
-reports/
+
+# Reports générés automatiquement (structure préservée via .gitkeep)
+reports/**/*.json
+reports/**/*.html
+!reports/README.md
+!reports/.gitkeep
+!reports/monitoring/.gitkeep
+!reports/validation/.gitkeep

@@ -255,5 +255,5 @@ Pour analyser les modèles en détail, consultez les notebooks Jupyter :
 
 ---
 
-**Dernière mise à jour**: 2024-01-24  
-**Modèle recommandé**: **v2** (multi-scénarios avec GridSearchCV)
+**Dernière mise à jour**: 31 janvier 2026  
+**Modèle recommandé**: **v2** (multi-scénarios, 88.23% accuracy)

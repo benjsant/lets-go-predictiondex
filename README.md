@@ -37,7 +37,7 @@ docker compose up --build
 **⏱️ Durée première exécution:** 60-90 minutes (ETL + ML training)
 **Durée démarrages suivants:** 2-3 minutes (données en cache)
 
-➡️ **Guide détaillé:** [docs/deployment/QUICK_START.md](docs/deployment/QUICK_START.md)
+➡️ **Guide détaillé:** [scripts/quick_start_docker.py](scripts/quick_start_docker.py)
 
 ---
 
@@ -77,7 +77,7 @@ Ce projet valide les **compétences E1 et E3** du titre RNCP **"Concepteur Déve
 - **E1** - Collecte et traitement de données
 - **E3** - Intégration de composants d'intelligence artificielle
 
-➡️ [Documentation certification complète](docs/certification/)
+➡️ [Documentation certification complète](docs/CERTIFICATION_E1_E3.md)
 
 ---
 
@@ -93,7 +93,7 @@ Ce projet valide les **compétences E1 et E3** du titre RNCP **"Concepteur Déve
 | **Model Registry** | Versioning et promotion automatique des modèles | ✅ |
 | **Drift Detection** | Détection de drift sur les prédictions | ✅ |
 
-**Accuracy:** 88.23% sur test set (~30,000 combats)
+**Accuracy:** 88.23% sur test set (modèle v2 multi-scénarios)
 
 ### 🎮 Interface Utilisateur (Streamlit)
 

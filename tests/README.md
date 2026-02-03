@@ -183,7 +183,7 @@ pytest tests/ -n auto  # Requires pytest-xdist
 | **Interface** | 20+ | 🆕 New | ~60% |
 | **ML** | 50 | ✅ Passing | ~75% |
 | **MLflow** | 17 | ✅ Passing | ~85% |
-| **TOTAL** | **~205** | **✅** | **~78%** |
+| **TOTAL** | **~252** | **✅** | **~82%** |
 
 ---
 
@@ -342,4 +342,4 @@ open htmlcov/index.html
 
 ---
 
-**Last Updated**: 26 janvier 2026
+**Last Updated**: 31 janvier 2026

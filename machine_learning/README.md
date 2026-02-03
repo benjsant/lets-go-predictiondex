@@ -145,7 +145,7 @@ python machine_learning/test_model_inference.py
 
 ## Résultats du Modèle
 
-### Performance (Test Set)
+### Modèle v1 - Performance (Test Set)
 
 | Métrique | Score |
 |----------|-------|
@@ -154,6 +154,16 @@ python machine_learning/test_model_inference.py
 | Recall | 94.21% |
 | F1-Score | 94.24% |
 | ROC-AUC | 98.96% |
+
+### Modèle v2 (recommandé) - Performance (Test Set)
+
+| Métrique | Score |
+|----------|-------|
+| **Accuracy** | **88.23%** |
+| Precision | 87.89% |
+| Recall | 88.45% |
+| F1-Score | 88.17% |
+| ROC-AUC | 94.0% |
 
 ### Top Features (Importance)
 
@@ -223,9 +233,10 @@ Voir `requirements.txt` à la racine du projet:
 3. **Overfitting Minimal**: Gap train/test de 4.63% (acceptable pour XGBoost)
 4. **Reproducibilité**: Random seed fixé à 42 pour tous les processus aléatoires
 
-## Prochaines Étapes
+## Documentation Complète
 
-1. **Intégration API**: Créer endpoint `/predict/best_move` dans FastAPI
-2. **Tests**: Tests unitaires pour le pipeline ML
-3. **Monitoring**: Tracking des performances en production
-4. **Documentation E3**: Documenter le pipeline complet pour validation académique
+- **API**: Endpoint `/predict/best-move` intégré dans FastAPI ✅
+- **Tests**: Tests unitaires dans `tests/ml/` ✅
+- **Monitoring**: Prometheus + Grafana + drift detection ✅
+- **CI/CD**: GitHub Actions workflows ✅
+- **MLflow**: Experiment tracking + Model Registry ✅

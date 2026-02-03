@@ -1,59 +1,89 @@
-# Datasets ML - Classification
+# 📊 Datasets ML - Battle Winner Prediction
 
-Ce dossier contient les datasets pour le modèle de classification ML.
+> Datasets pour l'entraînement du modèle de prédiction de combat
 
-## Structure
+## 📁 Structure
 
 ```
 data/ml/
-├── raw/
-│   └── battle_samples.parquet      # Données brutes générées depuis PostgreSQL
-├── processed/
-│   ├── train.parquet                # Train set (80%)
-│   └── test.parquet                 # Test set (20%)
+├── battle_winner/
+│   ├── raw/
+│   │   └── matchups.parquet           # Données brutes (188×188 matchups)
+│   ├── processed/
+│   │   ├── train.parquet              # Train set (80%)
+│   │   └── test.parquet               # Test set (20%)
+│   └── features/
+│       ├── X_train.parquet            # Features normalisées (train)
+│       ├── X_test.parquet             # Features normalisées (test)
+│       ├── y_train.parquet            # Labels (train)
+│       └── y_test.parquet             # Labels (test)
 └── README.md
 ```
 
-## Génération des Données
+## 📈 Datasets Disponibles
 
-**Script**: [machine_learning/build_classification_dataset.py](../../machine_learning/build_classification_dataset.py)
+### Dataset v1 (best_move)
+- **Échantillons** : 34,040 (188 × 188 matchups)
+- **Scénario** : Les deux Pokémon utilisent leur meilleur move
+- **Train/Test** : 80% / 20%
+
+### Dataset v2 (multi-scénarios)
+- **Échantillons** : ~898,000
+- **Scénarios** :
+  - `best_move` (~34k) : Meilleur move pour A et B
+  - `random_move` (~10k) : B utilise un move aléatoire
+  - `all_combinations` (~854k) : Toutes les combinaisons de moves
+- **Train/Test** : 80% / 20%
+
+## 🔧 Génération
 
 ```bash
-# Générer le dataset ML
-python machine_learning/build_classification_dataset.py
+# Dataset v1
+python machine_learning/run_machine_learning.py --mode=dataset --dataset-version=v1
+
+# Dataset v2 (multi-scénarios)
+python machine_learning/run_machine_learning.py --mode=dataset --dataset-version=v2 --scenario-type=all
 ```
 
-## Format
+## 📋 Features (133 colonnes)
 
-**Type**: Parquet (pandas + pyarrow)
+**Features brutes (38)** :
+- Stats Pokémon A : hp, attack, defense, sp_attack, sp_defense, speed
+- Stats Pokémon B : hp, attack, defense, sp_attack, sp_defense, speed
+- Types : type_1, type_2 (A et B)
+- Move : power, accuracy, type, category, priority
 
-**Features**:
-- Pokémon attaquant: type_1, type_2, attack, sp_attack
-- Pokémon défenseur: type_1, type_2, defense, sp_defense
-- Capacité: type, category, power, accuracy
-- Métier: type_multiplier
+**Features dérivées (6)** :
+- `stat_ratio` : Ratio stats totales A/B
+- `effective_power_diff` : Différence de puissance effective
+- `hp_diff` : Différence de HP
+- `type_advantage_diff` : Différence avantage de type
+- `a_moves_first` : A attaque en premier (vitesse)
+- `stab_advantage` : Avantage STAB
 
-**Target**: `is_effective ∈ {0, 1}`
+**One-hot encoding** : ~89 colonnes (types)
 
-**Règle**: `is_effective = 1 if type_multiplier >= 2 else 0`
-
-## Taille Estimée
-
-- **Lignes**: ~500K - 1M (après échantillonnage)
-- **Taille**: 50-100 MB
-
-## Utilisation
+## 💻 Utilisation
 
 ```python
 import pandas as pd
 
-# Charger le train set
-train_df = pd.read_parquet("data/ml/processed/train.parquet")
+# Charger les features normalisées
+X_train = pd.read_parquet("data/ml/battle_winner/features/X_train.parquet")
+X_test = pd.read_parquet("data/ml/battle_winner/features/X_test.parquet")
+y_train = pd.read_parquet("data/ml/battle_winner/features/y_train.parquet")
+y_test = pd.read_parquet("data/ml/battle_winner/features/y_test.parquet")
 
-# Charger le test set
-test_df = pd.read_parquet("data/ml/processed/test.parquet")
+# Charger les données brutes
+train_df = pd.read_parquet("data/ml/battle_winner/processed/train.parquet")
 ```
+
+## 🎯 Target
+
+- **Colonne** : `winner`
+- **Valeurs** : `0` (B gagne) ou `1` (A gagne)
+- **Distribution** : ~50% / 50% (balancé)
 
 ---
 
-**Date de création**: 2026-01-20
+**Dernière mise à jour** : 31 janvier 2026
