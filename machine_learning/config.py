@@ -11,6 +11,15 @@ Validation: C10 (hyperparameter optimization)
 from dataclasses import dataclass, field
 from typing import Dict, List, Any
 
+# Import de la configuration plateforme pour détection Windows/Linux
+try:
+    from machine_learning.platform_config import SAFE_N_JOBS, SAFE_GRIDSEARCH_N_JOBS
+except ImportError:
+    # Fallback si platform_config non disponible
+    import multiprocessing
+    SAFE_N_JOBS = -1
+    SAFE_GRIDSEARCH_N_JOBS = max(1, multiprocessing.cpu_count() // 2)
+
 
 # ================================================================
 # SEED GLOBAL
@@ -24,7 +33,13 @@ RANDOM_SEED = 42
 
 @dataclass
 class XGBoostConfig:
-    """Configuration pour XGBoost optimisée pour CPU."""
+    """
+    Configuration pour XGBoost optimisée pour CPU.
+
+    n_jobs est automatiquement ajusté selon la plateforme:
+    - Linux: -1 (tous les cœurs)
+    - Windows: 50% des cœurs (pour éviter saturation mémoire)
+    """
 
     n_estimators: int = 100
     max_depth: int = 8
@@ -34,7 +49,7 @@ class XGBoostConfig:
     tree_method: str = 'hist'        # CPU-optimized histogram algorithm
     predictor: str = 'cpu_predictor'  # Explicit CPU predictor
     random_state: int = RANDOM_SEED
-    n_jobs: int = -1                 # Use all CPU cores
+    n_jobs: int = SAFE_N_JOBS        # Auto-ajusté selon plateforme (Windows/Linux)
     eval_metric: str = 'logloss'
 
     def to_dict(self) -> Dict[str, Any]:

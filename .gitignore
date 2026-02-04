@@ -226,3 +226,4 @@ reports/**/*.html
 !reports/.gitkeep
 !reports/monitoring/.gitkeep
 !reports/validation/.gitkeep
+nul

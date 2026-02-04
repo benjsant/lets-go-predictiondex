@@ -56,6 +56,7 @@ from machine_learning.config import (
     XGBOOST_PARAM_GRID_FAST,
     XGBOOST_PARAM_GRID_EXTENDED,
     RANDOM_SEED,
+    SAFE_GRIDSEARCH_N_JOBS,
 )
 from machine_learning.constants import (
     PROJECT_ROOT,
@@ -197,7 +198,7 @@ def train_xgboost(X_train, y_train, use_gridsearch: bool = False, grid_type: str
         cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=RANDOM_SEED)
         base_model = xgb.XGBClassifier(
             random_state=RANDOM_SEED,
-            n_jobs=-1,
+            n_jobs=SAFE_GRIDSEARCH_N_JOBS,  # Auto-ajusté selon plateforme
             eval_metric='logloss',
             tree_method='hist',          # CPU-optimized
             predictor='cpu_predictor'    # Explicit CPU
@@ -207,7 +208,7 @@ def train_xgboost(X_train, y_train, use_gridsearch: bool = False, grid_type: str
             param_grid=param_grid,
             scoring="roc_auc",
             cv=cv,
-            n_jobs=-1,                   # Parallelize across all cores
+            n_jobs=SAFE_GRIDSEARCH_N_JOBS,  # Auto-ajusté selon plateforme (Windows/Linux)
             verbose=1,
             return_train_score=False,    # Don't compute train scores (faster)
         )

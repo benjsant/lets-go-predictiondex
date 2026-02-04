@@ -76,6 +76,7 @@ from machine_learning.config import (
     XGBOOST_PARAMS,
     XGBOOST_PARAM_GRID_FAST,
     RANDOM_SEED,
+    SAFE_GRIDSEARCH_N_JOBS,
 )
 from machine_learning.constants import (
     PROJECT_ROOT,
@@ -373,7 +374,7 @@ def tune_hyperparameters(X_train: pd.DataFrame, y_train: pd.Series,
         print("Method: GridSearchCV with 3-fold CV")
 
     if model_type == 'xgboost':
-        base_model = xgb.XGBClassifier(random_state=RANDOM_SEED, n_jobs=-1)
+        base_model = xgb.XGBClassifier(random_state=RANDOM_SEED, n_jobs=SAFE_GRIDSEARCH_N_JOBS)
         param_grid = XGBOOST_PARAM_GRID
     else:
         raise ValueError("Hyperparameter tuning only implemented for XGBoost")
@@ -396,7 +397,7 @@ def tune_hyperparameters(X_train: pd.DataFrame, y_train: pd.Series,
         param_grid=param_grid,
         cv=cv,
         scoring='roc_auc',      # Better metric for imbalanced data
-        n_jobs=-1,              # Parallelize CV folds across all cores
+        n_jobs=SAFE_GRIDSEARCH_N_JOBS,  # Auto-ajusté selon plateforme (Windows/Linux)
         verbose=2 if verbose else 0,
         refit=True,             # Refit best model on full training set
         return_train_score=False  # Don't compute train scores (faster)
