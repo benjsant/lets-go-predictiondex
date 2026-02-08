@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-Docker Stack Validator
-======================
+Docker Stack Validator.
 
 Validation script to verify that all Docker services are properly
 configured and functional.
@@ -31,29 +30,28 @@ Output:
 """
 
 import argparse
-import requests
-import time
 import sys
-from typing import Dict, List, Tuple
-from pathlib import Path
+from typing import Dict, Tuple
+
+import requests
 
 
-# Services à valider
+# Services to validate
 SERVICES = {
     "postgres": {
-        "url": None,  # Pas d'URL HTTP
+        "url": None,  # No HTTP URL
         "port": 5432,
-        "description": "Base de données PostgreSQL"
+        "description": "PostgreSQL Database"
     },
     "api": {
         "url": "http://localhost:8080/health",
         "port": 8080,
-        "description": "API FastAPI"
+        "description": "FastAPI API"
     },
     "streamlit": {
         "url": "http://localhost:8502",
         "port": 8502,
-        "description": "Interface Streamlit"
+        "description": "Streamlit Interface"
     },
     "prometheus": {
         "url": "http://localhost:9091/-/healthy",
@@ -71,71 +69,85 @@ SERVICES = {
         "description": "MLflow (Model Registry)"
     },
     "node-exporter": {
-        "url": "http://localhost:9100/metrics",
-        "port": 9100,
-        "description": "Node Exporter (métriques système)"
+        "url": "http://localhost:9101/metrics",
+        "port": 9101,
+        "description": "Node Exporter (system metrics)"
     }
 }
 
 
 class DockerStackValidator:
-    """Validateur de stack Docker."""
+    """Docker stack validator."""
 
     def __init__(self, verbose: bool = False):
+        """Initialize the validator.
+
+        Args:
+            verbose: Whether to display detailed output.
+        """
         self.verbose = verbose
         self.results = {}
 
-    def check_service(self, name: str, config: Dict) -> Tuple[bool, str]:
-        """
-        Vérifie qu'un service est accessible.
+    def check_service(self, config: Dict) -> Tuple[bool, str]:
+        """Check that a service is accessible.
+
+        Args:
+            config: Service configuration dictionary.
 
         Returns:
-            (is_healthy, message)
+            Tuple of (is_healthy, message).
         """
         if config["url"] is None:
-            # Pas de health check HTTP (ex: postgres)
-            return True, "N/A (pas de health check HTTP)"
+            # No HTTP health check (e.g., postgres)
+            return True, "N/A (no HTTP health check)"
 
         try:
             response = requests.get(config["url"], timeout=5)
 
             if response.status_code == 200:
                 return True, f"✅ Accessible (HTTP {response.status_code})"
-            else:
-                return False, f"⚠️  HTTP {response.status_code}"
+
+            return False, f"⚠️  HTTP {response.status_code}"
 
         except requests.exceptions.ConnectionError:
-            return False, "❌ Connexion refusée (service non démarré?)"
+            return False, "❌ Connection refused (service not started?)"
 
         except requests.exceptions.Timeout:
-            return False, "❌ Timeout (service lent ou non démarré?)"
+            return False, "❌ Timeout (service slow or not started?)"
 
-        except Exception as e:
-            return False, f"❌ Erreur: {str(e)[:50]}"
+        except requests.exceptions.RequestException as exc:
+            return False, f"❌ Error: {str(exc)[:50]}"
 
     def check_api_endpoints(self) -> Dict[str, bool]:
-        """Vérifie les endpoints clés de l'API."""
+        """Check key API endpoints.
+
+        Returns:
+            Dictionary mapping endpoint to health status.
+        """
         endpoints = {
             "/health": "Health check",
-            "/docs": "Documentation Swagger",
-            "/metrics": "Métriques Prometheus",
-            "/pokemon": "Liste Pokémon",
-            "/types": "Liste types",
-            "/moves": "Liste capacités"
+            "/docs": "Swagger Documentation",
+            "/metrics": "Prometheus Metrics",
+            "/pokemon": "Pokemon List",
+            "/types": "Types List",
+            "/moves": "Moves List"
         }
 
         results = {}
 
         for endpoint, description in endpoints.items():
             try:
-                response = requests.get(f"http://localhost:8080{endpoint}", timeout=5)
+                response = requests.get(
+                    f"http://localhost:8080{endpoint}",
+                    timeout=5
+                )
                 results[endpoint] = response.status_code == 200
 
                 if self.verbose:
                     status = "✅" if results[endpoint] else "❌"
                     print(f"      {status} {endpoint:20s} - {description}")
 
-            except:
+            except requests.exceptions.RequestException:
                 results[endpoint] = False
                 if self.verbose:
                     print(f"      ❌ {endpoint:20s} - {description}")
@@ -143,15 +155,19 @@ class DockerStackValidator:
         return results
 
     def check_prometheus_targets(self) -> Dict[str, str]:
-        """Vérifie les targets Prometheus."""
+        """Check Prometheus targets.
+
+        Returns:
+            Dictionary mapping job name to health status.
+        """
         try:
             response = requests.get(
-                "http://localhost:9090/api/v1/targets",
+                "http://localhost:9091/api/v1/targets",
                 timeout=5
             )
 
             if response.status_code != 200:
-                return {"error": "Impossible d'accéder aux targets"}
+                return {"error": "Unable to access targets"}
 
             data = response.json()
             targets = {}
@@ -168,20 +184,24 @@ class DockerStackValidator:
 
             return targets
 
-        except Exception as e:
-            return {"error": str(e)}
+        except requests.exceptions.RequestException as exc:
+            return {"error": str(exc)}
 
     def check_grafana_datasources(self) -> Dict[str, bool]:
-        """Vérifie les datasources Grafana."""
+        """Check Grafana datasources.
+
+        Returns:
+            Dictionary mapping datasource name to availability status.
+        """
         try:
             # Grafana anonymous access enabled
             response = requests.get(
-                "http://localhost:3000/api/datasources",
+                "http://localhost:3001/api/datasources",
                 timeout=5
             )
 
             if response.status_code != 200:
-                return {"error": "Impossible d'accéder aux datasources"}
+                return {"error": "Unable to access datasources"}
 
             datasources = response.json()
             results = {}
@@ -196,23 +216,27 @@ class DockerStackValidator:
 
             return results
 
-        except Exception as e:
-            return {"error": str(e)}
+        except requests.exceptions.RequestException as exc:
+            return {"error": str(exc)}
 
     def run_validation(self):
-        """Exécute la validation complète."""
+        """Run complete validation.
+
+        Returns:
+            Exit code (0 for success, 1 for failure).
+        """
         print("\n" + "=" * 80)
-        print("🔍 Validation de la stack Docker")
+        print("🔍 Docker Stack Validation")
         print("=" * 80)
 
         all_healthy = True
 
-        # 1. Vérifier les services
-        print("\n1️⃣ Services Docker")
+        # 1. Check services
+        print("\n1️⃣ Docker Services")
         print("-" * 80)
 
         for name, config in SERVICES.items():
-            is_healthy, message = self.check_service(name, config)
+            is_healthy, message = self.check_service(config)
             self.results[name] = is_healthy
 
             status = "✅" if is_healthy else "❌"
@@ -224,9 +248,9 @@ class DockerStackValidator:
             elif self.verbose:
                 print(f"   {message}")
 
-        # 2. Vérifier endpoints API
+        # 2. Check API endpoints
         if self.results.get("api"):
-            print("\n2️⃣ Endpoints API")
+            print("\n2️⃣ API Endpoints")
             print("-" * 80)
 
             endpoints = self.check_api_endpoints()
@@ -235,12 +259,12 @@ class DockerStackValidator:
             if not self.verbose:
                 working = sum(endpoints.values())
                 total = len(endpoints)
-                print(f"   {working}/{total} endpoints fonctionnels")
+                print(f"   {working}/{total} endpoints functional")
 
             if not api_healthy:
                 all_healthy = False
 
-        # 3. Vérifier Prometheus targets
+        # 3. Check Prometheus targets
         if self.results.get("prometheus"):
             print("\n3️⃣ Prometheus Targets")
             print("-" * 80)
@@ -259,7 +283,7 @@ class DockerStackValidator:
             else:
                 print(f"   ⚠️  {targets['error']}")
 
-        # 4. Vérifier Grafana datasources
+        # 4. Check Grafana datasources
         if self.results.get("grafana"):
             print("\n4️⃣ Grafana Datasources")
             print("-" * 80)
@@ -267,40 +291,40 @@ class DockerStackValidator:
             datasources = self.check_grafana_datasources()
 
             if "error" not in datasources:
-                print(f"   {len(datasources)} datasource(s) configurée(s)")
+                print(f"   {len(datasources)} datasource(s) configured")
             else:
                 print(f"   ⚠️  {datasources['error']}")
 
-        # 5. Résumé
+        # 5. Summary
         print("\n" + "=" * 80)
 
         if all_healthy:
-            print("✅ Tous les services sont opérationnels!")
-            print("\n💡 URLs utiles:")
-            print(f"   API Swagger: http://localhost:8080/docs")
-            print(f"   Streamlit: http://localhost:8502")
-            print(f"   Grafana: http://localhost:3001")
-            print(f"   Prometheus: http://localhost:9091")
-            print(f"   MLflow: http://localhost:5001")
+            print("✅ All services are operational!")
+            print("\n💡 Useful URLs:")
+            print("   API Swagger: http://localhost:8080/docs")
+            print("   Streamlit: http://localhost:8502")
+            print("   Grafana: http://localhost:3001")
+            print("   Prometheus: http://localhost:9091")
+            print("   MLflow: http://localhost:5001")
             return 0
-        else:
-            print("❌ Certains services ne sont pas accessibles")
-            print("\n💡 Démarrez les services manquants:")
-            print("   docker-compose up -d")
-            print("\n💡 Vérifiez les logs:")
-            print("   docker-compose logs <service>")
-            return 1
+
+        print("❌ Some services are not accessible")
+        print("\n💡 Start missing services:")
+        print("   docker-compose up -d")
+        print("\n💡 Check logs:")
+        print("   docker-compose logs <service>")
+        return 1
 
 
 def main():
-    """Point d'entrée principal."""
+    """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Validateur de stack Docker"
+        description="Docker Stack Validator"
     )
     parser.add_argument(
         "--verbose", "-v",
         action="store_true",
-        help="Mode verbeux (afficher plus de détails)"
+        help="Verbose mode (show more details)"
     )
 
     args = parser.parse_args()

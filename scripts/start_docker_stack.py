@@ -1,30 +1,57 @@
 #!/usr/bin/env python3
 """
-Script de démarrage rapide pour Docker + monitoring
-===================================================
+Quick Start Script for Docker + Monitoring.
 
-Remplace start_docker_stack.sh en Python pur.
+Replaces start_docker_stack.sh in pure Python.
 
 Usage:
     python scripts/start_docker_stack.py
 """
 
-import sys
+import shutil
 import subprocess
+import sys
 import time
 from pathlib import Path
 
 
 def print_header(text: str):
-    """Affiche un header formaté."""
+    """Display a formatted header."""
     print("=" * 50)
     print(text)
     print("=" * 50)
     print()
 
 
+def get_docker_compose_command():
+    """
+    Detect Docker Compose command (v2 'docker compose' or v1 'docker-compose').
+
+    Returns:
+        str: The appropriate docker compose command
+    """
+    # Try docker compose (v2) first
+    try:
+        result = subprocess.run(
+            ["docker", "compose", "version"],
+            capture_output=True,
+            timeout=5,
+            check=False
+        )
+        if result.returncode == 0:
+            return "docker compose"
+    except (subprocess.TimeoutExpired, OSError):
+        pass
+
+    # Fallback to docker-compose (v1)
+    if shutil.which("docker-compose"):
+        return "docker-compose"
+
+    return None
+
+
 def check_command(command: str) -> bool:
-    """Vérifie si une commande existe."""
+    """Check if a command exists."""
     try:
         subprocess.run(
             ["which", command],
@@ -37,7 +64,7 @@ def check_command(command: str) -> bool:
 
 
 def run_command(command: str, description: str = None) -> bool:
-    """Exécute une commande shell."""
+    """Execute a shell command."""
     if description:
         print(f"🔧 {description}...")
 
@@ -47,34 +74,35 @@ def run_command(command: str, description: str = None) -> bool:
             shell=True,
             capture_output=True,
             text=True,
-            timeout=300
+            timeout=300,
+            check=False
         )
 
         if result.returncode == 0:
             if description:
                 print(f"✅ {description} - OK\n")
             return True
-        else:
-            print(f"❌ Erreur: {result.stderr[:200]}\n")
-            return False
+
+        print(f"❌ Error: {result.stderr[:200]}\n")
+        return False
 
     except subprocess.TimeoutExpired:
-        print(f"❌ Timeout\n")
+        print("❌ Timeout\n")
         return False
-    except Exception as e:
-        print(f"❌ Erreur: {e}\n")
+    except OSError as exc:
+        print(f"❌ Error: {exc}\n")
         return False
 
 
 def create_env_file():
-    """Crée le fichier .env s'il n'existe pas."""
+    """Create .env file if it doesn't exist."""
     env_path = Path(".env")
 
     if env_path.exists():
-        print("✅ Fichier .env existant\n")
+        print("✅ .env file exists\n")
         return True
 
-    print("📝 Création du fichier .env...")
+    print("📝 Creating .env file...")
 
     env_content = """# Database
 POSTGRES_HOST=db
@@ -98,85 +126,93 @@ GRAFANA_URL=http://grafana:3000
 
     try:
         env_path.write_text(env_content)
-        print("✅ Fichier .env créé\n")
+        print("✅ .env file created\n")
         return True
-    except Exception as e:
-        print(f"❌ Erreur création .env: {e}\n")
+    except OSError as exc:
+        print(f"❌ Error creating .env: {exc}\n")
         return False
 
 
-def check_docker_status():
-    """Vérifie le statut des services Docker."""
+def check_docker_status(compose_cmd: str):
+    """Check Docker services status.
+
+    Args:
+        compose_cmd: Docker compose command to use
+    """
     try:
         result = subprocess.run(
-            ["docker-compose", "ps"],
+            f"{compose_cmd} ps",
+            shell=True,
             capture_output=True,
             text=True,
-            timeout=10
+            timeout=10,
+            check=False
         )
 
         if result.returncode == 0:
             lines = result.stdout.strip().split('\n')
 
-            # Compter services UP
+            # Count services UP
             services_up = sum(1 for line in lines if 'Up' in line)
 
             if services_up > 0:
-                print(f"   ✅ {services_up} service(s) en cours d'exécution")
+                print(f"   ✅ {services_up} service(s) running")
                 return services_up
 
         return 0
 
-    except Exception:
+    except (subprocess.TimeoutExpired, OSError):
         return 0
 
 
 def main():
-    """Point d'entrée principal."""
-    print_header("🚀 Démarrage PredictionDex - Full Stack")
+    """Main entry point."""
+    print_header("🚀 Starting PredictionDex - Full Stack")
 
-    # 1. Vérifier Docker
+    # 1. Check Docker
     if not check_command("docker"):
-        print("❌ Docker n'est pas installé")
-        print("💡 Installez Docker: https://docs.docker.com/get-docker/")
+        print("❌ Docker is not installed")
+        print("💡 Install Docker: https://docs.docker.com/get-docker/")
         sys.exit(1)
 
-    if not check_command("docker-compose"):
-        print("❌ Docker Compose n'est pas installé")
-        print("💡 Installez Docker Compose: https://docs.docker.com/compose/install/")
+    # Detect Docker Compose version (v2 or v1)
+    compose_cmd = get_docker_compose_command()
+    if not compose_cmd:
+        print("❌ Docker Compose is not installed")
+        print("💡 Install Docker Compose: https://docs.docker.com/compose/install/")
         sys.exit(1)
 
-    print("✅ Docker et Docker Compose détectés\n")
+    print(f"✅ Docker and Docker Compose detected (using: {compose_cmd})\n")
 
-    # 2. Créer fichier .env
+    # 2. Create .env file
     if not create_env_file():
         sys.exit(1)
 
-    # 3. Construction des images
-    print("📦 Construction des images Docker...")
-    if not run_command("docker-compose build --parallel", "Construction des images"):
-        print("⚠️  Échec de la construction, mais on continue...\n")
+    # 3. Build images
+    print("📦 Building Docker images...")
+    if not run_command(f"{compose_cmd} build --parallel", "Building images"):
+        print("⚠️  Build failed, but continuing...\n")
 
-    # 4. Démarrage des services
-    print("🚀 Démarrage des services...")
-    if not run_command("docker-compose up -d", "Démarrage de la stack"):
-        print("❌ Échec du démarrage")
+    # 4. Start services
+    print("🚀 Starting services...")
+    if not run_command(f"{compose_cmd} up -d", "Starting stack"):
+        print("❌ Startup failed")
         sys.exit(1)
 
-    # 5. Attente du démarrage
-    print("⏳ Attente du démarrage complet (30s)...")
+    # 5. Wait for startup
+    print("⏳ Waiting for complete startup (30s)...")
     for i in range(6, 0, -1):
-        print(f"   {i*5}s restantes...")
+        print(f"   {i*5}s remaining...")
         time.sleep(5)
     print()
 
-    # 6. Vérifier les services
-    print("🔍 Vérification des services...")
+    # 6. Check services
+    print("🔍 Checking services...")
 
     services = [
         ("db", 5432, "PostgreSQL"),
-        ("api", 8000, "API FastAPI"),
-        ("streamlit", 8501, "Interface Streamlit"),
+        ("api", 8000, "FastAPI API"),
+        ("streamlit", 8501, "Streamlit Interface"),
         ("prometheus", 9090, "Prometheus"),
         ("grafana", 3000, "Grafana"),
         ("mlflow", 5001, "MLflow"),
@@ -184,53 +220,57 @@ def main():
 
     all_ok = True
     for service, port, name in services:
-        # Vérifier via docker-compose ps
+        # Check via docker compose ps
         result = subprocess.run(
-            f"docker-compose ps {service} 2>/dev/null | grep -q Up",
+            f"{compose_cmd} ps {service} 2>/dev/null | grep -q Up",
             shell=True,
-            capture_output=True
+            capture_output=True,
+            check=False
         )
 
         if result.returncode == 0:
             print(f"   ✅ {name} ({port})")
         else:
-            print(f"   ❌ {name} ({port}) - Non démarré")
+            print(f"   ❌ {name} ({port}) - Not started")
             all_ok = False
 
     print()
 
-    # 7. Résumé final
-    print_header("✅ Tous les services sont opérationnels!" if all_ok else "⚠️  Certains services ne sont pas démarrés")
+    # 7. Final summary
+    if all_ok:
+        print_header("✅ All services are operational!")
+    else:
+        print_header("⚠️  Some services are not started")
 
     if all_ok:
-        print("🌐 URLs disponibles:")
+        print("🌐 Available URLs:")
         print("   API (Swagger):    http://localhost:8080/docs")
         print("   Streamlit:        http://localhost:8502")
         print("   Grafana:          http://localhost:3001")
         print("   Prometheus:       http://localhost:9091")
         print("   MLflow:           http://localhost:5001")
         print()
-        print("📊 Métriques API:    http://localhost:8080/metrics")
-        print("🔥 Health API:       http://localhost:8080/health")
+        print("📊 API Metrics:      http://localhost:8080/metrics")
+        print("🔥 API Health:       http://localhost:8080/health")
         print()
-        print("💡 Commandes utiles:")
-        print("   # Voir les logs")
+        print("💡 Useful commands:")
+        print("   # View logs")
         print("   docker-compose logs -f api")
         print()
-        print("   # Générer des métriques de test")
+        print("   # Generate test metrics")
         print("   python scripts/generate_monitoring_data.py --duration 10")
         print()
-        print("   # Valider la stack")
+        print("   # Validate stack")
         print("   python scripts/validate_docker_stack.py")
         print()
-        print("   # Arrêter les services")
+        print("   # Stop services")
         print("   docker-compose down")
         print()
     else:
-        print("💡 Actions à effectuer:")
-        print("   1. Vérifiez les logs: docker-compose logs <service>")
-        print("   2. Redémarrez: docker-compose restart")
-        print("   3. Validez: python scripts/validate_docker_stack.py")
+        print("💡 Actions to take:")
+        print("   1. Check logs: docker-compose logs <service>")
+        print("   2. Restart: docker-compose restart")
+        print("   3. Validate: python scripts/validate_docker_stack.py")
         print()
 
     print("=" * 50)
@@ -242,8 +282,5 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except KeyboardInterrupt:
-        print("\n\n⚠️  Interrompu par l'utilisateur")
-        sys.exit(1)
-    except Exception as e:
-        print(f"\n❌ Erreur: {e}")
+        print("\n\n⚠️  Interrupted by user")
         sys.exit(1)

@@ -1,8 +1,8 @@
 """
-Constantes globales pour le pipeline Machine Learning.
+Global constants for the Machine Learning pipeline.
 
-Ce module centralise toutes les constantes partagées entre les différents
-modules du pipeline ML (dataset, training, evaluation).
+This module centralizes all constants shared between different
+ML pipeline modules (dataset, training, evaluation).
 """
 
 import os
@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 # ================================================================
-# CHEMINS DU PROJET
+# PROJECT PATHS
 # ================================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -20,39 +20,39 @@ REPORTS_DIR = PROJECT_ROOT / "reports" / "ml"
 
 def get_data_dir(version: str = 'v1') -> Path:
     """
-    Retourne le répertoire data selon la version du dataset.
+    Return the data directory according to the dataset version.
 
     Args:
-        version: 'v1' pour battle_winner, 'v2' pour battle_winner_v2
+        version: 'v1' for battle_winner, 'v2' for battle_winner_v2
 
     Returns:
-        Path: Chemin vers le répertoire data
+        Path: Path to the data directory
     """
     suffix = '' if version == 'v1' else '_v2'
     return PROJECT_ROOT / "data" / "ml" / f"battle_winner{suffix}"
 
 
 def get_raw_dir(version: str = 'v1') -> Path:
-    """Retourne le répertoire raw selon la version."""
+    """Return the raw directory according to the version."""
     return get_data_dir(version) / "raw"
 
 
 def get_processed_dir(version: str = 'v1') -> Path:
-    """Retourne le répertoire processed selon la version."""
+    """Return the processed directory according to the version."""
     return get_data_dir(version) / "processed"
 
 
 def get_features_dir(version: str = 'v1') -> Path:
-    """Retourne le répertoire features selon la version."""
+    """Return the features directory according to the version."""
     return get_data_dir(version) / "features"
 
 
 # ================================================================
-# CONFIGURATION BASE DE DONNÉES
+# DATABASE CONFIGURATION
 # ================================================================
 
 DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
-DB_PORT = int(os.getenv("POSTGRES_PORT", 5432))
+DB_PORT = int(os.getenv("POSTGRES_PORT", "5432"))
 DB_USER = os.getenv("POSTGRES_USER", "letsgo_user")
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "letsgo_password")
 DB_NAME = os.getenv("POSTGRES_DB", "letsgo_db")
@@ -60,16 +60,16 @@ DB_NAME = os.getenv("POSTGRES_DB", "letsgo_db")
 
 def get_db_connection_string() -> str:
     """
-    Construit la chaîne de connexion PostgreSQL.
+    Build the PostgreSQL connection string.
 
     Returns:
-        str: Connection string au format postgresql://user:pass@host:port/db
+        str: Connection string in format postgresql://user:pass@host:port/db
     """
     return f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 
 # ================================================================
-# TYPES DE SCÉNARIOS (DATASET V2)
+# SCENARIO TYPES (DATASET V2)
 # ================================================================
 
 SCENARIO_TYPES = {
@@ -81,7 +81,7 @@ SCENARIO_TYPES = {
 
 
 # ================================================================
-# TYPES DE DÉGÂTS AUTORISÉS
+# ALLOWED DAMAGE TYPES
 # ================================================================
 
 ALLOWED_DAMAGE_TYPES = {
@@ -90,7 +90,7 @@ ALLOWED_DAMAGE_TYPES = {
 
 
 # ================================================================
-# MÉTRIQUES D'ÉVALUATION
+# EVALUATION METRICS
 # ================================================================
 
 DEFAULT_METRICS = [
@@ -103,21 +103,21 @@ DEFAULT_METRICS = [
 
 
 # ================================================================
-# COLONNES DE FEATURES
+# FEATURE COLUMNS
 # ================================================================
 
-# Colonnes de stats des Pokémon
+# Pokemon stats columns
 POKEMON_STAT_COLUMNS = [
     'hp', 'attack', 'defense', 'sp_attack', 'sp_defense', 'speed'
 ]
 
-# Colonnes de types
+# Type columns
 TYPE_COLUMNS = ['type_1', 'type_2']
 
-# Colonnes de move
+# Move columns
 MOVE_COLUMNS = ['move_id', 'move_type', 'move_power', 'move_priority', 'move_stab', 'move_type_mult']
 
-# Colonnes ID (à exclure du training)
+# ID columns (to exclude from training)
 ID_COLUMNS = [
     'a_pokedex_number', 'b_pokedex_number',
     'a_pokemon_id', 'b_pokemon_id',
@@ -126,7 +126,7 @@ ID_COLUMNS = [
 
 
 # ================================================================
-# CONFIGURATION MLflow
+# MLFLOW CONFIGURATION
 # ================================================================
 
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5001")
@@ -143,7 +143,7 @@ VALIDATION_SPLIT = 0.2
 
 
 # ================================================================
-# VALEURS PAR DÉFAUT
+# DEFAULT VALUES
 # ================================================================
 
 DEFAULT_TEST_SIZE = 0.2

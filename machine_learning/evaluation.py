@@ -62,7 +62,7 @@ def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
     y_test_pred = model.predict(X_test)
 
     # Probabilities for ROC-AUC
-    y_train_proba = model.predict_proba(X_train)[:, 1]
+    _ = model.predict_proba(X_train)[:, 1]  # Train proba not used
     y_test_proba = model.predict_proba(X_test)[:, 1]
 
     # Calculate metrics
@@ -150,7 +150,7 @@ def analyze_feature_importance(model: Any, feature_columns: List[str],
     if verbose:
         print(f"\nTop {top_n} Most Important Features:")
         print("-" * 80)
-        for i, row in importance_df.head(top_n).iterrows():
+        for _, row in importance_df.head(top_n).iterrows():
             print(f"{row['feature']:40s} {row['importance']:.6f}")
 
     return importance_df
@@ -158,7 +158,7 @@ def analyze_feature_importance(model: Any, feature_columns: List[str],
 
 def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
                    y_train: pd.Series, y_test: pd.Series,
-                   models_to_compare: List[str] = ['xgboost', 'random_forest'],
+                   models_to_compare: List[str] = None,
                    verbose: bool = True) -> Tuple[Any, str, Dict]:
     """
     Train and compare multiple models.
@@ -184,6 +184,9 @@ def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
     """
     # Import here to avoid circular dependency
     from machine_learning.run_machine_learning import train_model
+
+    if models_to_compare is None:
+        models_to_compare = ['xgboost', 'random_forest']
 
     if verbose:
         print("\n" + "=" * 80)

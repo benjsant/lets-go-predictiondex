@@ -144,7 +144,7 @@ def style_matrix(val):
     val_clean = val.replace("¼", "0.25").replace("½", "0.5")
     try:
         m = float(val_clean)
-    except BaseException:
+    except ValueError:
         m = 1.0
     return f'background-color:{multiplier_color(m)}; color:white; font-weight:600; text-align:center;'
 

@@ -35,7 +35,38 @@ router = APIRouter(prefix="/moves", tags=["Moves"])
 @router.get("/", response_model=List[MoveListItem])
 def get_moves(db: Session = Depends(get_db)):
     """
-    List all moves with lightweight information.
+    List all Pokémon moves from the database.
+
+    Returns a complete list of all 226 moves available in Pokémon Let's Go
+    with basic information (lightweight for performance).
+
+    **Returns:**
+    List of moves with:
+    - id: Move unique identifier
+    - name: Move name (French)
+    - category: Physical/Special/Status
+    - power: Base power (null for status moves)
+    - accuracy: Accuracy percentage (null for moves that never miss)
+    - description: Move description
+    - type: Move type (Fire, Water, Electric, etc.)
+
+    **Example Response:**
+    ```json
+    [
+      {
+        "id": 1,
+        "name": "Charge",
+        "category": "Physical",
+        "power": 50,
+        "accuracy": 100,
+        "description": "A physical attack...",
+        "type": {"id": 1, "name": "Normal"}
+      }
+    ]
+    ```
+
+    **Use Case:**
+    Populate move selection lists in Streamlit interface.
     """
     moves = list_moves(db)
 
@@ -69,8 +100,46 @@ def search_moves(
     db: Session = Depends(get_db),
 ):
     """
-    Search moves by French name.
-    Always returns a list (empty if no match).
+    Search for moves by French name (partial or full match).
+
+    Performs case-insensitive and accent-insensitive partial match on move names.
+    Designed to be Streamlit-friendly by returning empty list instead of 404.
+
+    **Query Parameters:**
+    - name: Move name to search (minimum 1 character)
+      - Partial match supported (e.g., "foud" matches "Fatal-Foudre")
+      - Accent-insensitive (e.g., "eclair" matches "Éclair")
+      - Case-insensitive
+
+    **Returns:**
+    List of matching moves (empty list if no matches)
+
+    **Example Request:**
+    ```
+    GET /moves/search?name=foud
+    ```
+
+    **Example Response:**
+    ```json
+    [
+      {
+        "id": 87,
+        "name": "Fatal-Foudre",
+        "category": "Special",
+        "power": 110,
+        "accuracy": 70,
+        "description": "Une puissante décharge électrique...",
+        "type": {"id": 4, "name": "Electric"}
+      }
+    ]
+    ```
+
+    **Note:**
+    - No 404 error if no match (returns empty list)
+    - Optimized for autocomplete and search-as-you-type interfaces
+
+    **Use Case:**
+    Move search in Streamlit interface (autocomplete).
     """
     moves = search_moves_by_name(db, name)
 
@@ -107,10 +176,57 @@ def get_moves_by_type(
     db: Session = Depends(get_db),
 ):
     """
-    Retrieve moves of a given type.
+    List all moves of a specific type.
 
-    If `pokemon_id` is provided, learning information is included.
-    Always returns a stable, flat structure for Streamlit.
+    Returns all moves of the specified type. If a Pokémon ID is provided,
+    includes learning information (method and level) for that specific Pokémon.
+
+    **Path Parameters:**
+    - type_name: Type name (e.g., "Fire", "Water", "Electric")
+
+    **Query Parameters:**
+    - pokemon_id (optional): Filter to show only moves learnable by this Pokémon
+      - If provided: Includes learn_method and learn_level
+      - If omitted: Returns all moves of the type
+
+    **Returns:**
+    List of moves with:
+    - id: Move unique identifier
+    - name: Move name
+    - category: Physical/Special/Status
+    - power: Base power
+    - accuracy: Accuracy percentage
+    - description: Move description
+    - type: Move type
+    - learn_method (if pokemon_id provided): Level-up/TM/Egg/Tutor
+    - learn_level (if pokemon_id provided): Level learned (null for TM/Egg/Tutor)
+
+    **Example Request:**
+    ```
+    GET /moves/by-type/Fire?pokemon_id=6
+    ```
+
+    **Example Response:**
+    ```json
+    [
+      {
+        "id": 52,
+        "name": "Lance-Flammes",
+        "category": "Special",
+        "power": 90,
+        "accuracy": 100,
+        "description": "Une puissante attaque de feu...",
+        "type": {"id": 2, "name": "Fire"},
+        "learn_method": "Level-up",
+        "learn_level": 34
+      }
+    ]
+    ```
+
+    **Use Case:**
+    - Move selection filtered by type
+    - STAB move recommendations (Same Type Attack Bonus)
+    - Team building with type coverage
     """
     items = list_moves_by_type(
         db=db,
@@ -146,7 +262,43 @@ def get_move(
     db: Session = Depends(get_db),
 ):
     """
-    Retrieve detailed information for a specific move by its ID.
+    Get detailed information for a specific move by ID.
+
+    Returns comprehensive data about a move including all attributes
+    needed for battle calculations and UI display.
+
+    **Path Parameters:**
+    - move_id: Move unique identifier (1-226)
+
+    **Returns:**
+    - id: Move unique identifier
+    - name: Move name (French)
+    - category: Physical/Special/Status
+    - power: Base power (null for status moves)
+    - accuracy: Accuracy percentage (null for never-miss moves)
+    - description: Detailed move description
+    - damage_type: Special damage mechanics (e.g., "multi_coups", "deux_tours")
+    - type: Move type
+
+    **Example Response:**
+    ```json
+    {
+      "id": 87,
+      "name": "Fatal-Foudre",
+      "category": "Special",
+      "power": 110,
+      "accuracy": 70,
+      "description": "Une puissante décharge électrique qui peut aussi paralyser l'ennemi.",
+      "damage_type": null,
+      "type": {"id": 4, "name": "Electric"}
+    }
+    ```
+
+    **Errors:**
+    - 404: Move not found (invalid ID)
+
+    **Use Case:**
+    Display move details in Streamlit interface (move info cards, battle simulator).
     """
     move = get_move_by_id(db, move_id)
 

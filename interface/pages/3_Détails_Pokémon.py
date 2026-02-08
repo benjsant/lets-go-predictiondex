@@ -84,7 +84,7 @@ if pokemon_id_from_query:
         default_id = int(pokemon_id_from_query)
         if default_id not in pokemon_lookup:
             default_id = list(pokemon_lookup.keys())[0]
-    except BaseException:
+    except ValueError:
         default_id = list(pokemon_lookup.keys())[0]
 else:
     default_id = list(pokemon_lookup.keys())[0]

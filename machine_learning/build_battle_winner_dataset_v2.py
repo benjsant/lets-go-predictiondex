@@ -62,7 +62,7 @@ load_dotenv()
 
 # Database connection
 DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
-DB_PORT = int(os.getenv("POSTGRES_PORT", 5432))
+DB_PORT = int(os.getenv("POSTGRES_PORT", "5432"))
 DB_USER = os.getenv("POSTGRES_USER", "letsgo_user")
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "letsgo_password")
 DB_NAME = os.getenv("POSTGRES_DB", "letsgo_db")
@@ -235,12 +235,11 @@ def calculate_effective_power(move, damage_type):
 
     if damage_type == "multi_coups":
         return power * 3
-    elif damage_type == "double_degats":
+    if damage_type == "double_degats":
         return power * 2
-    elif damage_type == "deux_tours":
+    if damage_type == "deux_tours":
         return power / 2
-    else:
-        return power
+    return power
 
 
 def calculate_damage(level, power, atk_stat, def_stat, stab, type_mult):
@@ -431,13 +430,10 @@ def simulate_battle(attacker_a, attacker_b, move_a, move_b, type_eff):
     if a_moves_first:
         if turns_to_ko_b <= turns_to_ko_a:
             return 1  # A wins
-        else:
-            return 0  # B wins
-    else:
-        if turns_to_ko_a <= turns_to_ko_b:
-            return 0  # B wins
-        else:
-            return 1  # A wins
+        return 0  # B wins
+    if turns_to_ko_a <= turns_to_ko_b:
+        return 0  # B wins
+    return 1  # A wins
 
 
 def build_sample_dict(pokemon_a, pokemon_b, move_a, move_b, winner, scenario_type):
@@ -518,7 +514,7 @@ def generate_best_move_scenario(pokemon_df, pokemon_moves_df, type_eff):
     skipped = 0
 
     for idx_a, pokemon_a in pokemon_df.iterrows():
-        for idx_b, pokemon_b in pokemon_df.iterrows():
+        for _, pokemon_b in pokemon_df.iterrows():
             if pokemon_a['pokemon_id'] == pokemon_b['pokemon_id']:
                 skipped += 1
                 continue
@@ -623,7 +619,7 @@ def generate_all_combinations_scenario(pokemon_df, pokemon_moves_df, type_eff, m
     skipped = 0
 
     for idx_a, pokemon_a in pokemon_df.iterrows():
-        for idx_b, pokemon_b in pokemon_df.iterrows():
+        for _, pokemon_b in pokemon_df.iterrows():
             if pokemon_a['pokemon_id'] == pokemon_b['pokemon_id']:
                 skipped += 1
                 continue

@@ -43,12 +43,11 @@ def get_pokemon_options(include_special_forms: bool = False, sort_by_form: bool 
             name_lower = p.name.lower()
             if "alola" in name_lower:
                 return (1, p.name)  # Formes Alola après
-            elif "mega" in name_lower:
+            if "mega" in name_lower:
                 return (2, p.name)  # Formes Mega après
-            elif "giga" in name_lower:
+            if "giga" in name_lower:
                 return (3, p.name)  # Formes Gigamax après
-            else:
-                return (0, p.name)  # Formes normales en premier
+            return (0, p.name)  # Formes normales en premier
 
         formatted_pokemons = sorted(formatted_pokemons, key=get_sort_key)
 

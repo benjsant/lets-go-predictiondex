@@ -20,7 +20,7 @@ from machine_learning.constants import MODELS_DIR
 
 
 def export_model(model: Any, scalers: Dict, feature_columns: List[str],
-                 metrics: Dict, hyperparams: Optional[Dict] = None,
+                 metrics: Dict, *, hyperparams: Optional[Dict] = None,
                  version: str = "v1", verbose: bool = True):
     """
     Export trained model, scalers, and metadata.
@@ -97,7 +97,7 @@ def export_model(model: Any, scalers: Dict, feature_columns: List[str],
     metadata_json['feature_columns'] = feature_columns[:10] + ['...'] if len(feature_columns) > 10 else feature_columns
 
     metadata_json_path = MODELS_DIR / f"battle_winner_metadata_{version}.json"
-    with open(metadata_json_path, 'w') as f:
+    with open(metadata_json_path, 'w', encoding='utf-8') as f:
         json.dump(metadata_json, f, indent=2)
     if verbose:
         print(f"✅ Metadata (JSON) exported: {metadata_json_path}")

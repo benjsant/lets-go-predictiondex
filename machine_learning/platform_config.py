@@ -33,9 +33,9 @@ def is_running_in_docker() -> bool:
 
     # Méthode 2: Vérifier /proc/1/cgroup
     try:
-        with open('/proc/1/cgroup', 'rt') as f:
+        with open('/proc/1/cgroup', 'rt', encoding='utf-8') as f:
             return 'docker' in f.read()
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         return False
 
 
@@ -49,13 +49,13 @@ def get_available_memory_gb() -> float:
     try:
         # Linux/Docker: Lire /proc/meminfo
         if os.path.exists('/proc/meminfo'):
-            with open('/proc/meminfo', 'r') as f:
+            with open('/proc/meminfo', 'r', encoding='utf-8') as f:
                 for line in f:
                     if line.startswith('MemTotal:'):
                         # Format: "MemTotal:       8194801 kB"
                         kb = int(line.split()[1])
                         return kb / (1024 * 1024)  # Convert KB to GB
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         pass
 
     try:

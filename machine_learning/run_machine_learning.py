@@ -56,7 +56,6 @@ import sys
 from datetime import datetime
 from typing import Any, Dict, Optional, Tuple
 
-import joblib  # For RandomForest model compression
 import numpy as np
 import pandas as pd
 import xgboost as xgb
@@ -669,7 +668,7 @@ Examples:
                 scalers,
                 feature_columns,
                 metrics,
-                hyperparams,
+                hyperparams=hyperparams,
                 version=args.version,
                 verbose=verbose)
 
@@ -763,7 +762,7 @@ Examples:
                 scalers,
                 feature_columns,
                 metrics,
-                hyperparams,
+                hyperparams=hyperparams,
                 version=args.version,
                 verbose=verbose)
 

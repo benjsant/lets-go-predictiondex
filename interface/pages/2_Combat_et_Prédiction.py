@@ -353,7 +353,7 @@ if st.button("🔮 Lancer la Simulation de Combat", type="primary", use_containe
                     icon = "❌"
                     color = "error"
 
-                with st.expander(f"{icon} **#{i} - {move_data['move_name']}** — {win_prob:.1f}%", expanded=(i == 1)):
+                with st.expander(f"{icon} **#{i} - {move_data['move_name']}** — {win_prob:.1f}%", expanded=i == 1):
                     col1, col2, col3, col4 = st.columns(4)
 
                     col1.metric("Type", move_data['move_type'].capitalize())
@@ -373,7 +373,7 @@ if st.button("🔮 Lancer la Simulation de Combat", type="primary", use_containe
 
             # Disclaimer important
             if manual_mode:
-                st.success(f"""
+                st.success("""
                 ✅ **Mode Manuel activé !** Le modèle a simulé tous les combats possibles avec les movesets
                 que tu as choisis. Précision : **96.24%** sur 898,612 combats analysés.
                 """)
@@ -428,7 +428,7 @@ if st.button("🔮 Lancer la Simulation de Combat", type="primary", use_containe
                 les Pokémon de Let's Go avec différentes configurations de capacités !
                 """)
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             st.error(f"❌ Erreur lors de la prédiction : {str(e)}")
             with st.expander("🔍 Détails de l'erreur"):
                 st.exception(e)

@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 """
-Script d'orchestration pour exécuter tous les tests du projet VIA DOCKER
+Orchestration script to run all project tests VIA DOCKER.
+
 Usage: python3 scripts/run_all_tests.py [--local] [--build]
 
-Par défaut, lance les tests dans un conteneur Docker isolé (recommandé).
+By default, runs tests in an isolated Docker container (recommended).
 """
+import argparse
+import json
 import os
+import shutil
+import subprocess
 import sys
 import time
-import argparse
-import subprocess
-import shutil
 
-# Couleurs ANSI
+# ANSI Colors
 GREEN = '\033[0;32m'
 RED = '\033[0;31m'
 YELLOW = '\033[1;33m'
@@ -21,93 +23,106 @@ CYAN = '\033[0;36m'
 BOLD = '\033[1m'
 RESET = '\033[0m'
 
+
 def print_header(text):
-    """Affiche un en-tête formaté"""
+    """Display a formatted header."""
     print(f"\n{BLUE}{'='*80}{RESET}")
     print(f"{BLUE}{BOLD}{text:^80}{RESET}")
     print(f"{BLUE}{'='*80}{RESET}\n")
 
+
 def print_success(text):
-    """Affiche un message de succès"""
+    """Display a success message."""
     print(f"{GREEN}✅ {text}{RESET}")
 
+
 def print_error(text):
-    """Affiche un message d'erreur"""
+    """Display an error message."""
     print(f"{RED}❌ {text}{RESET}")
 
+
 def print_warning(text):
-    """Affiche un avertissement"""
+    """Display a warning message."""
     print(f"{YELLOW}⚠️  {text}{RESET}")
 
+
 def print_info(text):
-    """Affiche une information"""
+    """Display an info message."""
     print(f"{CYAN}ℹ️  {text}{RESET}")
 
+
 def check_docker():
-    """Vérifie que Docker est disponible"""
-    print_info("Vérification de Docker...")
+    """Check that Docker is available."""
+    print_info("Checking Docker...")
 
     if not shutil.which("docker"):
-        print_error("Docker n'est pas installé ou pas dans le PATH")
+        print_error("Docker is not installed or not in PATH")
         return False
 
-    # Vérifier que Docker daemon est accessible
+    # Check that Docker daemon is accessible
     try:
         result = subprocess.run(
             ["docker", "ps"],
             capture_output=True,
-            timeout=5
+            timeout=5,
+            check=False
         )
         if result.returncode == 0:
-            print_success("Docker est disponible")
+            print_success("Docker is available")
             return True
-        else:
-            print_error("Docker daemon n'est pas accessible")
-            return False
-    except Exception as e:
-        print_error(f"Erreur lors de la vérification Docker: {e}")
+
+        print_error("Docker daemon is not accessible")
+        return False
+    except subprocess.TimeoutExpired:
+        print_error("Docker check timeout")
+        return False
+    except OSError as exc:
+        print_error(f"Error checking Docker: {exc}")
         return False
 
-def check_docker_compose():
-    """Vérifie que Docker Compose est disponible"""
-    print_info("Vérification de Docker Compose...")
 
-    # Essayer 'docker compose' (v2)
+def check_docker_compose():
+    """Check that Docker Compose is available."""
+    print_info("Checking Docker Compose...")
+
+    # Try 'docker compose' (v2)
     try:
         result = subprocess.run(
             ["docker", "compose", "version"],
             capture_output=True,
-            timeout=5
+            timeout=5,
+            check=False
         )
         if result.returncode == 0:
-            print_success("Docker Compose v2 disponible")
+            print_success("Docker Compose v2 available")
             return ["docker", "compose"]
-    except Exception:
+    except (subprocess.TimeoutExpired, OSError):
         pass
 
-    # Essayer 'docker-compose' (v1)
+    # Try 'docker-compose' (v1)
     if shutil.which("docker-compose"):
-        print_success("Docker Compose v1 disponible")
+        print_success("Docker Compose v1 available")
         return ["docker-compose"]
 
-    print_error("Docker Compose n'est pas disponible")
+    print_error("Docker Compose is not available")
     return None
 
+
 def check_services_running(compose_cmd):
-    """Vérifie que les services principaux sont lancés"""
-    print_info("Vérification des services Docker...")
+    """Check that main services are running."""
+    print_info("Checking Docker services...")
 
     try:
         result = subprocess.run(
             compose_cmd + ["ps", "--format", "json"],
             capture_output=True,
             text=True,
-            timeout=10
+            timeout=10,
+            check=False
         )
 
         if result.returncode == 0:
-            # Compter les services en cours
-            import json
+            # Count running services
             services = []
             for line in result.stdout.strip().split('\n'):
                 if line:
@@ -115,62 +130,70 @@ def check_services_running(compose_cmd):
                         service = json.loads(line)
                         if service.get('State') == 'running':
                             services.append(service.get('Service'))
-                    except:
+                    except json.JSONDecodeError:
                         pass
 
-            if len(services) >= 5:  # Au moins 5 services (db, api, mlflow, prometheus, grafana)
-                print_success(f"{len(services)} services actifs")
+            if len(services) >= 5:  # At least 5 services (db, api, mlflow, prometheus, grafana)
+                print_success(f"{len(services)} active services")
                 return True
-            else:
-                print_warning(f"Seulement {len(services)} services actifs")
-                return False
 
-    except Exception as e:
-        print_warning(f"Impossible de vérifier les services: {e}")
+            print_warning(f"Only {len(services)} active services")
+            return False
+
+    except subprocess.TimeoutExpired:
+        print_warning("Service check timeout")
+    except OSError as exc:
+        print_warning(f"Unable to check services: {exc}")
 
     return False
 
+
 def start_services(compose_cmd):
-    """Démarre tous les services Docker"""
-    print_info("Démarrage des services Docker...")
-    
-    # Timeout plus long en environnement CI (GitHub Actions plus lent)
+    """Start all Docker services."""
+    print_info("Starting Docker services...")
+
+    # Longer timeout in CI environment (GitHub Actions is slower)
     is_ci = os.getenv('CI') == 'true' or os.getenv('GITHUB_ACTIONS') == 'true'
     timeout_seconds = 600 if is_ci else 180
-    
+
     if is_ci:
-        print_info(f"Environnement CI - Timeout étendu à {timeout_seconds}s pour le build des images...")
+        print_info(f"CI environment - Extended timeout to {timeout_seconds}s for image build...")
 
     try:
         result = subprocess.run(
             compose_cmd + ["up", "-d"],
-            timeout=timeout_seconds
+            timeout=timeout_seconds,
+            check=False
         )
 
         if result.returncode == 0:
-            print_success("Services démarrés")
+            print_success("Services started")
             wait_time = 45 if is_ci else 30
-            print_info(f"Attente de {wait_time} secondes pour que les services soient prêts...")
+            print_info(f"Waiting {wait_time} seconds for services to be ready...")
             time.sleep(wait_time)
             return True
-        else:
-            print_error("Échec du démarrage des services")
-            return False
 
-    except Exception as e:
-        print_error(f"Erreur lors du démarrage: {e}")
+        print_error("Failed to start services")
         return False
 
+    except subprocess.TimeoutExpired:
+        print_error("Service startup timeout")
+        return False
+    except OSError as exc:
+        print_error(f"Error during startup: {exc}")
+        return False
+
+
 def run_tests_in_docker(compose_cmd, build=False):
-    """Lance les tests dans un conteneur Docker"""
-    print_header("LANCEMENT DES TESTS VIA DOCKER")
+    """Run tests in a Docker container."""
+    print_header("RUNNING TESTS VIA DOCKER")
 
     print_info("Configuration:")
-    print(f"  - Environnement: Docker (isolé)")
-    print(f"  - Build image: {'Oui' if build else 'Non (utilise cache)'}")
-    print(f"  - Services requis: PostgreSQL, API, MLflow, Prometheus, Grafana")
+    print("  - Environment: Docker (isolated)")
+    print(f"  - Build image: {'Yes' if build else 'No (using cache)'}")
+    print("  - Required services: PostgreSQL, API, MLflow, Prometheus, Grafana")
 
-    # Construire la commande
+    # Build command
     cmd = compose_cmd + ["--profile", "tests", "up"]
 
     if build:
@@ -178,150 +201,156 @@ def run_tests_in_docker(compose_cmd, build=False):
 
     cmd.extend(["--abort-on-container-exit", "--exit-code-from", "tests", "tests"])
 
-    print_info("\nLancement des tests...")
-    print_info(f"Commande: {' '.join(cmd)}\n")
+    print_info("\nRunning tests...")
+    print_info(f"Command: {' '.join(cmd)}\n")
 
     try:
-        # Lancer les tests (output en temps réel)
-        result = subprocess.run(cmd)
+        # Run tests (real-time output)
+        result = subprocess.run(cmd, check=False)
 
         return result.returncode
 
     except KeyboardInterrupt:
-        print_warning("\n\nTests interrompus par l'utilisateur")
+        print_warning("\n\nTests interrupted by user")
         return 130
-    except Exception as e:
-        print_error(f"Erreur lors de l'exécution des tests: {e}")
+    except OSError as exc:
+        print_error(f"Error running tests: {exc}")
         return 1
 
-def run_tests_locally():
-    """Lance les tests d'intégration depuis l'hôte (legacy)"""
-    print_header("LANCEMENT DES TESTS DEPUIS L'HÔTE")
 
-    print_warning("Mode local (legacy) - Peut échouer si DB Docker non accessible")
-    print_info("Lancement du test système complet...")
+def run_tests_locally():
+    """Run integration tests from host (legacy)."""
+    print_header("RUNNING TESTS FROM HOST")
+
+    print_warning("Local mode (legacy) - May fail if Docker DB is not accessible")
+    print_info("Running complete system test...")
 
     try:
         result = subprocess.run(
-            [sys.executable, "tests/integration/test_complete_system.py"]
+            [sys.executable, "tests/integration/test_complete_system.py"],
+            check=False
         )
         return result.returncode
-    except Exception as e:
-        print_error(f"Erreur: {e}")
+    except OSError as exc:
+        print_error(f"Error: {exc}")
         return 1
 
+
 def cleanup_tests_container(compose_cmd):
-    """Nettoie le conteneur de tests après exécution"""
-    print_info("\nNettoyage du conteneur de tests...")
+    """Clean up tests container after execution."""
+    print_info("\nCleaning up tests container...")
 
     try:
         subprocess.run(
             compose_cmd + ["rm", "-f", "tests"],
             capture_output=True,
-            timeout=10
+            timeout=10,
+            check=False
         )
-        print_success("Conteneur de tests nettoyé")
-    except Exception:
+        print_success("Tests container cleaned up")
+    except (subprocess.TimeoutExpired, OSError):
         pass
 
+
 def main():
-    """Fonction principale"""
+    """Main function."""
     parser = argparse.ArgumentParser(
-        description="Lance tous les tests via Docker (recommandé)",
+        description="Run all tests via Docker (recommended)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Exemples:
-  python3 scripts/run_all_tests.py              # Lance via Docker (cache)
-  python3 scripts/run_all_tests.py --build      # Lance via Docker (rebuild)
-  python3 scripts/run_all_tests.py --local      # Lance depuis l'hôte (legacy)
+Examples:
+  python3 scripts/run_all_tests.py              # Run via Docker (cache)
+  python3 scripts/run_all_tests.py --build      # Run via Docker (rebuild)
+  python3 scripts/run_all_tests.py --local      # Run from host (legacy)
         """
     )
 
     parser.add_argument(
         "--local",
         action="store_true",
-        help="Lance les tests depuis l'hôte au lieu de Docker (non recommandé)"
+        help="Run tests from host instead of Docker (not recommended)"
     )
 
     parser.add_argument(
         "--build",
         action="store_true",
-        help="Rebuild l'image Docker des tests avant de lancer"
+        help="Rebuild Docker test image before running"
     )
 
     parser.add_argument(
         "--no-start",
         action="store_true",
-        help="Ne pas démarrer les services automatiquement (suppose qu'ils tournent déjà)"
+        help="Don't start services automatically (assumes they're already running)"
     )
 
     args = parser.parse_args()
 
-    print_header("TESTS COMPLETS - Let's Go PredictionDex")
+    print_header("FULL TESTS - Let's Go PredictionDex")
 
-    # Mode local (legacy)
+    # Local mode (legacy)
     if args.local:
-        print_warning("Mode local activé (non recommandé)")
+        print_warning("Local mode enabled (not recommended)")
         return run_tests_locally()
 
-    # Mode Docker (recommandé)
-    print_success("Mode Docker activé (recommandé)")
+    # Docker mode (recommended)
+    print_success("Docker mode enabled (recommended)")
 
-    # 1. Vérifier Docker
+    # 1. Check Docker
     if not check_docker():
-        print_error("\n❌ Docker n'est pas disponible")
-        print_info("Installez Docker: https://docs.docker.com/get-docker/")
+        print_error("\n❌ Docker is not available")
+        print_info("Install Docker: https://docs.docker.com/get-docker/")
         return 1
 
-    # 2. Vérifier Docker Compose
+    # 2. Check Docker Compose
     compose_cmd = check_docker_compose()
     if not compose_cmd:
-        print_error("\n❌ Docker Compose n'est pas disponible")
+        print_error("\n❌ Docker Compose is not available")
         return 1
 
-    # 3. Vérifier/Démarrer les services
+    # 3. Check/Start services
     if not args.no_start:
         services_running = check_services_running(compose_cmd)
 
         if not services_running:
-            print_warning("Services Docker non démarrés")
+            print_warning("Docker services not started")
 
-            # En environnement CI (GitHub Actions), démarrer automatiquement
+            # In CI environment (GitHub Actions), start automatically
             is_ci = os.getenv('CI') == 'true' or os.getenv('GITHUB_ACTIONS') == 'true'
-            
+
             if is_ci:
-                print_info("🔄 Environnement CI détecté - démarrage automatique des services...")
+                print_info("🔄 CI environment detected - starting services automatically...")
                 if not start_services(compose_cmd):
-                    print_error("\n❌ Impossible de démarrer les services")
+                    print_error("\n❌ Unable to start services")
                     return 1
             else:
-                response = input(f"\n{YELLOW}Démarrer les services maintenant? (o/N): {RESET}")
-                if response.lower() in ['o', 'oui', 'y', 'yes']:
+                response = input(f"\n{YELLOW}Start services now? (y/N): {RESET}")
+                if response.lower() in ['y', 'yes', 'o', 'oui']:
                     if not start_services(compose_cmd):
-                        print_error("\n❌ Impossible de démarrer les services")
+                        print_error("\n❌ Unable to start services")
                         return 1
                 else:
-                    print_error("\n❌ Les tests nécessitent que les services soient lancés")
-                    print_info("Lancez manuellement: docker compose up -d")
+                    print_error("\n❌ Tests require services to be running")
+                    print_info("Start manually: docker compose up -d")
                     return 1
 
-    # 4. Lancer les tests
+    # 4. Run tests
     exit_code = run_tests_in_docker(compose_cmd, build=args.build)
 
-    # 5. Nettoyer
+    # 5. Cleanup
     cleanup_tests_container(compose_cmd)
 
-    # 6. Résumé
-    print_header("RÉSULTAT FINAL")
+    # 6. Summary
+    print_header("FINAL RESULT")
 
     if exit_code == 0:
-        print_success("✅ TOUS LES TESTS ONT RÉUSSI")
-        print_info("\nRapports disponibles dans: ./reports/")
+        print_success("✅ ALL TESTS PASSED")
+        print_info("\nReports available in: ./reports/")
         return 0
-    else:
-        print_error(f"❌ TESTS ÉCHOUÉS (code: {exit_code})")
-        print_info("\nConsultez les logs ci-dessus pour plus de détails")
-        return exit_code
+
+    print_error(f"❌ TESTS FAILED (code: {exit_code})")
+    print_info("\nCheck the logs above for details")
+    return exit_code
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -1,144 +1,158 @@
 #!/usr/bin/env python3
 """
-Script pour enregistrer le modèle existant dans MLflow Model Registry
-Enregistre le modèle v2 (96.24% accuracy) qui existe déjà sur disque
-"""
-import os
-import sys
-import pickle
-import json
-from pathlib import Path
-from datetime import datetime
+Script to register the existing model in MLflow Model Registry.
 
-# Ajouter le répertoire parent au PYTHONPATH
+Registers model v2 (96.24% accuracy) that already exists on disk.
+"""
+import json
+import os
+import pickle
+import sys
+from datetime import datetime
+from pathlib import Path
+
+# Add parent directory to PYTHONPATH before importing local modules
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from machine_learning.mlflow_integration import MLflowTracker, get_mlflow_tracker
+import mlflow  # pylint: disable=wrong-import-position
+from mlflow.tracking import MlflowClient  # pylint: disable=wrong-import-position
 
-# Couleurs
+from machine_learning.mlflow_integration import (  # pylint: disable=wrong-import-position
+    get_mlflow_tracker
+)
+
+# Colors
 GREEN = '\033[92m'
 RED = '\033[91m'
 YELLOW = '\033[93m'
 BLUE = '\033[94m'
 RESET = '\033[0m'
 
+
 def print_section(title):
+    """Display a formatted section header."""
     print(f"\n{BLUE}{'='*80}{RESET}")
     print(f"{BLUE}{title:^80}{RESET}")
     print(f"{BLUE}{'='*80}{RESET}\n")
 
+
 def print_success(msg):
+    """Display a success message."""
     print(f"{GREEN}✅ {msg}{RESET}")
 
+
 def print_error(msg):
+    """Display an error message."""
     print(f"{RED}❌ {msg}{RESET}")
 
+
 def print_info(msg):
+    """Display an info message."""
     print(f"   {msg}")
 
-def check_mlflow_connection():
-    """Vérifie que MLflow est accessible"""
-    import mlflow
 
+def check_mlflow_connection():
+    """Check that MLflow is accessible."""
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5001")
     mlflow.set_tracking_uri(tracking_uri)
 
     try:
         # Test connection
         mlflow.search_experiments()
-        print_success(f"MLflow connecté: {tracking_uri}")
+        print_success(f"MLflow connected: {tracking_uri}")
         return True
-    except Exception as e:
-        print_error(f"MLflow non accessible: {e}")
-        print_info(f"Assurez-vous que MLflow est démarré:")
-        print_info(f"  docker compose ps mlflow")
-        print_info(f"  curl http://localhost:5001/health")
+    except mlflow.exceptions.MlflowException as exc:
+        print_error(f"MLflow not accessible: {exc}")
+        print_info("Make sure MLflow is started:")
+        print_info("  docker compose ps mlflow")
+        print_info("  curl http://localhost:5001/health")
         return False
 
-def register_model_v2():
-    """Enregistre le modèle v2 existant dans MLflow"""
-    print_section("ENREGISTREMENT MODÈLE V2 DANS MLFLOW")
 
-    # Chemins vers le modèle
+def register_model_v2():
+    """Register the existing v2 model in MLflow."""
+    print_section("REGISTERING MODEL V2 IN MLFLOW")
+
+    # Paths to the model
     models_dir = Path(__file__).parent.parent.parent / "models"
     model_path = models_dir / "battle_winner_model_v2.pkl"
     scalers_path = models_dir / "battle_winner_scalers_v2.pkl"
     metadata_path = models_dir / "battle_winner_metadata_v2.json"
 
-    # Vérifier que les fichiers existent
+    # Check that files exist
     if not model_path.exists():
-        print_error(f"Modèle non trouvé: {model_path}")
+        print_error(f"Model not found: {model_path}")
         return False
 
-    print_info(f"Chargement du modèle: {model_path}")
+    print_info(f"Loading model: {model_path}")
 
-    # Charger le modèle
+    # Load the model
     try:
         with open(model_path, 'rb') as f:
             model = pickle.load(f)
-        print_success("Modèle chargé")
-    except Exception as e:
-        print_error(f"Erreur lors du chargement du modèle: {e}")
+        print_success("Model loaded")
+    except (OSError, pickle.UnpicklingError) as exc:
+        print_error(f"Error loading model: {exc}")
         return False
 
-    # Charger les scalers
+    # Load scalers
+    scalers = None
     try:
         with open(scalers_path, 'rb') as f:
             scalers = pickle.load(f)
-        print_success("Scalers chargés")
-    except Exception as e:
-        print_error(f"Erreur lors du chargement des scalers: {e}")
-        scalers = None
+        print_success("Scalers loaded")
+    except (OSError, pickle.UnpicklingError) as exc:
+        print_error(f"Error loading scalers: {exc}")
 
-    # Charger les métadonnées
+    # Load metadata
+    metadata = {}
     try:
-        with open(metadata_path, 'r') as f:
+        with open(metadata_path, 'r', encoding='utf-8') as f:
             metadata = json.load(f)
-        print_success("Métadonnées chargées")
+        print_success("Metadata loaded")
 
-        # Afficher les métriques
+        # Display metrics
         metrics = metadata.get('metrics', {})
         print_info(f"  - Accuracy: {metrics.get('test_accuracy', 0)*100:.2f}%")
         print_info(f"  - ROC-AUC: {metrics.get('test_roc_auc', 0)*100:.2f}%")
         print_info(f"  - F1-Score: {metrics.get('test_f1', 0)*100:.2f}%")
 
-    except Exception as e:
-        print_error(f"Erreur lors du chargement des métadonnées: {e}")
-        metadata = {}
+    except (OSError, json.JSONDecodeError) as exc:
+        print_error(f"Error loading metadata: {exc}")
 
-    # Créer le tracker MLflow
-    print_info("\nCréation du tracker MLflow...")
+    # Create MLflow tracker
+    print_info("\nCreating MLflow tracker...")
 
     try:
-        # Forcer l'activation de MLflow
+        # Force MLflow activation
         os.environ["DISABLE_MLFLOW_TRACKING"] = "false"
 
         tracker = get_mlflow_tracker(experiment_name="pokemon_battle_winner")
 
         if tracker.experiment_name is None:
-            print_error("MLflow tracking est désactivé")
-            print_info("Définissez DISABLE_MLFLOW_TRACKING=false")
+            print_error("MLflow tracking is disabled")
+            print_info("Set DISABLE_MLFLOW_TRACKING=false")
             return False
 
-        print_success(f"Tracker créé - Experiment: {tracker.experiment_name}")
+        print_success(f"Tracker created - Experiment: {tracker.experiment_name}")
 
-    except Exception as e:
-        print_error(f"Erreur lors de la création du tracker: {e}")
+    except mlflow.exceptions.MlflowException as exc:
+        print_error(f"Error creating tracker: {exc}")
         return False
 
-    # Démarrer un run
+    # Start a run
     run_name = f"register_existing_v2_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    print_info(f"\nDémarrage du run: {run_name}")
+    print_info(f"\nStarting run: {run_name}")
 
     try:
         tracker.start_run(run_name=run_name)
-        print_success("Run démarré")
-    except Exception as e:
-        print_error(f"Erreur lors du démarrage du run: {e}")
+        print_success("Run started")
+    except mlflow.exceptions.MlflowException as exc:
+        print_error(f"Error starting run: {exc}")
         return False
 
-    # Logger les paramètres
-    print_info("\nLog des hyperparamètres...")
+    # Log parameters
+    print_info("\nLogging hyperparameters...")
     try:
         params = metadata.get('hyperparameters', {})
         params['model_version'] = metadata.get('version', 'v2')
@@ -146,23 +160,23 @@ def register_model_v2():
         params['n_features'] = metadata.get('n_features', 133)
 
         tracker.log_params(params)
-        print_success(f"{len(params)} paramètres loggés")
-    except Exception as e:
-        print_error(f"Erreur lors du log des paramètres: {e}")
+        print_success(f"{len(params)} parameters logged")
+    except mlflow.exceptions.MlflowException as exc:
+        print_error(f"Error logging parameters: {exc}")
 
-    # Logger les métriques
-    print_info("\nLog des métriques...")
+    # Log metrics
+    print_info("\nLogging metrics...")
     try:
         metrics_to_log = metadata.get('metrics', {})
         tracker.log_metrics(metrics_to_log)
-        print_success(f"{len(metrics_to_log)} métriques loggées")
-    except Exception as e:
-        print_error(f"Erreur lors du log des métriques: {e}")
+        print_success(f"{len(metrics_to_log)} metrics logged")
+    except mlflow.exceptions.MlflowException as exc:
+        print_error(f"Error logging metrics: {exc}")
 
-    # Logger le modèle
-    print_info("\nLog du modèle...")
+    # Log the model
+    print_info("\nLogging model...")
     try:
-        # Préparer les metadata pour MLflow
+        # Prepare metadata for MLflow
         mlflow_metadata = {
             'model_type': metadata.get('model_type', 'XGBClassifier'),
             'version': metadata.get('version', 'v2'),
@@ -178,14 +192,15 @@ def register_model_v2():
             scalers=scalers,
             metadata=mlflow_metadata
         )
-        print_success("Modèle loggé avec scalers et metadata")
-    except Exception as e:
-        print_error(f"Erreur lors du log du modèle: {e}")
+        print_success("Model logged with scalers and metadata")
+    except mlflow.exceptions.MlflowException as exc:
+        print_error(f"Error logging model: {exc}")
         tracker.end_run()
         return False
 
-    # Enregistrer dans Model Registry
-    print_info("\nEnregistrement dans Model Registry...")
+    # Register in Model Registry
+    print_info("\nRegistering in Model Registry...")
+    metrics = metadata.get('metrics', {})
     try:
         model_name = "battle_winner_predictor"
         description = (
@@ -204,117 +219,120 @@ def register_model_v2():
         )
 
         if version_number:
-            print_success(f"Modèle enregistré: {model_name} version {version_number}")
+            print_success(f"Model registered: {model_name} version {version_number}")
 
-            # Promouvoir en Production si accuracy >= 95%
+            # Promote to Production if accuracy >= 95%
             test_accuracy = metrics.get('test_accuracy', 0)
             if test_accuracy >= 0.95:
-                print_info("\nPromotion en Production...")
+                print_info("\nPromoting to Production...")
                 success = tracker.promote_to_production(model_name, version_number)
                 if success:
-                    print_success(f"Modèle promu en Production (Accuracy: {test_accuracy*100:.2f}%)")
+                    print_success(
+                        f"Model promoted to Production (Accuracy: {test_accuracy*100:.2f}%)"
+                    )
                 else:
-                    print_error("Échec de la promotion en Production")
+                    print_error("Failed to promote to Production")
             else:
-                print_info(f"\nAccuracy {test_accuracy*100:.2f}% < 95%, pas de promotion automatique")
-                print_info(f"Pour promouvoir manuellement:")
-                print_info(f"  python -c \"")
-                print_info(f"  from machine_learning.mlflow_integration import MLflowTracker")
-                print_info(f"  tracker = MLflowTracker('pokemon_battle_winner')")
+                print_info(
+                    f"\nAccuracy {test_accuracy*100:.2f}% < 95%, no automatic promotion"
+                )
+                print_info("To promote manually:")
+                print_info('  python -c "')
+                print_info("  from machine_learning.mlflow_integration import MLflowTracker")
+                print_info("  tracker = MLflowTracker('pokemon_battle_winner')")
                 print_info(f"  tracker.promote_to_production('{model_name}', {version_number})")
-                print_info(f"  \"")
+                print_info('  "')
         else:
-            print_error("Échec de l'enregistrement du modèle")
+            print_error("Failed to register model")
 
-    except Exception as e:
-        print_error(f"Erreur lors de l'enregistrement: {e}")
-        import mlflow
+    except mlflow.exceptions.MlflowException as exc:
+        print_error(f"Error during registration: {exc}")
         mlflow.end_run()
         return False
 
-    # Terminer le run
-    import mlflow
+    # End the run
     mlflow.end_run()
-    print_success("\nRun terminé")
+    print_success("\nRun completed")
 
     return True
 
+
 def verify_registration():
-    """Vérifie que le modèle est bien enregistré"""
-    print_section("VÉRIFICATION ENREGISTREMENT")
+    """Verify that the model is properly registered."""
+    print_section("VERIFYING REGISTRATION")
 
     try:
-        tracker = get_mlflow_tracker(experiment_name="pokemon_battle_winner")
-
-        # Lister les expériences
-        import mlflow
+        # List experiments
         experiments = mlflow.search_experiments()
-        print_info(f"Expériences trouvées: {len(experiments)}")
+        print_info(f"Experiments found: {len(experiments)}")
         for exp in experiments:
             print_info(f"  - {exp.name} (ID: {exp.experiment_id})")
 
-        # Lister les modèles enregistrés
-        from mlflow.tracking import MlflowClient
+        # List registered models
         client = MlflowClient()
 
         try:
             registered_models = client.search_registered_models()
-            print_info(f"\nModèles enregistrés: {len(registered_models)}")
+            print_info(f"\nRegistered models: {len(registered_models)}")
 
             for rm in registered_models:
-                print_success(f"\n📦 Modèle: {rm.name}")
-                print_info(f"   Description: {rm.description[:100]}...")
+                print_success(f"\n📦 Model: {rm.name}")
+                if rm.description:
+                    print_info(f"   Description: {rm.description[:100]}...")
 
-                # Lister les versions
+                # List versions
                 versions = client.search_model_versions(f"name='{rm.name}'")
                 for mv in versions:
                     stage = mv.current_stage
                     emoji = "🏆" if stage == "Production" else "📝"
                     print_info(f"   {emoji} Version {mv.version}: Stage={stage}")
 
-        except Exception as e:
-            print_error(f"Impossible de lister les modèles: {e}")
+        except mlflow.exceptions.MlflowException as exc:
+            print_error(f"Unable to list models: {exc}")
 
         return True
 
-    except Exception as e:
-        print_error(f"Erreur lors de la vérification: {e}")
+    except mlflow.exceptions.MlflowException as exc:
+        print_error(f"Error during verification: {exc}")
         return False
 
+
 def main():
-    print_section("ENREGISTREMENT MODÈLE V2 DANS MLFLOW")
+    """Main function."""
+    print_section("REGISTERING MODEL V2 IN MLFLOW")
 
-    print_info("Ce script va:")
-    print_info("  1. Charger le modèle v2 existant (96.24% accuracy)")
-    print_info("  2. Créer une expérimentation MLflow")
-    print_info("  3. Logger le modèle, métriques et hyperparamètres")
-    print_info("  4. Enregistrer dans MLflow Model Registry")
-    print_info("  5. Promouvoir en Production si accuracy >= 95%")
+    print_info("This script will:")
+    print_info("  1. Load the existing v2 model (96.24% accuracy)")
+    print_info("  2. Create an MLflow experiment")
+    print_info("  3. Log model, metrics, and hyperparameters")
+    print_info("  4. Register in MLflow Model Registry")
+    print_info("  5. Promote to Production if accuracy >= 95%")
 
-    # Vérifier la connexion MLflow
+    # Check MLflow connection
     if not check_mlflow_connection():
         return 1
 
-    # Enregistrer le modèle
+    # Register the model
     if not register_model_v2():
-        print_error("\n❌ ÉCHEC de l'enregistrement")
+        print_error("\n❌ REGISTRATION FAILED")
         return 1
 
-    # Vérifier l'enregistrement
+    # Verify registration
     if not verify_registration():
-        print_error("\n❌ ÉCHEC de la vérification")
+        print_error("\n❌ VERIFICATION FAILED")
         return 1
 
-    print_section("SUCCÈS")
-    print_success("Modèle v2 enregistré dans MLflow!")
-    print_info("\nVérifiez dans MLflow UI:")
+    print_section("SUCCESS")
+    print_success("Model v2 registered in MLflow!")
+    print_info("\nCheck in MLflow UI:")
     print_info("  http://localhost:5001")
-    print_info("\nPour utiliser le modèle depuis MLflow dans l'API:")
-    print_info("  Modifiez docker-compose.yml ligne 128:")
-    print_info("    USE_MLFLOW_REGISTRY: \"true\"")
-    print_info("  Puis redémarrez: docker compose restart api")
+    print_info("\nTo use the model from MLflow in the API:")
+    print_info("  Modify docker-compose.yml line 128:")
+    print_info('    USE_MLFLOW_REGISTRY: "true"')
+    print_info("  Then restart: docker compose restart api")
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

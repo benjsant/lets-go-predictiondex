@@ -1,9 +1,9 @@
 """
-Configuration centralisée pour le pipeline Machine Learning.
+Centralized configuration for the Machine Learning pipeline.
 
-Ce module centralise tous les hyperparamètres, configurations de grilles de recherche,
-et paramètres de pipeline pour éviter la duplication entre run_machine_learning.py
-et train_model.py.
+This module centralizes all hyperparameters, grid search configurations,
+and pipeline parameters to avoid duplication between run_machine_learning.py
+and train_model.py.
 
 Validation: C10 (hyperparameter optimization)
 """
@@ -11,34 +11,34 @@ Validation: C10 (hyperparameter optimization)
 from dataclasses import dataclass, field
 from typing import Dict, List, Any
 
-# Import de la configuration plateforme pour détection Windows/Linux
+# Import platform configuration for Windows/Linux detection
 try:
     from machine_learning.platform_config import SAFE_N_JOBS, SAFE_GRIDSEARCH_N_JOBS
 except ImportError:
-    # Fallback si platform_config non disponible
+    # Fallback if platform_config not available
     import multiprocessing
     SAFE_N_JOBS = -1
     SAFE_GRIDSEARCH_N_JOBS = max(1, multiprocessing.cpu_count() // 2)
 
 
 # ================================================================
-# SEED GLOBAL
+# GLOBAL SEED
 # ================================================================
 RANDOM_SEED = 42
 
 
 # ================================================================
-# HYPERPARAMÈTRES XGBOOST (CPU-OPTIMISÉS)
+# XGBOOST HYPERPARAMETERS (CPU-OPTIMIZED)
 # ================================================================
 
 @dataclass
 class XGBoostConfig:
     """
-    Configuration pour XGBoost optimisée pour CPU.
+    CPU-optimized configuration for XGBoost.
 
-    n_jobs est automatiquement ajusté selon la plateforme:
-    - Linux: -1 (tous les cœurs)
-    - Windows: 50% des cœurs (pour éviter saturation mémoire)
+    n_jobs is automatically adjusted according to the platform:
+    - Linux: -1 (all cores)
+    - Windows: 50% of cores (to avoid memory saturation)
     """
 
     n_estimators: int = 100
@@ -49,11 +49,11 @@ class XGBoostConfig:
     tree_method: str = 'hist'        # CPU-optimized histogram algorithm
     predictor: str = 'cpu_predictor'  # Explicit CPU predictor
     random_state: int = RANDOM_SEED
-    n_jobs: int = SAFE_N_JOBS        # Auto-ajusté selon plateforme (Windows/Linux)
+    n_jobs: int = SAFE_N_JOBS        # Auto-adjusted according to platform (Windows/Linux)
     eval_metric: str = 'logloss'
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convertit la config en dictionnaire pour XGBoost."""
+        """Convert the config to a dictionary for XGBoost."""
         return {
             'n_estimators': self.n_estimators,
             'max_depth': self.max_depth,
@@ -69,16 +69,16 @@ class XGBoostConfig:
 
 
 # ================================================================
-# GRILLES DE RECHERCHE D'HYPERPARAMÈTRES
+# HYPERPARAMETER SEARCH GRIDS
 # ================================================================
 
 @dataclass
 class GridSearchConfigFast:
     """
-    Grille de recherche rapide pour GridSearchCV.
+    Fast search grid for GridSearchCV.
 
-    Configuration conservative pour entraînement rapide (CI/Docker).
-    2×2×2×1×1 = 8 combinaisons (~5-10 min)
+    Conservative configuration for fast training (CI/Docker).
+    2×2×2×1×1 = 8 combinations (~5-10 min)
     """
 
     n_estimators: List[int] = field(default_factory=lambda: [100, 200])
@@ -89,7 +89,7 @@ class GridSearchConfigFast:
     tree_method: List[str] = field(default_factory=lambda: ['hist'])
 
     def to_dict(self) -> Dict[str, List]:
-        """Convertit en dictionnaire pour GridSearchCV."""
+        """Convert to dictionary for GridSearchCV."""
         return {
             'n_estimators': self.n_estimators,
             'max_depth': self.max_depth,
@@ -103,10 +103,10 @@ class GridSearchConfigFast:
 @dataclass
 class GridSearchConfigExtended:
     """
-    Grille de recherche étendue pour GridSearchCV.
+    Extended search grid for GridSearchCV.
 
-    Configuration exhaustive pour recherche approfondie (production).
-    3×3×3×3×3×1 = 243 combinaisons (~2-4 heures)
+    Exhaustive configuration for in-depth search (production).
+    3×3×3×3×3×1 = 243 combinations (~2-4 hours)
     """
 
     n_estimators: List[int] = field(default_factory=lambda: [100, 200, 300])
@@ -117,7 +117,7 @@ class GridSearchConfigExtended:
     tree_method: List[str] = field(default_factory=lambda: ['hist'])
 
     def to_dict(self) -> Dict[str, List]:
-        """Convertit en dictionnaire pour GridSearchCV."""
+        """Convert to dictionary for GridSearchCV."""
         return {
             'n_estimators': self.n_estimators,
             'max_depth': self.max_depth,
@@ -129,39 +129,39 @@ class GridSearchConfigExtended:
 
 
 # ================================================================
-# CONFIGURATION DATASET
+# DATASET CONFIGURATION
 # ================================================================
 
 @dataclass
 class DatasetConfig:
-    """Configuration pour la génération de datasets."""
+    """Configuration for dataset generation."""
 
-    version: str = 'v1'              # 'v1' ou 'v2'
+    version: str = 'v1'              # 'v1' or 'v2'
     scenario_type: str = 'all'       # 'best_move', 'random_move', 'all_combinations', 'all'
     test_size: float = 0.2
     random_seed: int = RANDOM_SEED
-    num_random_samples: int = 5      # Pour random_move scenario
-    max_combinations: int = 20       # Pour all_combinations scenario
+    num_random_samples: int = 5      # For random_move scenario
+    max_combinations: int = 20       # For all_combinations scenario
 
 
 # ================================================================
-# CONFIGURATION FEATURE ENGINEERING
+# FEATURE ENGINEERING CONFIGURATION
 # ================================================================
 
 @dataclass
 class FeatureEngineeringConfig:
-    """Configuration pour le feature engineering."""
+    """Configuration for feature engineering."""
 
     use_derived_features: bool = True
     use_standard_scaling: bool = True
 
-    # Features catégorielles à encoder (one-hot)
+    # Categorical features to encode (one-hot)
     categorical_features: List[str] = field(default_factory=lambda: [
         'a_type_1', 'a_type_2', 'b_type_1', 'b_type_2',
         'a_move_type', 'b_move_type'
     ])
 
-    # Features numériques à normaliser
+    # Numerical features to normalize
     numerical_features_to_scale: List[str] = field(default_factory=lambda: [
         'a_hp', 'a_attack', 'a_defense', 'a_sp_attack', 'a_sp_defense', 'a_speed',
         'b_hp', 'b_attack', 'b_defense', 'b_sp_attack', 'b_sp_defense', 'b_speed',
@@ -170,14 +170,14 @@ class FeatureEngineeringConfig:
         'speed_diff', 'hp_diff'
     ])
 
-    # Features dérivées à créer
+    # Derived features to create
     derived_features: List[str] = field(default_factory=lambda: [
         'stat_ratio', 'type_advantage_diff',
         'effective_power_a', 'effective_power_b',
         'effective_power_diff', 'priority_advantage'
     ])
 
-    # Colonnes ID et noms à ne pas inclure dans le modèle
+    # ID and name columns not to include in the model
     id_features: List[str] = field(default_factory=lambda: [
         'a_pokedex_number', 'b_pokedex_number',
         'a_pokemon_id', 'b_pokemon_id',
@@ -188,21 +188,21 @@ class FeatureEngineeringConfig:
 
 
 # ================================================================
-# CONFIGURATION PIPELINE COMPLÈTE
+# COMPLETE PIPELINE CONFIGURATION
 # ================================================================
 
 @dataclass
 class MLPipelineConfig:
-    """Configuration complète du pipeline ML."""
+    """Complete ML pipeline configuration."""
 
-    # Sous-configurations
+    # Sub-configurations
     xgboost: XGBoostConfig = field(default_factory=XGBoostConfig)
     dataset: DatasetConfig = field(default_factory=DatasetConfig)
     features: FeatureEngineeringConfig = field(default_factory=FeatureEngineeringConfig)
 
-    # Paramètres d'entraînement
+    # Training parameters
     use_gridsearch: bool = False
-    grid_type: str = 'fast'          # 'fast' ou 'extended'
+    grid_type: str = 'fast'          # 'fast' or 'extended'
     use_early_stopping: bool = True
     early_stopping_rounds: int = 10
 
@@ -211,25 +211,35 @@ class MLPipelineConfig:
     mlflow_experiment_name: str = "pokemon_battle_prediction"
 
     def get_grid_config(self) -> Dict[str, List]:
-        """Retourne la grille de recherche selon le type."""
+        """Return the search grid according to the type."""
         if self.grid_type == 'extended':
             return GridSearchConfigExtended().to_dict()
         return GridSearchConfigFast().to_dict()
 
 
 # ================================================================
-# INSTANCES PAR DÉFAUT (pour import direct)
+# DEFAULT INSTANCES (for direct import)
 # ================================================================
 
-# Configurations par défaut réutilisables
+# Reusable default configurations
 DEFAULT_XGBOOST_CONFIG = XGBoostConfig()
 DEFAULT_DATASET_CONFIG = DatasetConfig()
 DEFAULT_FEATURE_CONFIG = FeatureEngineeringConfig()
 DEFAULT_PIPELINE_CONFIG = MLPipelineConfig()
 
-# Grilles de recherche
+# Search grids
 XGBOOST_PARAM_GRID_FAST = GridSearchConfigFast().to_dict()
 XGBOOST_PARAM_GRID_EXTENDED = GridSearchConfigExtended().to_dict()
 
-# Hyperparamètres XGBoost en dict (backward compatibility)
+# XGBoost hyperparameters as dict (backward compatibility)
 XGBOOST_PARAMS = DEFAULT_XGBOOST_CONFIG.to_dict()
+
+# Exported for external use
+__all__ = [
+    'SAFE_N_JOBS',
+    'SAFE_GRIDSEARCH_N_JOBS',
+    'RANDOM_SEED',
+    'XGBOOST_PARAMS',
+    'XGBOOST_PARAM_GRID_FAST',
+    'XGBOOST_PARAM_GRID_EXTENDED',
+]
