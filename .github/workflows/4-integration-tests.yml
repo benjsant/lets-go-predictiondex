@@ -19,7 +19,7 @@ jobs:
   integration-tests:
     name: Integration Tests (Essential Services Only)
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 25
     # Ne s'exécute que si le workflow précédent a réussi (ou si déclenché manuellement)
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     
@@ -32,16 +32,18 @@ jobs:
         with:
           python-version: '3.11'
       
-      - name: 📥 Download all Docker images
+      - name: 📥 Download Docker images from Docker Build workflow
         uses: actions/download-artifact@v4
         with:
           path: docker-images/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
       
       - name: 🐋 Load Docker images (if available)
         run: |
           if [ -d "docker-images/" ]; then
-            for service in api etl ml streamlit mlflow; do
+            for service in api etl ml_builder streamlit mlflow; do
               if [ -f docker-images/docker-image-$service/$service.tar.gz ]; then
                 echo "Loading $service image..."
                 gunzip -c docker-images/docker-image-$service/$service.tar.gz | docker load
