@@ -98,11 +98,11 @@ def verify_api_key(api_key: Optional[str] = Security(api_key_header)) -> str:
             headers={"WWW-Authenticate": "ApiKey"},
         )
 
-    # Vérification de la validité
+    # Vérification de la validité (constant-time comparison contre timing attacks)
     valid_keys = get_api_keys()
     api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()
 
-    if api_key_hash not in valid_keys:
+    if not any(secrets.compare_digest(api_key_hash, valid) for valid in valid_keys):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="API Key invalide",

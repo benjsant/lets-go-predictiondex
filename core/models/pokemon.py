@@ -22,7 +22,6 @@ Each Pokémon:
 """
 
 from sqlalchemy import (
-    TIMESTAMP,
     Column,
     ForeignKey,
     Integer,
@@ -30,7 +29,6 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
-    func,
 )
 from sqlalchemy.orm import relationship
 
@@ -90,13 +88,6 @@ class Pokemon(Base):
 
     #: URL to the Pokémon sprite or official artwork
     sprite_url = Column(Text)
-
-    #: Record creation timestamp
-    created_at = Column(
-        TIMESTAMP,
-        server_default=func.now(),  # pylint: disable=not-callable
-        nullable=False,
-    )
 
     # --- Relationships ---
 

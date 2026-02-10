@@ -29,6 +29,7 @@ def _get(endpoint: str, timeout: int = 30):
 
 def _post(endpoint: str, data: dict, timeout: int = 60):
     """Generic POST request (higher timeout for ML predictions)."""
+    response = None
     try:
         url = f"{API_BASE_URL}{endpoint}"
         response = requests.post(url, json=data, headers=_get_headers(), timeout=timeout)
@@ -36,7 +37,7 @@ def _post(endpoint: str, data: dict, timeout: int = 60):
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"❌ API POST Error on {endpoint}: {e}")
-        if response.text:
+        if response is not None and response.text:
             print(f"Response: {response.text}")
         return None
 
