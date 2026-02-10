@@ -23,6 +23,9 @@ def get_pokemon_weaknesses(pokemon_id: int):
     """
     weaknesses_json = _get(f"/pokemon/{pokemon_id}/weaknesses")
 
+    if not weaknesses_json:
+        return []
+
     # Sécurisation : conversion du multiplicateur en float
     for w in weaknesses_json:
         w["multiplier"] = float(w["multiplier"])

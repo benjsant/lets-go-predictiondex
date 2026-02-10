@@ -380,7 +380,6 @@ def main():
                     print(f"\n⚠️  Model registered as version {version_number} but not promoted (accuracy < 0.85)")
                     print(f"   Manual promotion: MLflow UI or CLI")
 
-                tracker.end_run()
                 print(f"\n✅ Model registered in MLflow Model Registry")
             except Exception as e:
                 print(f"\n⚠️  MLflow registration failed: {e}")

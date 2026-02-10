@@ -2,7 +2,7 @@ name: Certification E1/E3 - Validation Complète
 
 on:
   push:
-    branches: [ main, develop, certification, nettoyage_clean_code_final ]
+    branches: [ main, develop ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:

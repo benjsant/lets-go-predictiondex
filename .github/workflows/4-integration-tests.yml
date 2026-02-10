@@ -12,7 +12,7 @@ on:
     workflows: ["3️⃣ Docker Build (C13)"]
     types:
       - completed
-    branches: [ main, develop, nettoyage_clean_code_final ]
+    branches: [ main, develop ]
   workflow_dispatch:
 
 jobs:

@@ -100,7 +100,7 @@ def get_type_affinities() -> List[Dict]:
 
 def get_type_affinities_by_name(attacking_type: str, defending_type: str) -> Dict:
     """Get type affinity for specific attacking/defending combination."""
-    return _get(f"/types/affinities/by-name?attacking_type={attacking_type}&defending_type={defending_type}")
+    return _get(f"/types/affinities/by-name?attacking={attacking_type}&defending={defending_type}")
 
 
 def get_pokemon_by_type(type_id: int) -> List[Dict]:

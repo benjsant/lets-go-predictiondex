@@ -58,7 +58,7 @@ RUN mkdir -p /app/mlruns /app/artifacts
 # Network configuration
 # ---------------------
 # Expose the MLflow web UI port.
-EXPOSE 5000
+EXPOSE 5001
 
 # Health check
 # ------------
@@ -66,15 +66,15 @@ EXPOSE 5000
 # The container is marked unhealthy if the /health endpoint
 # does not respond successfully.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:5000/health || exit 1
+    CMD curl -f http://localhost:5001/health || exit 1
 
 # Default command
 # ---------------
 # Start the MLflow Tracking Server:
 # - Bind to all network interfaces
-# - Expose the web UI on port 5000
+# - Expose the web UI on port 5001 (matches docker-compose)
 # - Use PostgreSQL as the backend store
 # - Store artifacts locally in /app/mlruns
 #
 # This command can be overridden in docker-compose or Kubernetes manifests.
-CMD ["mlflow", "server", "--host", "0.0.0.0","--port", "5000", "--backend-store-uri", "postgresql://letsgo_user:letsgo_password@db:5432/letsgo_db","--default-artifact-root", "/app/mlruns"]
+CMD ["mlflow", "server", "--host", "0.0.0.0","--port", "5001", "--backend-store-uri", "postgresql://letsgo_user:letsgo_password@db:5432/letsgo_db","--default-artifact-root", "/app/mlruns"]
