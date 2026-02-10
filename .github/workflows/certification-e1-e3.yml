@@ -480,7 +480,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: e3-c12-c13-mlops
-    if: github.event.inputs.deploy_services == 'true' || github.ref == 'refs/heads/main'
+    if: github.event.inputs.deploy_services == 'true'
     
     steps:
       - name: 📥 Checkout code
