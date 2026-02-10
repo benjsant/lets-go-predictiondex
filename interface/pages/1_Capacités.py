@@ -3,7 +3,7 @@ from typing import Optional
 
 import pandas as pd
 import streamlit as st
-from utils.pokemon_theme import TYPE_COLORS, load_custom_css, page_header
+from interface.utils.pokemon_theme import TYPE_COLORS, load_custom_css, page_header
 
 from interface.services.api_client import get_all_moves
 

@@ -1,6 +1,6 @@
 # interface/pages/3_Credits.py
 import streamlit as st
-from utils.pokemon_theme import (
+from interface.utils.pokemon_theme import (
     POKEMON_COLORS,
     info_box,
     load_custom_css,

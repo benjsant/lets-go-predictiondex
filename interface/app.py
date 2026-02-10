@@ -1,6 +1,6 @@
 # interface/app.py
 import streamlit as st
-from utils.pokemon_theme import (
+from interface.utils.pokemon_theme import (
     POKEMON_COLORS,
     feature_card,
     info_box,

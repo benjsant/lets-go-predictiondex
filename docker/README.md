@@ -94,7 +94,7 @@ API_KEY=your-secure-api-key
 API_KEY_REQUIRED=true
 
 # MLflow
-MLFLOW_TRACKING_URI=http://mlflow:5000
+MLFLOW_TRACKING_URI=http://mlflow:5001
 
 # Mode développement
 DEV_MODE=true

@@ -1,6 +1,6 @@
 # interface/pages/2_Compare.py
 import streamlit as st
-from utils.pokemon_theme import POKEMON_COLORS, load_custom_css, page_header, type_badge
+from interface.utils.pokemon_theme import POKEMON_COLORS, load_custom_css, page_header, type_badge
 
 from interface.services.api_client import predict_best_move
 from interface.utils.ui_helpers import (
