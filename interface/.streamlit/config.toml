@@ -1,0 +1,29 @@
+# Pokémon Let's Go - Streamlit Theme Configuration
+# =================================================
+
+[theme]
+# Thème inspiré des couleurs Pokémon Let's Go
+primaryColor = "#FFCC00"        # Jaune Pikachu (boutons primaires)
+backgroundColor = "#FAFAFA"      # Blanc cassé (fond principal)
+secondaryBackgroundColor = "#E8F0F8"  # Bleu clair (sidebars, containers)
+textColor = "#2C3E50"           # Gris foncé (texte principal)
+font = "sans-serif"             # Police par défaut
+
+[server]
+headless = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false
+
+[client]
+# Désactiver le bouton Deploy et la banderole
+showErrorDetails = false
+toolbarMode = "minimal"
+
+[ui]
+# Cacher les éléments inutiles pour une démo pro
+hideTopBar = false
+hideSidebarNav = false

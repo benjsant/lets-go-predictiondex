@@ -1,0 +1,80 @@
+# Dockerfile for MLflow Tracking Server
+# ------------------------------------
+# This container provides an MLflow Tracking Server used to:
+# - log experiments,
+# - store metrics, parameters, and artifacts,
+# - and expose the MLflow web UI.
+#
+# MLflow Version: 3.8.1 (stable)
+
+# Base image
+# ----------
+# Use the official Python 3.11 slim image for a lightweight and secure runtime.
+FROM python:3.11-slim
+
+# System dependencies
+# -------------------
+# Install required system-level packages:
+# - gcc / g++: compilation of Python packages with native extensions
+# - postgresql-client & libpq-dev: PostgreSQL connectivity for MLflow backend store
+# - curl: used for health checks
+#
+# APT cache is cleaned to reduce final image size.
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    postgresql-client \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Working directory
+# -----------------
+# All MLflow-related data and execution will be based in /app.
+WORKDIR /app
+
+# MLflow installation
+# -------------------
+# Install MLflow and its required dependencies:
+# - mlflow: experiment tracking server
+# - psycopg2-binary: PostgreSQL backend store support
+# - boto3: support for S3-compatible artifact storage
+# - google-cloud-storage: support for GCS artifact storage
+#
+# --no-cache-dir is used to minimize image size.
+RUN pip install --no-cache-dir \
+    mlflow==3.8.1 \
+    psycopg2-binary==2.9.9 \
+    boto3==1.34.162 \
+    google-cloud-storage==2.18.2
+
+# Data directories
+# ----------------
+# Create directories for:
+# - MLflow run metadata
+# - MLflow artifacts (models, plots, etc.)
+RUN mkdir -p /app/mlruns /app/artifacts
+
+# Network configuration
+# ---------------------
+# Expose the MLflow web UI port.
+EXPOSE 5000
+
+# Health check
+# ------------
+# Periodically verify that the MLflow server is reachable.
+# The container is marked unhealthy if the /health endpoint
+# does not respond successfully.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
+
+# Default command
+# ---------------
+# Start the MLflow Tracking Server:
+# - Bind to all network interfaces
+# - Expose the web UI on port 5000
+# - Use PostgreSQL as the backend store
+# - Store artifacts locally in /app/mlruns
+#
+# This command can be overridden in docker-compose or Kubernetes manifests.
+CMD ["mlflow", "server", "--host", "0.0.0.0","--port", "5000", "--backend-store-uri", "postgresql://letsgo_user:letsgo_password@db:5432/letsgo_db","--default-artifact-root", "/app/mlruns"]

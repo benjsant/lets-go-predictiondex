@@ -1,0 +1,90 @@
+# Prometheus Alerting Rules
+groups:
+  - name: api_alerts
+    interval: 30s
+    rules:
+      # High API latency
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.95, rate(api_request_duration_seconds_bucket[5m])) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API latency detected"
+          description: "95th percentile latency is {{ $value }}s (threshold: 0.5s)"
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(api_errors_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High API error rate"
+          description: "Error rate is {{ $value }} errors/s"
+
+      # API down
+      - alert: APIDown
+        expr: up{job="api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API is down"
+          description: "API has been down for more than 1 minute"
+
+  - name: model_alerts
+    interval: 30s
+    rules:
+      # High model latency
+      - alert: HighModelLatency
+        expr: histogram_quantile(0.95, rate(model_prediction_duration_seconds_bucket[5m])) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High model prediction latency"
+          description: "95th percentile model latency is {{ $value }}s (threshold: 0.1s)"
+
+      # Low model confidence
+      - alert: LowModelConfidence
+        expr: model_confidence_score < 0.6
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low model confidence detected"
+          description: "Model confidence is {{ $value }} (threshold: 0.6)"
+
+  - name: system_alerts
+    interval: 30s
+    rules:
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: system_cpu_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% (threshold: 80%)"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (system_memory_usage_bytes / (system_memory_usage_bytes + system_memory_available_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}% (threshold: 85%)"
+
+      # Low available memory
+      - alert: LowMemoryAvailable
+        expr: system_memory_available_bytes < 536870912  # 512 MB
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low available memory"
+          description: "Available memory is {{ $value | humanize }}B (threshold: 512MB)"

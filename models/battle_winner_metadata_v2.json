@@ -1,0 +1,40 @@
+{
+  "model_type": "XGBClassifier",
+  "version": "v2",
+  "trained_at": "2026-02-06T15:30:20.749097",
+  "feature_columns": [
+    "pokemon_a_id",
+    "pokemon_b_id",
+    "a_hp",
+    "a_attack",
+    "a_defense",
+    "a_sp_attack",
+    "a_sp_defense",
+    "a_speed",
+    "b_hp",
+    "b_attack",
+    "..."
+  ],
+  "n_features": 135,
+  "hyperparameters": {
+    "colsample_bytree": 0.8,
+    "learning_rate": 0.1,
+    "max_depth": 10,
+    "n_estimators": 200,
+    "subsample": 0.8,
+    "tree_method": "hist"
+  },
+  "metrics": {
+    "model_name": "xgboost_tuned",
+    "train_accuracy": 0.982319940908819,
+    "test_accuracy": 0.9625701774397267,
+    "test_precision": 0.9653797130052219,
+    "test_recall": 0.9654690310974042,
+    "test_f1": 0.9654243699854543,
+    "test_roc_auc": 0.9953791694527814,
+    "train_samples": 718889,
+    "test_samples": 179723,
+    "overfitting": 0.019749763469092296
+  },
+  "random_seed": 42
+}

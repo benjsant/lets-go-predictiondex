@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "PredictionDex PostgreSQL",
+      "Group": "Servers",
+      "Host": "db",
+      "Port": 5432,
+      "MaintenanceDB": "letsgo_db",
+      "Username": "letsgo_user",
+      "SSLMode": "prefer",
+      "Comment": "Base de données PredictionDex - Let's Go Pikachu/Eevee"
+    }
+  }
+}

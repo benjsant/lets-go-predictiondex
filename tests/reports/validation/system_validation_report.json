@@ -1,0 +1,37 @@
+{
+  "services": {
+    "PostgreSQL": "UP",
+    "API": "UP",
+    "Streamlit": "UP",
+    "MLflow": "UP",
+    "Prometheus": "UP",
+    "Grafana": "UP",
+    "pgAdmin": "UP"
+  },
+  "monitoring": {
+    "prometheus_targets": "3/3",
+    "api_requests_total": 29,
+    "api_request_duration_seconds_bucket": 180,
+    "model_predictions_total": 1,
+    "model_prediction_duration_seconds_bucket": 8,
+    "model_confidence_score_bucket": 14,
+    "system_cpu_usage_percent": 1,
+    "latency_P50": 0.005384777567765229,
+    "latency_P95": 0.022007776046768113,
+    "latency_P99": 0.04440142787666801,
+    "grafana_dashboards": 2,
+    "drift_reports": 0
+  },
+  "mlflow": {},
+  "api": {},
+  "data": {
+    "pokemon_count": 188,
+    "moves_count": 226,
+    "types_count": 18
+  },
+  "predictions": {
+    "success": false,
+    "model_accuracy": 0.9623754333056982
+  },
+  "errors": []
+}

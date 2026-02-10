@@ -1,0 +1,95 @@
+name: 2️⃣ Unit Tests (C12)
+
+# Compétence C12 (E3): Programmer les tests automatisés d'un modèle 
+# d'intelligence artificielle
+# → Tests unitaires rapides sans Docker
+# → Tests de validation des jeux de données, préparation, entraînement, 
+#    évaluation et validation du modèle
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  unit-tests:
+    name: Fast Unit Tests (No Docker)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: letsgo_test
+          POSTGRES_USER: letsgo_user
+          POSTGRES_PASSWORD: letsgo_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    strategy:
+      matrix:
+        python-version: ['3.11']
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov pytest-asyncio httpx
+          pip install -r api_pokemon/requirements.txt
+          pip install -r machine_learning/requirements.txt
+      
+      - name: 🔧 Set environment variables
+        run: |
+          echo "POSTGRES_HOST=localhost" >> $GITHUB_ENV
+          echo "POSTGRES_PORT=5432" >> $GITHUB_ENV
+          echo "POSTGRES_DB=letsgo_test" >> $GITHUB_ENV
+          echo "POSTGRES_USER=letsgo_user" >> $GITHUB_ENV
+          echo "POSTGRES_PASSWORD=letsgo_password" >> $GITHUB_ENV
+          echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
+      
+      - name: 🧪 Run unit tests (fast)
+        run: |
+          # Tests essentiels uniquement pour CI/CD rapide
+          # Focus sur ML (C12) - tests du modèle IA
+          pytest tests/ml/ \
+            -v --tb=short -m "not slow" \
+            --cov=machine_learning \
+            --cov-report=xml --cov-report=term-missing
+      
+      - name: 📦 Archive test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-unit
+          path: |
+            coverage.xml
+            .coverage
+          retention-days: 30
+          if-no-files-found: ignore
+      
+      - name: ✅ Summary
+        if: success()
+        run: |
+          echo "## ✅ Unit Tests Passed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Coverage Report:**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          coverage report >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

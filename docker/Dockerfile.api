@@ -1,0 +1,74 @@
+# Dockerfile for API Service
+# --------------------------
+# This container runs the API layer responsible for exposing application
+# endpoints (e.g. prediction, data access, and health checks).
+#
+# It typically serves as the inference layer in the MLOps pipeline,
+# consuming trained machine learning models and interacting with
+# the PostgreSQL database.
+
+# Base image
+# ----------
+# Use the official Python 3.11 slim image to provide a lightweight and
+# reproducible Python runtime.
+FROM python:3.11-slim
+
+# Working directory
+# -----------------
+# All API-related code and execution will take place in /app.
+WORKDIR /app
+
+# Environment configuration
+# -------------------------
+# PYTHONDONTWRITEBYTECODE prevents creation of .pyc files.
+# PYTHONUNBUFFERED ensures real-time log output for container visibility.
+# PYTHONPATH allows shared project modules to be imported correctly.
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+
+# System dependencies
+# -------------------
+# Install system-level packages required for:
+# - building Python packages with native extensions
+# - PostgreSQL connectivity via libpq
+# - HTTP requests and diagnostics (curl)
+# - Git operations if required by the API or deployment process
+#
+# --no-install-recommends is used to keep the image lightweight.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# API dependencies
+# ----------------
+# Copy API-specific requirements separately to leverage Docker layer caching.
+COPY api_pokemon/requirements.txt ./api_requirements.txt
+RUN pip install --no-cache-dir -r api_requirements.txt
+
+# Application source code
+# -----------------------
+# Copy the API implementation, shared core utilities,
+# and the API container entrypoint script.
+COPY api_pokemon ./api_pokemon
+COPY core ./core
+COPY docker/api_entrypoint.py ./docker/api_entrypoint.py
+
+# Machine Learning models
+# -----------------------
+# Copy pre-trained ML models required for inference at runtime.
+COPY models ./models
+
+# Network configuration
+# ---------------------
+# Expose the API service port.
+# Note: The service listens on port 8080 instead of the default 8000.
+EXPOSE 8080
+
+# Entrypoint
+# ----------
+# Launch the API service via its dedicated entrypoint script.
+ENTRYPOINT ["python", "docker/api_entrypoint.py"]

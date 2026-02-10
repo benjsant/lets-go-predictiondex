@@ -68,6 +68,11 @@ instance/
 # Scrapy stuff:
 .scrapy
 
+# Machine Learning Models (too large for GitHub)
+models/*.pkl
+!models/battle_winner_metadata_v2.pkl
+!models/battle_winner_scalers_v2.pkl
+
 # Sphinx documentation
 docs/_build/
 
@@ -136,6 +141,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.local
 .envrc
 .venv
 env/
@@ -143,6 +149,10 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Interface specific environment files
+interface/.env
+interface/.env.local
 
 # Spyder project settings
 .spyderproject
@@ -204,4 +214,16 @@ cython_debug/
 # Marimo
 marimo/_static/
 marimo/_lsp/
-__marimo__/
+__marimo__/API_KEYS_PRIVATE.md
+
+# Monitoring reports (generated files)
+monitoring_validation_report.*
+
+# Reports générés automatiquement (structure préservée via .gitkeep)
+reports/**/*.json
+reports/**/*.html
+!reports/README.md
+!reports/.gitkeep
+!reports/monitoring/.gitkeep
+!reports/validation/.gitkeep
+nul

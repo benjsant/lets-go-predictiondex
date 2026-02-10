@@ -1,29 +1,333 @@
 services:
   db:
-    image: docker.io/library/postgres:15
+    image: postgres:15
     container_name: letsgo_postgres
     environment:
       POSTGRES_DB: letsgo_db
       POSTGRES_USER: letsgo_user
       POSTGRES_PASSWORD: letsgo_password
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql
+    ports:
+      - "5432:5432"  # Exposé sur localhost pour notebooks locaux
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U letsgo_user -d letsgo_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  app:
+  pgadmin:
+    image: dpage/pgadmin4:8.1
+    container_name: letsgo_pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@predictiondex.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin4/servers.json:/pgadmin4/servers.json
+    ports:
+      - "5050:80"  # Interface web accessible sur http://localhost:5050
+    networks:
+      - backend
+    restart: unless-stopped
+
+  etl:
     build:
       context: .
-      dockerfile: docker/Dockerfile  # chemin explicite vers le Dockerfile
-    container_name: letsgo_app
+      dockerfile: docker/Dockerfile.etl
+    container_name: letsgo_etl
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    environment:
+      PYTHONPATH: /app
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: letsgo_db
+      POSTGRES_USER: letsgo_user
+      POSTGRES_PASSWORD: letsgo_password
+      DEV_MODE: "true"
     volumes:
-      - .:/app
+      - ./etl_pokemon:/app/etl_pokemon
+      - ./core:/app/core
+      - ./docker:/app/docker
+    networks:
+      - backend
+    restart: "no"
+
+  ml_builder:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ml
+    container_name: letsgo_ml
+    depends_on:
+      etl:
+        condition: service_completed_successfully
+    environment:
+      PYTHONPATH: /app
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: letsgo_db
+      POSTGRES_USER: letsgo_user
+      POSTGRES_PASSWORD: letsgo_password
+      DEV_MODE: "true"
+      # Disable MLflow tracking for initial model creation (simplifies deployment)
+      DISABLE_MLFLOW_TRACKING: "true"
+      # Skip ML training if model already exists (set to false to force retrain)
+      ML_SKIP_IF_EXISTS: "true"
+      # ML Pipeline v2 Configuration
+      ML_MODE: "all"                    # all, dataset, train, evaluate
+      ML_SCENARIO_TYPE: "all"           # best_move, random_move, all_combinations, all
+      ML_TUNE_HYPERPARAMS: "true"       # Enable GridSearchCV
+      ML_GRID_TYPE: "fast"              # fast (8 combinations) or extended (243 combinations)
+      ML_NUM_RANDOM_SAMPLES: "5"        # Samples per matchup for random_move scenario
+      ML_MAX_COMBINATIONS: "20"         # Max combinations per matchup for all_combinations
+    volumes:
+      - ./machine_learning:/app/machine_learning
+      - ./core:/app/core
+      - ./data:/app/data
+      - ./models:/app/models            # Mount models/ to export trained models
+      - ./docker:/app/docker
+    networks:
+      - backend
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: letsgo_api
+    depends_on:
+      db:
+        condition: service_healthy
+      etl:
+        condition: service_completed_successfully
+      ml_builder:
+        condition: service_completed_successfully
     env_file:
       - .env
-    stdin_open: true
-    tty: true
+    environment:
+      PYTHONPATH: /app
+      DEV_MODE: "true"
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: letsgo_db
+      POSTGRES_USER: letsgo_user
+      POSTGRES_PASSWORD: letsgo_password
+      # Sécurité API
+      API_KEY_REQUIRED: "true"
+      # ML Model Loading: Use local files (much faster than MLflow Registry)
+      USE_MLFLOW_REGISTRY: "false"
+    volumes:
+      - ./api_pokemon:/app/api_pokemon
+      - ./core:/app/core
+      - ./docker:/app/docker
+      - ./data:/app/data                # For drift detection reference data
+      - ./models:/app/models            # For model metadata
+      - ./machine_learning:/app/machine_learning  # For ML pipeline + MLflow integration
+      - ./api_pokemon/monitoring:/app/api_pokemon/monitoring  # Persist monitoring data
+    # Port 8080 exposed for API access (API Key required for security)
+    ports:
+      - "8080:8080"  # Accessible from all interfaces (needed for CI/CD)
+    networks:
+      - backend
+      - monitoring
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.streamlit
+    container_name: letsgo_streamlit
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      PYTHONPATH: /app
+      STREAMLIT_API_KEY: ${STREAMLIT_API_KEY:-}
+    volumes:
+      - ./interface:/app/interface
+      - ./core:/app/core
+    ports:
+      - "8502:8501"  # Port modifié : 8502 sur l'hôte → 8501 dans le container
+    networks:
+      - backend
+      - monitoring
+    restart: unless-stopped
+
+  # ====================================================================
+  # Monitoring Stack
+  # ====================================================================
+  
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: letsgo_prometheus
+    volumes:
+      - ./docker/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9091:9090"  # Port modifié : 9091 sur l'hôte → 9090 dans le container
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: letsgo_grafana
+    depends_on:
+      prometheus:
+        condition: service_started
+      api:
+        condition: service_healthy
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_INSTALL_PLUGINS=
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3001:3000"  # Port modifié : 3001 sur l'hôte → 3000 dans le container
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:v1.6.1
+    container_name: letsgo_node_exporter
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    ports:
+      - "9101:9100"  # Port modifié : 9101 sur l'hôte → 9100 dans le container
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # ====================================================================
+  # MLflow Tracking Server (MLOps - C13)
+  # ====================================================================
+  
+  mlflow:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mlflow
+    container_name: letsgo_mlflow
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MLFLOW_BACKEND_STORE_URI: postgresql://letsgo_user:letsgo_password@db:5432/mlflow_db
+      MLFLOW_DEFAULT_ARTIFACT_ROOT: /app/mlruns
+      MLFLOW_TRACKING_URI: http://mlflow:5001
+    volumes:
+      - mlflow_data:/app/mlruns
+      - ./models:/app/models
+    ports:
+      - "5001:5001"  # Port modifié : 5001 sur l'hôte → 5001 dans le container
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5001
+      --backend-store-uri postgresql://letsgo_user:letsgo_password@db:5432/mlflow_db
+      --default-artifact-root /app/mlruns
+      --allowed-hosts *
+    networks:
+      - backend
+      - monitoring
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # ====================================================================
+  # Integration Tests (run with --profile tests)
+  # ====================================================================
+
+  tests:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.tests
+    container_name: letsgo_tests
+    depends_on:
+      api:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+      prometheus:
+        condition: service_started
+      grafana:
+        condition: service_started
+    environment:
+      PYTHONPATH: /app
+      PYTHONUNBUFFERED: 1
+      # Service URLs (internal Docker network)
+      API_URL: http://api:8080
+      MLFLOW_URL: http://mlflow:5001
+      PROMETHEUS_URL: http://prometheus:9090
+      GRAFANA_URL: http://grafana:3000
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: letsgo_db
+      POSTGRES_USER: letsgo_user
+      POSTGRES_PASSWORD: letsgo_password
+    volumes:
+      - ./tests:/app/tests
+      - ./reports:/app/reports
+      - ./core:/app/core
+      - ./api_pokemon:/app/api_pokemon
+      - ./machine_learning:/app/machine_learning
+    networks:
+      - backend
+      - monitoring
+    profiles:
+      - tests  # Only starts when using: docker compose --profile tests up
+
+networks:
+  backend:
+    driver: bridge
+    internal: false  # Réseau privé pour db, api, etl, ml, mlflow
+  monitoring:
+    driver: bridge   # Réseau pour Prometheus, Grafana, node-exporter
 
 volumes:
   postgres_data:
+  pgadmin_data:
+  prometheus_data:
+  grafana_data:
+  mlflow_data:

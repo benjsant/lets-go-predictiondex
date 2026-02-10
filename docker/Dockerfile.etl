@@ -1,0 +1,65 @@
+# Dockerfile for ETL Pipeline
+# ---------------------------
+# This container is responsible for executing the ETL (Extract, Transform, Load)
+# pipeline that populates and updates the PostgreSQL database.
+#
+# It is typically run as a batch container in Docker Compose, CI/CD pipelines,
+# or scheduled jobs.
+
+# Base image
+# ----------
+# Use the official Python 3.11 slim image to provide a lightweight and
+# reproducible Python runtime.
+FROM python:3.11-slim
+
+# Working directory
+# -----------------
+# All ETL-related code and execution will take place in /app.
+WORKDIR /app
+
+# Environment configuration
+# -------------------------
+# PYTHONDONTWRITEBYTECODE prevents generation of .pyc files.
+# PYTHONUNBUFFERED ensures real-time log output for container visibility.
+# PYTHONPATH allows shared project modules to be imported correctly.
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+
+# System dependencies
+# -------------------
+# Install system-level packages required for:
+# - building Python packages with native extensions
+# - PostgreSQL connectivity (libpq-dev)
+# - HTTP requests and health checks (curl)
+# - interacting with Git repositories if needed by the ETL
+#
+# --no-install-recommends keeps the final image minimal.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# ETL dependencies
+# ----------------
+# Copy ETL-specific requirements separately to benefit from Docker layer caching.
+COPY etl_pokemon/requirements.txt ./etl_requirements.txt
+RUN pip install --no-cache-dir -r etl_requirements.txt
+
+# Application source code
+# -----------------------
+# Copy the ETL logic, shared core utilities,
+# and the ETL container entrypoint script.
+COPY etl_pokemon ./etl_pokemon
+COPY core ./core
+COPY docker/etl_entrypoint.py ./docker/etl_entrypoint.py
+
+# Default command
+# ---------------
+# Execute the ETL entrypoint script, which:
+# - waits for the PostgreSQL database to be available,
+# - runs the ETL pipeline,
+# - exits with an appropriate status code.
+CMD ["python", "docker/etl_entrypoint.py"]
