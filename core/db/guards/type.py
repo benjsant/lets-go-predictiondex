@@ -3,7 +3,7 @@
 """
 Database guard for Pokémon types.
 
-This module ensures that Pokémon types are uniquely stored
+This module Pokémon types are uniquely stored
 and reused during ETL processes.
 """
 

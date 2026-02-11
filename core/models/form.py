@@ -1,10 +1,4 @@
-"""
-SQLAlchemy Model – Form
-======================
-
-This model represents a Pokémon form (Base, Mega, Alola, Starter, etc.).
-It centralizes form information and replaces the boolean flags in Pokemon.
-"""
+"""SQLAlchemy model for Pokemon forms (Base, Mega, Alola, etc.)."""
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship

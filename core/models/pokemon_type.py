@@ -1,21 +1,5 @@
 # core/models/pokemon_type.py
-
-"""
-SQLAlchemy Model – PokemonType
-==============================
-
-This module defines the `PokemonType` model, which represents the **elemental
-typing of a Pokémon** in Pokémon Let's Go Pikachu / Eevee.
-
-It is an enriched association table linking:
-- a Pokémon (`Pokemon`),
-- an elemental type (`Type`),
-- a slot indicating primary or secondary typing.
-
-Each Pokémon can have one or two types, ordered by slot:
-- slot = 1 → primary type
-- slot = 2 → secondary type
-"""
+"""SQLAlchemy model for Pokemon type associations."""
 
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship

@@ -1,27 +1,5 @@
 # core/models/learn_method.py
-"""
-SQLAlchemy Model – LearnMethod
-==============================
-
-This module defines the `LearnMethod` model, which represents **how a Pokémon
-learns a move** in Pokémon Let's Go Pikachu / Eevee.
-
-This model acts as a **reference (lookup) table** and is consumed by:
-- Scrapy pipelines (in-memory cache for performance),
-- Scrapy spiders (normalized learning method values),
-- the `pokemon_move` association table.
-
-Examples of learning methods:
-- level_up        → learned by leveling up
-- ct              → TM / Technical Machine
-- move_tutor      → Move Tutor
-- starter_exclusive / mega_exclusive (future extensions)
-
-This model enables:
-- strict normalization of learning methods,
-- referential integrity via foreign keys,
-- schema extensibility without modifying pipelines or spiders.
-"""
+"""SQLAlchemy model for move learning methods."""
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
@@ -46,11 +24,11 @@ class LearnMethod(Base):
 
     Example rows:
     ┌────┬──────────────────┐
-    │ id │ name             │
+    │ id │ name │
     ├────┼──────────────────┤
-    │ 1  │ level_up         │
-    │ 2  │ ct               │
-    │ 3  │ move_tutor       │
+    │ 1 │ level_up │
+    │ 2 │ ct │
+    │ 3 │ move_tutor │
     └────┴──────────────────┘
     """
 

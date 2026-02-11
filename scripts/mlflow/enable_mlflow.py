@@ -29,12 +29,12 @@ def print_header(text):
 
 def print_success(text):
     """Display a success message."""
-    print(f"{GREEN}✅ {text}{RESET}")
+    print(f"{GREEN}{text}{RESET}")
 
 
 def print_error(text):
     """Display an error message."""
-    print(f"{RED}❌ {text}{RESET}")
+    print(f"{RED}{text}{RESET}")
 
 
 def print_warning(text):
@@ -60,7 +60,7 @@ def check_mlflow_server():
         pass
 
     print_error("MLflow Server is not accessible")
-    print_warning("   Starting MLflow...")
+    print_warning(" Starting MLflow...")
 
     # Start MLflow
     try:
@@ -69,7 +69,7 @@ def check_mlflow_server():
             check=True,
             capture_output=True
         )
-        print_warning("   Waiting 10 seconds...")
+        print_warning(" Waiting 10 seconds...")
         time.sleep(10)
 
         # Re-check
@@ -79,7 +79,7 @@ def check_mlflow_server():
             return True
 
         print_error("MLflow Server still not accessible")
-        print_warning("   Check logs: docker compose logs mlflow")
+        print_warning(" Check logs: docker compose logs mlflow")
         return False
 
     except subprocess.CalledProcessError as exc:
@@ -99,9 +99,9 @@ def configure_environment():
     os.environ["ML_SKIP_IF_EXISTS"] = "false"
 
     print_success("Environment variables configured:")
-    print("   - DISABLE_MLFLOW_TRACKING=false")
-    print("   - MLFLOW_TRACKING_URI=http://localhost:5001")
-    print("   - ML_SKIP_IF_EXISTS=false")
+    print(" - DISABLE_MLFLOW_TRACKING=false")
+    print(" - MLFLOW_TRACKING_URI=http://localhost:5001")
+    print(" - ML_SKIP_IF_EXISTS=false")
 
 
 def register_model():
@@ -127,30 +127,30 @@ def register_model():
 def print_success_message():
     """Display the final success message."""
     print(f"\n{GREEN}{'='*40}{RESET}")
-    print(f"{GREEN}{'✅ SUCCESS!':^40}{RESET}")
+    print(f"{GREEN}{'SUCCESS!':^40}{RESET}")
     print(f"{GREEN}{'='*40}{RESET}\n")
 
     print_success("Model v2 (96.24% accuracy) has been registered in MLflow\n")
 
-    print_info("📊 Check in MLflow UI:")
-    print("   http://localhost:5001\n")
+    print_info("Check in MLflow UI:")
+    print(" http://localhost:5001\n")
 
-    print_info("🔧 To make the API use MLflow Registry:")
-    print("   1. Modify docker-compose.yml line 128:")
-    print('      USE_MLFLOW_REGISTRY: "true"')
-    print("   2. Restart the API:")
-    print("      docker compose restart api\n")
+    print_info("To make the API use MLflow Registry:")
+    print(" 1. Modify docker-compose.yml line 128:")
+    print(' USE_MLFLOW_REGISTRY: "true"')
+    print(" 2. Restart the API:")
+    print(" docker compose restart api\n")
 
-    print_info("🚀 To train a new model with MLflow:")
-    print("   export DISABLE_MLFLOW_TRACKING=false")
-    print("   export MLFLOW_TRACKING_URI=http://localhost:5001")
-    print("   python machine_learning/train_model.py --version v3\n")
+    print_info("To train a new model with MLflow:")
+    print(" export DISABLE_MLFLOW_TRACKING=false")
+    print(" export MLFLOW_TRACKING_URI=http://localhost:5001")
+    print(" python machine_learning/train_model.py --version v3\n")
 
 
 def print_failure_message():
     """Display the failure message."""
     print(f"\n{RED}{'='*40}{RESET}")
-    print(f"{RED}{'❌ FAILURE':^40}{RESET}")
+    print(f"{RED}{'FAILURE':^40}{RESET}")
     print(f"{RED}{'='*40}{RESET}\n")
 
     print_error("Model registration failed")

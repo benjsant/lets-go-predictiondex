@@ -28,7 +28,7 @@ def client():
 
 
 # ============================================================
-# 🔹 TESTS: GET /types/
+# TESTS: GET /types/
 # ============================================================
 
 class TestListTypes:
@@ -87,7 +87,7 @@ class TestListTypes:
 
 
 # ============================================================
-# 🔹 TESTS: GET /types/affinities
+# TESTS: GET /types/affinities
 # ============================================================
 
 class TestGetTypeAffinities:
@@ -229,7 +229,7 @@ class TestGetTypeAffinities:
 
 
 # ============================================================
-# 🔹 TESTS: GET /types/{type_name}/pokemon
+# TESTS: GET /types/{type_name}/pokemon
 # ============================================================
 
 class TestListPokemonByType:

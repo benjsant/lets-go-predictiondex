@@ -23,7 +23,7 @@ RESET = '\033[0m'
 
 def print_step(step_num, title):
     """Display a step header."""
-    print(f"\n📋 Step {step_num}: {title}...")
+    print(f"\n Step {step_num}: {title}...")
 
 
 def check_command(command):
@@ -36,18 +36,18 @@ def check_prerequisites():
     print_step(1, "Checking prerequisites")
 
     if not check_command("docker"):
-        print(f"{RED}❌ Docker is not installed{RESET}")
+        print(f"{RED}Docker is not installed{RESET}")
         return False
 
     if not (check_command("docker-compose") or check_command("docker")):
-        print(f"{RED}❌ Docker Compose is not installed{RESET}")
+        print(f"{RED}Docker Compose is not installed{RESET}")
         return False
 
     if not check_command("python3"):
-        print(f"{RED}❌ Python 3 is not installed{RESET}")
+        print(f"{RED}Python 3 is not installed{RESET}")
         return False
 
-    print(f"{GREEN}✅ All prerequisites OK{RESET}")
+    print(f"{GREEN}All prerequisites OK{RESET}")
     return True
 
 
@@ -58,7 +58,7 @@ def create_env_file():
     env_file = Path(".env")
 
     if env_file.exists():
-        print(f"{GREEN}✅ .env file already exists{RESET}")
+        print(f"{GREEN}.env file already exists{RESET}")
         return True
 
     env_content = """POSTGRES_USER=letsgo_user
@@ -75,7 +75,7 @@ ML_SKIP_IF_EXISTS=true
 """
 
     env_file.write_text(env_content)
-    print(f"{GREEN}✅ .env file created{RESET}")
+    print(f"{GREEN}.env file created{RESET}")
     return True
 
 
@@ -98,10 +98,10 @@ def start_services():
     )
 
     if result.returncode != 0:
-        print(f"{RED}❌ Failed to start services{RESET}")
+        print(f"{RED}Failed to start services{RESET}")
         return False
 
-    print("⏳ Waiting for services to start...")
+    print("Waiting for services to start...")
     time.sleep(10)
     return True
 
@@ -110,7 +110,7 @@ def wait_for_postgres():
     """Wait for PostgreSQL to be ready."""
     print_step(4, "Waiting for PostgreSQL")
 
-    for _ in range(30):  # 60 seconds max
+    for _ in range(30): # 60 seconds max
         result = subprocess.run(
             ["docker", "compose", "exec", "-T", "db", "pg_isready", "-U", "letsgo_user"],
             capture_output=True,
@@ -118,12 +118,12 @@ def wait_for_postgres():
         )
 
         if result.returncode == 0:
-            print(f"{GREEN}✅ PostgreSQL ready{RESET}")
+            print(f"{GREEN}PostgreSQL ready{RESET}")
             return True
 
         time.sleep(2)
 
-    print(f"{RED}❌ PostgreSQL timeout{RESET}")
+    print(f"{RED}PostgreSQL timeout{RESET}")
     return False
 
 
@@ -135,7 +135,7 @@ def wait_for_service(step, name, url, timeout=120, critical=True):
         try:
             response = requests.get(url, timeout=3)
             if response.status_code in [200, 302]:
-                print(f"{GREEN}✅ {name} ready{RESET}")
+                print(f"{GREEN}{name} ready{RESET}")
                 return True
         except requests.exceptions.RequestException:
             pass
@@ -143,10 +143,10 @@ def wait_for_service(step, name, url, timeout=120, critical=True):
         time.sleep(3)
 
     if critical:
-        print(f"{RED}❌ {name} timeout{RESET}")
+        print(f"{RED}{name} timeout{RESET}")
         return False
 
-    print(f"{YELLOW}⚠️  {name} timeout (non-critical){RESET}")
+    print(f"{YELLOW}{name} timeout (non-critical){RESET}")
     return True
 
 
@@ -191,11 +191,11 @@ def check_all_services():
         status, ok = check_service_status(name, url, success_codes)
         results[name] = (status, ok)
 
-        status_text = f"{GREEN}✅ OK ({status}){RESET}" if ok else f"{YELLOW}⚠️  WARN ({status}){RESET}"
+        status_text = f"{GREEN}OK ({status}){RESET}" if ok else f"{YELLOW}WARN ({status}){RESET}"
         if name == "API" and not ok:
-            status_text = f"{RED}❌ FAIL ({status}){RESET}"
+            status_text = f"{RED}FAIL ({status}){RESET}"
 
-        print(f"  - {name:12} {status_text}")
+        print(f" - {name:12} {status_text}")
 
     return results
 
@@ -204,7 +204,7 @@ def install_dependencies():
     """Install Python dependencies."""
     print_step(10, "Installing Python dependencies")
 
-    print(f"{GREEN}✅ Dependencies already installed{RESET}")
+    print(f"{GREEN}Dependencies already installed{RESET}")
     return True
 
 
@@ -217,7 +217,7 @@ def run_monitoring_validation():
     validation_script = Path("tests/integration/test_monitoring_validation.py")
 
     if not validation_script.exists():
-        print(f"{RED}❌ Validation script not found at {validation_script}{RESET}")
+        print(f"{RED}Validation script not found at {validation_script}{RESET}")
         return False, 0
 
     result = subprocess.run(
@@ -227,10 +227,10 @@ def run_monitoring_validation():
     )
 
     if result.returncode == 0:
-        print(f"\n{GREEN}✅ MONITORING VALIDATION PASSED!{RESET}")
+        print(f"\n{GREEN}MONITORING VALIDATION PASSED!{RESET}")
         return True, 100
 
-    print(f"\n{RED}❌ MONITORING VALIDATION FAILED!{RESET}")
+    print(f"\n{RED}MONITORING VALIDATION FAILED!{RESET}")
     return False, 0
 
 
@@ -245,19 +245,19 @@ def check_reports():
         try:
             data = json.loads(json_report.read_text())
             score = data.get("validation_score", 0)
-            print(f"{GREEN}✅ JSON report generated{RESET}")
-            print(f"   Score: {GREEN}{score}/100{RESET}")
+            print(f"{GREEN}JSON report generated{RESET}")
+            print(f" Score: {GREEN}{score}/100{RESET}")
         except json.JSONDecodeError:
-            print(f"{RED}❌ Failed to read JSON report{RESET}")
+            print(f"{RED}Failed to read JSON report{RESET}")
     else:
-        print(f"{RED}❌ JSON report not found{RESET}")
+        print(f"{RED}JSON report not found{RESET}")
 
     html_report = Path("reports/monitoring/validation_report.html")
     if html_report.exists():
-        print(f"{GREEN}✅ HTML report generated{RESET}")
-        print(f"   Location: {html_report}")
+        print(f"{GREEN}HTML report generated{RESET}")
+        print(f" Location: {html_report}")
     else:
-        print(f"{RED}❌ HTML report not found{RESET}")
+        print(f"{RED}HTML report not found{RESET}")
 
     return score
 
@@ -270,20 +270,20 @@ def print_summary(api_status, score):
     success = api_status and score >= 60
 
     if success:
-        print(f"\n{GREEN}🏆 SUCCESS! Your CI/CD pipeline will work on GitHub Actions{RESET}\n")
+        print(f"\n{GREEN} SUCCESS! Your CI/CD pipeline will work on GitHub Actions{RESET}\n")
         print("Next steps:")
-        print("  1. Commit your changes: git add . && git commit -m 'Add monitoring validation workflow'")
-        print("  2. Push to GitHub: git push origin main")
-        print("  3. Check GitHub Actions: https://github.com/your-repo/lets-go-predictiondex/actions")
-        print("  4. Download the HTML report from artifacts")
+        print(" 1. Commit your changes: git add . && git commit -m 'Add monitoring validation workflow'")
+        print(" 2. Push to GitHub: git push origin main")
+        print(" 3. Check GitHub Actions: https://github.com/your-repo/lets-go-predictiondex/actions")
+        print(" 4. Download the HTML report from artifacts")
         return 0
 
-    print(f"\n{RED}❌ FAILED! Fix the issues before pushing to GitHub{RESET}\n")
+    print(f"\n{RED}FAILED! Fix the issues before pushing to GitHub{RESET}\n")
     print("Issues found:")
     if not api_status:
-        print("  - API is not responding correctly")
+        print(" - API is not responding correctly")
     if score < 60:
-        print(f"  - Monitoring score is too low ({score} < 60)")
+        print(f" - Monitoring score is too low ({score} < 60)")
     return 1
 
 
@@ -293,20 +293,20 @@ def cleanup_prompt():
     try:
         response = input("Do you want to stop the services? (y/N): ")
         if response.lower() in ['y', 'yes']:
-            print("🧹 Cleaning up...")
+            print(" Cleaning up...")
             subprocess.run(["docker", "compose", "down", "-v"], check=False)
-            print(f"{GREEN}✅ Services stopped{RESET}")
+            print(f"{GREEN}Services stopped{RESET}")
         else:
-            print("⚙️  Services are still running")
-            print("   Stop them manually with: docker compose down -v")
+            print(" Services are still running")
+            print(" Stop them manually with: docker compose down -v")
     except KeyboardInterrupt:
-        print("\n⚙️  Services are still running")
-        print("   Stop them manually with: docker compose down -v")
+        print("\n Services are still running")
+        print(" Stop them manually with: docker compose down -v")
 
 
 def main():
     """Main function."""
-    print("🎯 Testing CI/CD Pipeline Locally")
+    print("Testing CI/CD Pipeline Locally")
     print("=" * 34)
 
     # Step 1: Check prerequisites

@@ -1,16 +1,5 @@
 # api_pokemon/services/pokemon_service.py
-
-"""
-Pokémon service layer
-====================
-
-Provides database access for Pokémon entities.
-
-This service is responsible for:
-- querying Pokémon data
-- eager-loading all required relationships
-- returning ORM objects ready for Pydantic serialization
-"""
+"""Database access functions for Pokemon entities."""
 
 from collections import defaultdict
 from decimal import Decimal
@@ -22,17 +11,10 @@ from core.models import Move, Pokemon, PokemonMove, PokemonType, Type, TypeEffec
 
 
 # -------------------------
-# 🔹 List Pokémon
+# List Pokémon
 # -------------------------
 def list_pokemon(db: Session) -> List[Pokemon]:
-    """
-    Retrieve all Pokémon for list views.
-
-    Eager-loaded relationships:
-    - species
-    - form
-    - types (with type details)
-    """
+    """Retrieve all Pokemon with eager-loaded relationships."""
     return (
         db.query(Pokemon)
         .options(
@@ -47,26 +29,13 @@ def list_pokemon(db: Session) -> List[Pokemon]:
 
 
 # -------------------------
-# 🔹 Pokémon detail
+# Pokémon detail
 # -------------------------
 def get_pokemon_by_id(
     db: Session,
     pokemon_id: int,
 ) -> Optional[Pokemon]:
-    """
-    Retrieve a Pokémon by ID for detail view.
-
-    Eager-loaded relationships:
-    - species
-    - form
-    - base stats
-    - types (with type details)
-    - moves:
-        - move
-        - move type
-        - move category
-        - learn method
-    """
+    """Retrieve a Pokemon by ID with eager-loaded relationships."""
     return (
         db.query(Pokemon)
         .options(
@@ -89,25 +58,12 @@ def get_pokemon_by_id(
     )
 
 # -------------------------
-# 🔹 Search Pokémon by species name
+# Search Pokémon by species name
 # -------------------------
 
 
 def search_pokemon_by_species_name(db: Session, name: str, lang: str = "fr") -> List[Pokemon]:
-    """
-    Search Pokémon by species name (localized).
-
-    Parameters
-    ----------
-    name : str
-        Partial or full name to search.
-    lang : str
-        Language code (default 'fr').
-
-    Returns
-    -------
-    List[Pokemon]
-    """
+    """Search Pokemon by species name (partial match, localized)."""
     species_name_field = getattr(Pokemon.species.property.mapper.class_, f"name_{lang}")
     return (
         db.query(Pokemon)
@@ -141,7 +97,7 @@ def compute_pokemon_weaknesses(
     # Base multiplier = 1
     multipliers = defaultdict(lambda: Decimal("1.0"))
 
-    # Toutes les relations où le Pokémon est défenseur
+    # All relations where the Pokemon is a defender
     affinities = (
         db.query(TypeEffectiveness)
         .filter(TypeEffectiveness.defending_type_id.in_(defending_type_ids))
@@ -151,13 +107,13 @@ def compute_pokemon_weaknesses(
     for eff in affinities:
         multipliers[eff.attacking_type_id] *= eff.multiplier
 
-    # Mapping ID → nom de type
+    # Mapping ID -> type name
     types = {
         t.id: t.name
         for t in db.query(Type).all()
     }
 
-    # On renvoie **tous les types**, même neutralité
+    # Return all types, including neutral
     return [
         {
             "attacking_type": types[type_id],

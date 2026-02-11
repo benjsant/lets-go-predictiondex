@@ -9,8 +9,8 @@ This schema is used in FastAPI responses to serialize
 learn method data from the database.
 
 Fields:
-- id    : unique identifier of the learn method
-- name  : normalized name of the method (e.g., level_up, ct, move_tutor)
+- id : unique identifier of the learn method
+- name : normalized name of the method (e.g., level_up, ct, move_tutor)
 """
 
 from pydantic import BaseModel, ConfigDict
@@ -24,6 +24,6 @@ class LearnMethodOut(BaseModel):
     in API responses, with attribute-based mapping.
     """
     id: int
-    name: str  # level_up | ct | move_tutor | etc.
+    name: str # level_up | ct | move_tutor | etc.
 
     model_config = ConfigDict(from_attributes=True)

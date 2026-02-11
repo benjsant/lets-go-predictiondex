@@ -1,26 +1,26 @@
-# 📜 Scripts Utilitaires
+# Scripts Utilitaires
 
 > Scripts pour faciliter le développement, les tests et les démonstrations
 
-## 📁 Structure
+## Structure
 
 ```
 scripts/
-├── demo_certification.py          # 🎓 Démonstration E1/E3
-├── quick_start_docker.py          # 🚀 Guide interactif Docker
-├── start_docker_stack.py          # 🐳 Démarrage Docker simplifié
-├── validate_docker_stack.py       # ✅ Validation des services
-├── run_all_tests.py               # 🧪 Orchestration des tests
-├── test_certification_workflow.py # 🎯 Simulation CI/CD local
-├── test_ci_cd_locally.py          # 🔄 Tests CI/CD avant push
-├── generate_monitoring_data.py    # 📊 Génération métriques Grafana
-├── populate_monitoring_v2.py      # 📈 Prédictions réalistes
-└── mlflow/                        # MLOps
-    ├── enable_mlflow.py           # Activation MLflow
-    └── register_existing_model.py # Enregistrement Model Registry
+├── demo_certification.py # Démonstration E1/E3
+├── quick_start_docker.py # Guide interactif Docker
+├── start_docker_stack.py # Démarrage Docker simplifié
+├── validate_docker_stack.py # Validation des services
+├── run_all_tests.py # Orchestration des tests
+├── test_certification_workflow.py # Simulation CI/CD local
+├── test_ci_cd_locally.py # Tests CI/CD avant push
+├── generate_monitoring_data.py # Génération métriques Grafana
+├── populate_monitoring_v2.py # Prédictions réalistes
+└── mlflow/ # MLOps
+ ├── enable_mlflow.py # Activation MLflow
+ └── register_existing_model.py # Enregistrement Model Registry
 ```
 
-## 🚀 Scripts de Démarrage
+## Scripts de Démarrage
 
 ### `quick_start_docker.py`
 Guide interactif pour démarrer la stack Docker complète.
@@ -53,7 +53,7 @@ python scripts/validate_docker_stack.py --verbose
 
 **Services vérifiés** : PostgreSQL, API, Streamlit, Prometheus, Grafana, MLflow
 
-## 🎓 Scripts de Certification
+## Scripts de Certification
 
 ### `demo_certification.py`
 Ouvre automatiquement toutes les interfaces pour la démonstration E1/E3.
@@ -88,7 +88,7 @@ python scripts/test_certification_workflow.py --job e1-data-validation
 python scripts/test_certification_workflow.py --job e3-c13-mlops
 ```
 
-## 🧪 Scripts de Test
+## Scripts de Test
 
 ### `run_all_tests.py`
 Orchestration complète des tests via Docker.
@@ -111,7 +111,7 @@ Teste le CI/CD localement avant de pousser sur GitHub.
 python scripts/test_ci_cd_locally.py
 ```
 
-## 📊 Scripts de Monitoring
+## Scripts de Monitoring
 
 ### `generate_monitoring_data.py`
 Génère des métriques pour remplir Grafana/Prometheus.
@@ -146,7 +146,7 @@ python scripts/populate_monitoring_v2.py --count 100
 python scripts/populate_monitoring_v2.py --count 50 --skip-mlflow
 ```
 
-## 🔬 Scripts MLflow
+## Scripts MLflow
 
 ### `mlflow/enable_mlflow.py`
 Active MLflow et configure le tracking.
@@ -162,13 +162,13 @@ Enregistre le modèle existant (v2, 88.23% accuracy) dans MLflow Registry.
 python scripts/mlflow/register_existing_model.py
 ```
 
-## 🔧 Prérequis
+## Prérequis
 
 - Python 3.11+
 - Docker et Docker Compose
 - Stack Docker démarrée (`docker compose up`)
 
-## 📈 Workflow Typique
+## Workflow Typique
 
 ```bash
 # 1. Démarrer la stack

@@ -1,35 +1,35 @@
-# 🔄 ETL Pipeline - Pokémon Let's Go
+# ETL Pipeline - Pokémon Let's Go
 
 > Pipeline de collecte, transformation et chargement des données Pokémon
 
-## 📋 Vue d'ensemble
+## Vue d'ensemble
 
 Ce module implémente un pipeline ETL complet qui :
 1. **Extract** : Collecte depuis 3 sources (CSV, PokéAPI, Pokepedia)
 2. **Transform** : Nettoie, normalise et agrège les données
 3. **Load** : Charge dans PostgreSQL (11 tables normalisées)
 
-## 📁 Structure
+## Structure
 
 ```
 etl_pokemon/
-├── pipeline.py              # 🚀 Orchestrateur principal
+├── pipeline.py # Orchestrateur principal
 ├── scripts/
-│   ├── etl_init_db.py       # Initialisation schéma BDD
-│   ├── etl_load_csv.py      # Chargement CSV (151 Pokémon)
-│   ├── etl_enrich_pokeapi.py # Enrichissement via PokéAPI
-│   ├── etl_post_process.py  # Transformations Méga
-│   └── etl_previous_evolution.py # Héritage moves évolutions
-├── pokepedia_scraper/       # 🕷️ Spider Scrapy
-│   └── pokepedia_scraper/
-│       └── spiders/
-│           └── letsgo_moves_sql.py
+│ ├── etl_init_db.py # Initialisation schéma BDD
+│ ├── etl_load_csv.py # Chargement CSV (151 Pokémon)
+│ ├── etl_enrich_pokeapi.py # Enrichissement via PokéAPI
+│ ├── etl_post_process.py # Transformations Méga
+│ └── etl_previous_evolution.py # Héritage moves évolutions
+├── pokepedia_scraper/ # Spider Scrapy
+│ └── pokepedia_scraper/
+│ └── spiders/
+│ └── letsgo_moves_sql.py
 ├── data/
-│   └── csv/                 # Fichiers CSV source
-└── utils/                   # Utilitaires
+│ └── csv/ # Fichiers CSV source
+└── utils/ # Utilitaires
 ```
 
-## 🚀 Utilisation
+## Utilisation
 
 ### Exécution complète (recommandé)
 
@@ -66,7 +66,7 @@ python etl_pokemon/scripts/etl_post_process.py
 python etl_pokemon/scripts/etl_previous_evolution.py
 ```
 
-## 📊 Sources de Données
+## Sources de Données
 
 | Source | Type | Données | Compétence |
 |--------|------|---------|------------|
@@ -75,7 +75,7 @@ python etl_pokemon/scripts/etl_previous_evolution.py
 | Pokepedia | Web Scraping | Moves Let's Go spécifiques | C1 |
 | PostgreSQL | Base de données | Requêtes SQL complexes | C2 |
 
-## 🗄️ Schéma Base de Données
+## Schéma Base de Données
 
 ```
 pokemon (188)
@@ -94,7 +94,7 @@ move (226)
 form (Alola, Mega)
 ```
 
-## ⚙️ Variables d'Environnement
+## Variables d'Environnement
 
 | Variable | Défaut | Description |
 |----------|--------|-------------|
@@ -104,13 +104,13 @@ form (Alola, Mega)
 | `POSTGRES_USER` | letsgo_user | Utilisateur |
 | `POSTGRES_PASSWORD` | letsgo_password | Mot de passe |
 
-## 🧪 Tests
+## Tests
 
 ```bash
 pytest tests/etl/ -v
 ```
 
-## 📈 Métriques
+## Métriques
 
 | Métrique | Valeur |
 |----------|--------|

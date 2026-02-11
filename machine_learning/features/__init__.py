@@ -1,9 +1,4 @@
-"""
-Feature engineering module for Pokemon ML pipeline.
-
-This module provides classes and functions to transform raw data
-into features ready for model training.
-"""
+"""Feature engineering module for Pokemon ML pipeline."""
 
 from machine_learning.features.engineering import PokemonFeatureEngineer
 

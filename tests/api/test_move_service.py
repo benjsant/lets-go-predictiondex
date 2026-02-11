@@ -19,7 +19,7 @@ from api_pokemon.services.move_service import (
 
 
 # ============================================================
-# 🔹 TESTS: Text Normalization
+# TESTS: Text Normalization
 # ============================================================
 
 class TestNormalize:
@@ -54,7 +54,7 @@ class TestNormalize:
 
 
 # ============================================================
-# 🔹 TESTS: List Moves
+# TESTS: List Moves
 # ============================================================
 
 class TestListMoves:
@@ -64,7 +64,7 @@ class TestListMoves:
         """Test that list_moves returns all moves."""
         result = list_moves(db_session)
 
-        assert len(result) == 6  # All sample moves
+        assert len(result) == 6 # All sample moves
         assert result[0].name == "Lance-Flammes"
 
     def test_list_moves_eager_loads_type(self, db_session, sample_moves):
@@ -95,7 +95,7 @@ class TestListMoves:
 
 
 # ============================================================
-# 🔹 TESTS: Get Move by ID
+# TESTS: Get Move by ID
 # ============================================================
 
 class TestGetMoveById:
@@ -130,7 +130,7 @@ class TestGetMoveById:
 
 
 # ============================================================
-# 🔹 TESTS: Search Moves by Name
+# TESTS: Search Moves by Name
 # ============================================================
 
 class TestSearchMovesByName:
@@ -183,7 +183,7 @@ class TestSearchMovesByName:
 
 
 # ============================================================
-# 🔹 TESTS: List Moves by Type
+# TESTS: List Moves by Type
 # ============================================================
 
 class TestListMovesByType:

@@ -1,23 +1,5 @@
 # core/schemas/move.py
-
-"""
-Pydantic schemas – Move
-======================
-
-This module defines the Pydantic schemas related to Pokémon moves
-for the FastAPI layer.
-
-The schemas are organized by use case:
-- base representation of a move,
-- lightweight version for list endpoints,
-- detailed version for move detail endpoints,
-- reverse view showing which Pokémon can learn a given move.
-
-These schemas are designed to:
-- cleanly separate API representation from SQLAlchemy models,
-- support nested serialization (Type, Pokémon),
-- ensure consistent responses across endpoints.
-"""
+"""Pydantic schemas for Pokemon moves."""
 
 from typing import List, Optional
 
@@ -27,7 +9,7 @@ from core.schemas.type import TypeOut
 
 
 # -------------------------
-# 🔹 Base Move
+# Base Move
 # -------------------------
 class MoveBase(BaseModel):
     """
@@ -45,7 +27,7 @@ class MoveBase(BaseModel):
 
 
 # -------------------------
-# 🔹 Move – list view
+# Move – list view
 # -------------------------
 class MoveListItem(MoveBase):
     """
@@ -60,7 +42,7 @@ class MoveListItem(MoveBase):
 
 
 # -------------------------
-# 🔹 Move – detail view
+# Move – detail view
 # -------------------------
 class MoveDetail(MoveListItem):
     """
@@ -74,7 +56,7 @@ class MoveDetail(MoveListItem):
 
 
 # -------------------------
-# 🔹 Pokémon learning the move (Move-centric view)
+# Pokémon learning the move (Move-centric view)
 # -------------------------
 class MovePokemonOut(BaseModel):
     """
@@ -93,7 +75,7 @@ class MovePokemonOut(BaseModel):
 
 
 # -------------------------
-# 🔹 Move with Pokémon list
+# Move with Pokémon list
 # -------------------------
 class MoveWithPokemons(MoveDetail):
     """

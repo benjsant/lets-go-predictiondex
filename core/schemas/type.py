@@ -1,48 +1,23 @@
 # core/schemas/type.py
-"""
-Pydantic schemas – Pokémon types (optimisé)
-===========================================
-
-Ce module définit les schemas Pydantic pour exposer les types Pokémon via l'API.
-Il est aligné avec les modèles SQLAlchemy et inclut les relations nécessaires pour
-les moves et les slots dans le contexte Pokémon.
-"""
+"""Pydantic schemas for Pokemon types."""
 
 from typing import List
 
 from pydantic import BaseModel, ConfigDict
 
 
-# -------------------------
-# 🔹 Type Pokémon de base
-# -------------------------
 class TypeOut(BaseModel):
-    """
-    Schema de sortie pour un type Pokémon élémentaire.
+ """Basic Pokemon type (id + name)."""
 
-    Ce schema est utilisé dans :
-    - les listes de Pokémon,
-    - les descriptions de moves,
-    - les réponses API légères.
-    """
+ id: int
+ name: str
 
-    id: int
-    name: str
-
-    model_config = ConfigDict(from_attributes=True)
+ model_config = ConfigDict(from_attributes=True)
 
 
-# -------------------------
-# 🔹 Type Pokémon avec moves
-# -------------------------
 class TypeWithMoves(TypeOut):
-    """
-    Schema étendu incluant les moves associés à ce type.
+ """Pokemon type with associated move IDs."""
 
-    Aligné avec le modèle SQLAlchemy `Move.type_id`.
-    Fournit une liste d'identifiants de moves pour les endpoints analytiques ou détaillés.
-    """
+ move_ids: List[int] = []
 
-    move_ids: List[int] = []
-
-    model_config = ConfigDict(from_attributes=True)
+ model_config = ConfigDict(from_attributes=True)

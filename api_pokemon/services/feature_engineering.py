@@ -115,26 +115,7 @@ def prepare_features_for_prediction(
 
 
 def apply_feature_engineering(df_raw: pd.DataFrame) -> pd.DataFrame:
-    """
-    Apply the same feature engineering pipeline as training.
-
-    This function transforms raw features into the engineered features
-    expected by the ML model using the same steps as during training.
-
-    Pipeline steps:
-    1. One-hot encode categorical features (types, move types)
-    2. Normalize numerical features using StandardScaler
-    3. Create derived features (ratios, advantages, etc.)
-    4. Normalize derived features using StandardScaler
-    5. Ensure all expected columns are present and in correct order
-
-    Args:
-        df_raw: Raw features DataFrame (1 row, ~38 columns)
-
-    Returns:
-        Engineered features DataFrame (1 row, ~133 columns)
-        Ready for model prediction.
-    """
+    """Apply the same feature engineering pipeline as training."""
     model_instance = prediction_model
     scalers = model_instance.scalers
 

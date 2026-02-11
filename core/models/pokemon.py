@@ -1,25 +1,5 @@
 # core/models/pokemon.py
-
-"""
-SQLAlchemy Model – Pokemon
-=========================
-
-This module defines the `Pokemon` model, which represents a **specific Pokémon
-form** in the database for Pokémon Let's Go Pikachu / Eevee.
-
-A Pokémon instance corresponds to a concrete, playable form of a species
-(e.g. Base form, Mega Evolution, Alolan form), and not to the species itself.
-
-The model is designed to:
-- normalize data coming from multiple sources (PokeAPI, Poképédia),
-- support form-specific attributes and flags,
-- serve as a core entity for battle simulation and machine learning.
-
-Each Pokémon:
-- belongs to exactly one species,
-- can have stats, types, and learnable moves,
-- is uniquely identified by its species and form name.
-"""
+"""SQLAlchemy model for Pokemon (specific form instances)."""
 
 from sqlalchemy import (
     Column,

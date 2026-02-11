@@ -1,17 +1,5 @@
 # core/schemas/pokemon.py
-"""
-Pydantic schemas – Pokémon
-=========================
-
-This module defines the Pydantic schemas used to expose Pokémon-related
-data through the FastAPI API layer.
-
-A Pokémon represents a concrete playable form of a species
-(Base, Mega, Alola, Starter, etc.).
-
-These schemas are read-only output models, built from SQLAlchemy ORM
-objects and optimized for clean, stable API contracts.
-"""
+"""Pydantic schemas for Pokemon API responses."""
 
 from decimal import Decimal
 from typing import List, Optional
@@ -24,7 +12,7 @@ from core.schemas.pokemon_type import PokemonTypeOut
 
 
 # -------------------------
-# 🔹 Stats
+# Stats
 # -------------------------
 class PokemonStatsOut(BaseModel):
     """
@@ -41,7 +29,7 @@ class PokemonStatsOut(BaseModel):
 
 
 # -------------------------
-# 🔹 Moves (Pokémon-centric view)
+# Moves (Pokémon-centric view)
 # -------------------------
 class PokemonMoveUIOut(BaseModel):
     """
@@ -60,7 +48,7 @@ class PokemonMoveUIOut(BaseModel):
 
 
 # -------------------------
-# 🔹 Base Pokémon
+# Base Pokémon
 # -------------------------
 class PokemonBase(BaseModel):
     """
@@ -75,7 +63,7 @@ class PokemonBase(BaseModel):
 
 
 # -------------------------
-# 🔹 Pokémon – list view
+# Pokémon – list view
 # -------------------------
 class PokemonListItem(PokemonBase):
     """
@@ -87,7 +75,7 @@ class PokemonListItem(PokemonBase):
 
 
 # -------------------------
-# 🔹 Pokémon – detail view
+# Pokémon – detail view
 # -------------------------
 class PokemonDetail(PokemonBase):
     """
@@ -104,7 +92,7 @@ class PokemonDetail(PokemonBase):
 
 
 # -------------------------
-# 🔹 Paginated response
+# Paginated response
 # -------------------------
 class PokemonListResponse(BaseModel):
     """

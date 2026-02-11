@@ -1,31 +1,4 @@
-"""
-ETL - Post-processing phase for Pokémon data (Pokémon Let's Go)
-
-This script performs post-load transformations that cannot be
-handled during the initial CSV or API ingestion phases.
-
-Context:
-Some Pokémon forms (e.g. Mega evolutions) do not have their own
-distinct learnsets in the data sources used for E1. However, from
-a business and gameplay perspective, Mega Pokémon inherit the moves
-of their base form.
-
-ETL responsibilities:
-- Identify Mega Pokémon forms already persisted in the database
-- Resolve their corresponding base Pokémon using Pokédex number
-- Copy (inherit) move learnsets from base form to Mega form
-- Ensure idempotent insertion using guarded upserts
-- Preserve referential integrity and learning metadata
-
-This script belongs to the "Transform" phase of the ETL pipeline
-and must be executed after:
-- Pokémon species are loaded
-- Pokémon forms are loaded
-- Pokémon ↔ moves associations are populated
-
-Competency block:
-- E1: Advanced data transformation and normalization logic
-"""
+"""ETL post-processing phase for Pokemon data."""
 
 from core.db.guards.pokemon_move import upsert_pokemon_move
 from core.db.session import SessionLocal
@@ -33,29 +6,7 @@ from core.models import Form, Pokemon, PokemonSpecies
 
 
 def inherit_mega_moves():
-    """
-    Inherit move learnsets from base Pokémon to Mega Pokémon forms.
-
-    Business rule:
-    - A Mega Pokémon shares the same learnable moves as its base form
-    - The base form is identified using the Pokédex number
-    - Only Pokémon with form_name == "mega" are processed
-
-    Processing steps:
-    1. Retrieve form IDs dynamically
-    2. Retrieve all Mega Pokémon forms
-    3. Resolve their Pokémon species
-    4. Find the corresponding base Pokémon by pokedex_number
-    5. Copy each move association from base to Mega
-    6. Use guarded upsert to avoid duplicates
-
-    Side effects:
-    - Inserts rows into pokemon_move table if missing
-    - Does not delete or override existing data
-
-    Returns:
-        None
-    """
+    """Copy move learnsets from base Pokemon to their Mega forms."""
     session = SessionLocal()
     try:
         # Retrieve form IDs dynamically

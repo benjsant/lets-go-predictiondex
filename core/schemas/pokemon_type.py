@@ -1,15 +1,5 @@
 # core/schemas/pokemon_type.py
-"""
-Pydantic schemas – Pokémon Type
-===============================
-
-This module defines the Pydantic schema used to expose Pokémon type
-information through the FastAPI API layer.
-
-A Pokémon type represents an elemental attribute (e.g. Fire, Water,
-Electric) assigned to a Pokémon, with support for mono-type and dual-type
-configurations via ordered slots.
-"""
+"""Pydantic schema for Pokemon type assignment."""
 
 from pydantic import BaseModel, ConfigDict
 

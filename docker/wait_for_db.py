@@ -94,7 +94,7 @@ def wait_for_db():
     - Incorrect database credentials
     - Network or service name resolution issues
     """
-    print(f"⏳ Waiting for PostgreSQL at {DB_HOST}:{DB_PORT}...", flush=True)
+    print(f"[WAIT] Waiting for PostgreSQL at {DB_HOST}:{DB_PORT}...", flush=True)
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
@@ -108,20 +108,20 @@ def wait_for_db():
             )
             conn.close()
             print(
-                f"✅ PostgreSQL is ready! (attempt {attempt}/{MAX_RETRIES})",
+                f"[OK] PostgreSQL is ready! (attempt {attempt}/{MAX_RETRIES})",
                 flush=True
             )
             return True
         except OperationalError as e:
             print(
-                f"⏳ Attempt {attempt}/{MAX_RETRIES}: DB not ready yet... ({e})",
+                f"[WAIT] Attempt {attempt}/{MAX_RETRIES}: DB not ready yet... ({e})",
                 flush=True
             )
             if attempt < MAX_RETRIES:
                 time.sleep(RETRY_INTERVAL)
             else:
                 print(
-                    f"❌ Failed to connect to PostgreSQL after {MAX_RETRIES} attempts",
+                    f"[ERROR] Failed to connect to PostgreSQL after {MAX_RETRIES} attempts",
                     flush=True
                 )
                 return False

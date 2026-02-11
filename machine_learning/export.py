@@ -1,11 +1,4 @@
-"""
-Model export module for Pokemon battle prediction.
-
-This module provides functions for exporting trained models, scalers,
-and feature-engineered datasets with proper versioning and metadata.
-
-Validation: C13 (model packaging and MLOps)
-"""
+"""Model export functions with versioning and metadata."""
 
 import json
 import pickle
@@ -22,28 +15,7 @@ from machine_learning.constants import MODELS_DIR
 def export_model(model: Any, scalers: Dict, feature_columns: List[str],
                  metrics: Dict, *, hyperparams: Optional[Dict] = None,
                  version: str = "v1", verbose: bool = True):
-    """
-    Export trained model, scalers, and metadata.
-
-    This function handles the complete export process including:
-    - Model serialization (with compression for RandomForest)
-    - Scaler serialization
-    - Metadata export (both pickle and JSON formats)
-
-    Args:
-        model: Trained model to export
-        scalers: Dictionary containing fitted scalers
-        feature_columns: List of feature column names
-        metrics: Dictionary of evaluation metrics
-        hyperparams: Optional dictionary of hyperparameters used for training
-        version: Version string for file naming (e.g., 'v1', 'v2')
-        verbose: Whether to print export progress
-
-    Returns:
-        Path to the exported model file as string
-
-    Validation: C13 (model packaging)
-    """
+    """Export trained model, scalers, and metadata to disk."""
     if verbose:
         print("\n" + "=" * 80)
         print("STEP 6: MODEL EXPORT")
@@ -59,20 +31,20 @@ def export_model(model: Any, scalers: Dict, feature_columns: List[str],
         # Use joblib with aggressive compression for RandomForest (5-10x smaller)
         joblib.dump(model, model_path, compress=('zlib', 9))
         if verbose:
-            print(f"\n✅ Model exported (joblib compressed): {model_path}")
+            print(f"\nModel exported (joblib compressed): {model_path}")
     else:
         # XGBoost and others use standard pickle
         with open(model_path, 'wb') as f:
             pickle.dump(model, f)
         if verbose:
-            print(f"\n✅ Model exported: {model_path}")
+            print(f"\nModel exported: {model_path}")
 
     # Export scalers
     scalers_path = MODELS_DIR / f"battle_winner_scalers_{version}.pkl"
     with open(scalers_path, 'wb') as f:
         pickle.dump(scalers, f)
     if verbose:
-        print(f"✅ Scalers exported: {scalers_path}")
+        print(f"Scalers exported: {scalers_path}")
 
     # Export metadata
     metadata = {
@@ -90,7 +62,7 @@ def export_model(model: Any, scalers: Dict, feature_columns: List[str],
     with open(metadata_path, 'wb') as f:
         pickle.dump(metadata, f)
     if verbose:
-        print(f"✅ Metadata exported: {metadata_path}")
+        print(f"Metadata exported: {metadata_path}")
 
     # Export metadata as JSON for readability
     metadata_json = metadata.copy()
@@ -100,10 +72,10 @@ def export_model(model: Any, scalers: Dict, feature_columns: List[str],
     with open(metadata_json_path, 'w', encoding='utf-8') as f:
         json.dump(metadata_json, f, indent=2)
     if verbose:
-        print(f"✅ Metadata (JSON) exported: {metadata_json_path}")
-        print(f"\n✅ All artifacts exported to: {MODELS_DIR}")
+        print(f"Metadata (JSON) exported: {metadata_json_path}")
+        print(f"\nAll artifacts exported to: {MODELS_DIR}")
 
-    return str(model_path)  # Return path for MLflow logging
+    return str(model_path) # Return path for MLflow logging
 
 
 def export_features(X_train: pd.DataFrame, X_test: pd.DataFrame,
@@ -137,4 +109,4 @@ def export_features(X_train: pd.DataFrame, X_test: pd.DataFrame,
     y_test.to_frame('winner').to_parquet(features_dir / "y_test.parquet", index=False, engine='pyarrow')
 
     if verbose:
-        print(f"✅ Features exported to: {features_dir}")
+        print(f"Features exported to: {features_dir}")

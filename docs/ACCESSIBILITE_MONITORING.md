@@ -10,28 +10,28 @@
 ## 2. Grafana - Accessibilité des dashboards
 
 ### Navigation clavier
-✅ **CONFORME**
+ **CONFORME**
 - Tous les éléments sont accessibles via la touche Tab
 - Les menus déroulants s'ouvrent avec Entrée
 - La navigation entre panneaux fonctionne avec les flèches directionnelles
 - Raccourcis clavier disponibles : `?` pour afficher l'aide
 
 ### Contraste des couleurs
-✅ **CONFORME WCAG 2.1 AA**
+ **CONFORME WCAG 2.1 AA**
 - Texte noir sur fond blanc : ratio 21:1 (requis : 4.5:1)
 - Labels des graphes : ratio 12:1
 - Alertes rouges : ratio 6.8:1
 - Alertes vertes : ratio 5.2:1
 
 ### Lecteurs d'écran
-✅ **SUPPORT PARTIEL**
+ **SUPPORT PARTIEL**
 - Grafana v10.1.0 supporte ARIA labels
 - Les graphes sont décrits textuellement
 - Les valeurs numériques sont annoncées
 - **Limitation** : Les graphes time-series complexes nécessitent l'export CSV pour analyse complète
 
 ### Zoom et agrandissement
-✅ **CONFORME**
+ **CONFORME**
 - Dashboards utilisables jusqu'à 200% de zoom
 - Pas de perte d'information
 - Responsive design fonctionne sur tablettes/mobiles
@@ -39,13 +39,13 @@
 ## 3. Prometheus - Accessibilité
 
 ### Interface web
-⚠️ **CONFORME BASIQUE**
+ **CONFORME BASIQUE**
 - Navigation clavier fonctionnelle
 - Contraste texte suffisant
 - **Limitation** : Interface destinée aux équipes techniques, pas au grand public
 
 ### Métriques exportées
-✅ **CONFORME**
+ **CONFORME**
 - Format texte brut accessible
 - Endpoint `/metrics` lisible par outils automatisés
 - Exportable en JSON/CSV via Grafana
@@ -66,9 +66,9 @@
 - **Lecteur d'écran** : Testé avec NVDA 2024.4
 - **Navigation** : Utiliser la touche Tab pour naviguer entre panneaux
 - **Export données** : Préférer l'export CSV pour analyse avec outils dédiés
-  1. Ouvrir un dashboard
-  2. Cliquer sur le titre d'un panneau
-  3. Sélectionner "Inspect" > "Data" > "Download CSV"
+ 1. Ouvrir un dashboard
+ 2. Cliquer sur le titre d'un panneau
+ 3. Sélectionner "Inspect" > "Data" > "Download CSV"
 
 ### Pour les utilisateurs non techniques
 - **Dashboards simplifiés** : "Model Performance" et "API Performance"
@@ -94,16 +94,16 @@ print(df.describe())
 Configuration dans `docker/prometheus/alertmanager.yml` :
 ```yaml
 receivers:
-  - name: 'email'
-    email_configs:
-      - to: 'equipe-ml@example.com'
-        from: 'alertes@example.com'
-        smarthost: 'smtp.example.com:587'
-        subject: '[ALERTE] {{ .GroupLabels.alertname }}'
-        text: |
-          Alerte : {{ .CommonAnnotations.summary }}
-          Description : {{ .CommonAnnotations.description }}
-          Sévérité : {{ .CommonLabels.severity }}
+ - name: 'email'
+ email_configs:
+ - to: 'equipe-ml@example.com'
+ from: 'alertes@example.com'
+ smarthost: 'smtp.example.com:587'
+ subject: '[ALERTE] {{ .GroupLabels.alertname }}'
+ text: |
+ Alerte : {{ .CommonAnnotations.summary }}
+ Description : {{ .CommonAnnotations.description }}
+ Sévérité : {{ .CommonLabels.severity }}
 ```
 
 ### Rapports automatiques (pour stakeholders)
@@ -134,43 +134,43 @@ report = f"""
 
 # Sauvegarder
 with open(f"reports/monitoring_week_{datetime.now().isocalendar()[1]}.md", "w") as f:
-    f.write(report)
+ f.write(report)
 ```
 
 ## 6. Tests d'accessibilité - Résultats détaillés
 
 ### WAVE (Web Accessibility Evaluation Tool)
 **Dashboard "Model Performance"**
-- ✅ 0 erreur d'accessibilité
-- ✅ 0 alerte critique
-- ⚠️ 2 alertes mineures (labels redondants)
-- ✅ Structure de heading correcte (h1 > h2 > h3)
+- 0 erreur d'accessibilité
+- 0 alerte critique
+- 2 alertes mineures (labels redondants)
+- Structure de heading correcte (h1 > h2 > h3)
 
 **Dashboard "API Performance"**
-- ✅ 0 erreur d'accessibilité
-- ✅ 0 alerte critique
-- ✅ Tous les graphes ont des labels ARIA
+- 0 erreur d'accessibilité
+- 0 alerte critique
+- Tous les graphes ont des labels ARIA
 
 ### Navigation clavier (test manuel)
 | Action | Résultat | Conformité |
 |--------|----------|------------|
-| Tab entre panneaux | ✅ Fonctionne | WCAG 2.1.1 |
-| Entrée pour ouvrir menus | ✅ Fonctionne | WCAG 2.1.1 |
-| Échap pour fermer dialogues | ✅ Fonctionne | WCAG 2.1.2 |
-| Flèches pour naviguer | ✅ Fonctionne | WCAG 2.1.3 |
+| Tab entre panneaux | Fonctionne | WCAG 2.1.1 |
+| Entrée pour ouvrir menus | Fonctionne | WCAG 2.1.1 |
+| Échap pour fermer dialogues | Fonctionne | WCAG 2.1.2 |
+| Flèches pour naviguer | Fonctionne | WCAG 2.1.3 |
 
 ### Lecteur d'écran (NVDA 2024.4)
 | Élément | Annonce NVDA | Conformité |
 |---------|--------------|------------|
-| Titre dashboard | "Model Performance dashboard" | ✅ ARIA |
-| Valeur métrique | "Predictions per minute: 15" | ✅ ARIA |
-| Graphe time-series | "Time series chart, 24 data points" | ✅ ARIA |
-| Alerte | "Warning: Low confidence alert" | ✅ role=alert |
+| Titre dashboard | "Model Performance dashboard" | ARIA |
+| Valeur métrique | "Predictions per minute: 15" | ARIA |
+| Graphe time-series | "Time series chart, 24 data points" | ARIA |
+| Alerte | "Warning: Low confidence alert" | role=alert |
 
 ## 7. Conformité aux standards
 
 ### WCAG 2.1 niveau AA
-✅ **CONFORME**
+ **CONFORME**
 - 1.1.1 Contenu non textuel : Graphes avec alt-text
 - 1.4.3 Contraste minimum : Ratio > 4.5:1
 - 2.1.1 Clavier : Navigation complète au clavier
@@ -179,7 +179,7 @@ with open(f"reports/monitoring_week_{datetime.now().isocalendar()[1]}.md", "w") 
 - 4.1.2 Nom, rôle, valeur : ARIA labels présents
 
 ### Recommandations Valentin Haüy
-✅ **CONFORME**
+ **CONFORME**
 - Titres de pages explicites
 - Structure de heading cohérente
 - Liens explicites (pas de "cliquez ici")
@@ -187,7 +187,7 @@ with open(f"reports/monitoring_week_{datetime.now().isocalendar()[1]}.md", "w") 
 - Feedback visuel et textuel pour les actions
 
 ### Recommandations Microsoft (Inclusive Design)
-✅ **CONFORME**
+ **CONFORME**
 - Support du mode High Contrast Windows
 - Zoom jusqu'à 200% sans scroll horizontal
 - Pas de timeout automatique
@@ -196,24 +196,24 @@ with open(f"reports/monitoring_week_{datetime.now().isocalendar()[1]}.md", "w") 
 ## 8. Limitations connues
 
 ### Grafana
-- ⚠️ Les graphes time-series complexes sont difficiles à interpréter avec lecteur d'écran
-  - **Solution** : Export CSV + analyse avec outils dédiés
-- ⚠️ L'interface d'administration nécessite la vue graphique
-  - **Solution** : Configuration via fichiers YAML versionnés
+- Les graphes time-series complexes sont difficiles à interpréter avec lecteur d'écran
+ - **Solution** : Export CSV + analyse avec outils dédiés
+- L'interface d'administration nécessite la vue graphique
+ - **Solution** : Configuration via fichiers YAML versionnés
 
 ### Prometheus
-- ⚠️ Interface web principalement pour équipes techniques
-  - **Solution** : Utiliser Grafana pour les utilisateurs finaux
-- ⚠️ PromQL requiert des connaissances techniques
-  - **Solution** : Dashboards pré-configurés pour non-experts
+- Interface web principalement pour équipes techniques
+ - **Solution** : Utiliser Grafana pour les utilisateurs finaux
+- PromQL requiert des connaissances techniques
+ - **Solution** : Dashboards pré-configurés pour non-experts
 
 ## 9. Formation des utilisateurs
 
 ### Documentation fournie
-- ✅ Guide complet dans `/docs/MONITORING.md`
-- ✅ Exemples de requêtes PromQL
-- ✅ Procédures de troubleshooting
-- ✅ Format markdown accessible (lisible par lecteurs d'écran)
+- Guide complet dans `/docs/MONITORING.md`
+- Exemples de requêtes PromQL
+- Procédures de troubleshooting
+- Format markdown accessible (lisible par lecteurs d'écran)
 
 ### Support disponible
 - Équipe technique : support@predictiondex.example

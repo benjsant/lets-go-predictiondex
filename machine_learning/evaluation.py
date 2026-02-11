@@ -1,11 +1,4 @@
-"""
-Model evaluation module for Pokemon battle prediction.
-
-This module provides functions for evaluating trained models, analyzing
-feature importance, and comparing multiple models.
-
-Validation: C12 (model evaluation tests)
-"""
+"""Model evaluation functions for Pokemon battle prediction."""
 
 from typing import Any, Dict, List, Tuple
 
@@ -25,33 +18,7 @@ def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
                    y_train: pd.Series, y_test: pd.Series,
                    model_name: str = "Model",
                    verbose: bool = True) -> Dict[str, float]:
-    """
-    Comprehensive model evaluation.
-
-    Args:
-        model: Trained model with predict() and predict_proba() methods
-        X_train: Training features
-        X_test: Test features
-        y_train: Training labels
-        y_test: Test labels
-        model_name: Name of the model for display purposes
-        verbose: Whether to print evaluation details
-
-    Returns:
-        Dictionary containing evaluation metrics:
-        - model_name: Name of the model
-        - train_accuracy: Training accuracy score
-        - test_accuracy: Test accuracy score
-        - test_precision: Test precision score
-        - test_recall: Test recall score
-        - test_f1: Test F1 score
-        - test_roc_auc: Test ROC AUC score
-        - train_samples: Number of training samples
-        - test_samples: Number of test samples
-        - overfitting: Difference between train and test accuracy
-
-    Validation: C12 (evaluation tests)
-    """
+    """Evaluate model and return performance metrics."""
     if verbose:
         print("\n" + "=" * 80)
         print(f"STEP 4: MODEL EVALUATION - {model_name}")
@@ -62,7 +29,7 @@ def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
     y_test_pred = model.predict(X_test)
 
     # Probabilities for ROC-AUC
-    _ = model.predict_proba(X_train)[:, 1]  # Train proba not used
+    _ = model.predict_proba(X_train)[:, 1] # Train proba not used
     y_test_proba = model.predict_proba(X_test)[:, 1]
 
     # Calculate metrics
@@ -83,15 +50,15 @@ def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
     metrics['overfitting'] = overfitting
 
     if verbose:
-        print("\n📊 PERFORMANCE METRICS")
+        print("\nPERFORMANCE METRICS")
         print("-" * 80)
-        print(f"Train Accuracy:  {metrics['train_accuracy']:.4f}")
-        print(f"Test Accuracy:   {metrics['test_accuracy']:.4f}")
-        print(f"Test Precision:  {metrics['test_precision']:.4f}")
-        print(f"Test Recall:     {metrics['test_recall']:.4f}")
-        print(f"Test F1-Score:   {metrics['test_f1']:.4f}")
-        print(f"Test ROC-AUC:    {metrics['test_roc_auc']:.4f}")
-        print(f"\nOverfitting:     {overfitting:.4f} ({overfitting*100:.2f}%)")
+        print(f"Train Accuracy: {metrics['train_accuracy']:.4f}")
+        print(f"Test Accuracy: {metrics['test_accuracy']:.4f}")
+        print(f"Test Precision: {metrics['test_precision']:.4f}")
+        print(f"Test Recall: {metrics['test_recall']:.4f}")
+        print(f"Test F1-Score: {metrics['test_f1']:.4f}")
+        print(f"Test ROC-AUC: {metrics['test_roc_auc']:.4f}")
+        print(f"\nOverfitting: {overfitting:.4f} ({overfitting*100:.2f}%)")
 
         # Classification report
         print("\n" + "-" * 80)
@@ -103,10 +70,10 @@ def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
         print("Confusion Matrix:")
         cm = confusion_matrix(y_test, y_test_pred)
         print(cm)
-        print(f"\nTrue Negatives:  {cm[0, 0]}")
+        print(f"\nTrue Negatives: {cm[0, 0]}")
         print(f"False Positives: {cm[0, 1]}")
         print(f"False Negatives: {cm[1, 0]}")
-        print(f"True Positives:  {cm[1, 1]}")
+        print(f"True Positives: {cm[1, 1]}")
 
     return metrics
 
@@ -138,7 +105,7 @@ def analyze_feature_importance(model: Any, feature_columns: List[str],
         importances = model.feature_importances_
     else:
         if verbose:
-            print("\n⚠️  Model does not support feature_importances_")
+            print("\nModel does not support feature_importances_")
         return pd.DataFrame()
 
     # Create DataFrame
@@ -212,7 +179,7 @@ def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
         results.append(metrics)
 
         if verbose:
-            print(f"✅ {model_type}: Test Accuracy = {metrics['test_accuracy']:.4f}")
+            print(f"{model_type}: Test Accuracy = {metrics['test_accuracy']:.4f}")
 
     # Create comparison DataFrame
     results_df = pd.DataFrame(results)
@@ -230,8 +197,8 @@ def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
     best_model = trained_models[best_model_name]
 
     if verbose:
-        print(f"\n🏆 BEST MODEL: {best_model_name}")
-        print(f"   Test Accuracy: {results_df.loc[best_idx, 'test_accuracy']:.4f}")
-        print(f"   Test ROC-AUC:  {results_df.loc[best_idx, 'test_roc_auc']:.4f}")
+        print(f"\n BEST MODEL: {best_model_name}")
+        print(f" Test Accuracy: {results_df.loc[best_idx, 'test_accuracy']:.4f}")
+        print(f" Test ROC-AUC: {results_df.loc[best_idx, 'test_roc_auc']:.4f}")
 
     return best_model, best_model_name, results_df.to_dict('records')

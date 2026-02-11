@@ -1,19 +1,5 @@
 # core/schemas/pokemon_species.py
-"""
-Pydantic schemas – Pokémon Species
-=================================
-
-This module defines the Pydantic schema used to expose Pokémon species
-data through the FastAPI API layer.
-
-A Pokémon species represents the **base Pokédex entry**, independent of:
-- forms (Mega, Alolan, etc.),
-- gameplay-specific variations,
-- learning mechanics.
-
-This schema is typically embedded in Pokémon-related responses and
-serves as a stable reference for Pokédex-level information.
-"""
+"""Pydantic schema for Pokemon species."""
 
 from typing import Optional
 

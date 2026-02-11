@@ -8,7 +8,7 @@ from interface.services.api_client import get_all_types, get_type_affinities
 # ======================================================
 # Page Config
 # ======================================================
-st.set_page_config(page_title="Types Pokémon", page_icon="🌈", layout="wide")
+st.set_page_config(page_title="Types Pokémon", layout="wide")
 load_custom_css()
 
 # ======================================================
@@ -41,7 +41,7 @@ def multiplier_color(m: float) -> str:
 
 
 def display_affinities_grouped(title: str, affinities: list, type_key: str):
-    """Display affinities in grouped sections: super effective, weak, neutral, immune."""
+    """Display affinities grouped by effectiveness level."""
     if not affinities:
         st.info(f"Aucune donnée pour {title}")
         return
@@ -53,21 +53,21 @@ def display_affinities_grouped(title: str, affinities: list, type_key: str):
     st.markdown(f"### {title}")
 
     if super_eff:
-        st.markdown("**🔥 Super Efficace (×2 ou ×4)**")
+        st.markdown("**Super Efficace (x2 ou x4)**")
         for a in sorted(super_eff, key=lambda x: x['multiplier'], reverse=True):
             st.markdown(
                 f"{type_badge(a[type_key])} "
                 f"<span style='color:{multiplier_color(a['multiplier'])}; font-weight:700;'>×{format_multiplier(a['multiplier'])}</span>",
                 unsafe_allow_html=True)
     if weak:
-        st.markdown("**💚 Peu Efficace (×½ ou ×¼)**")
+        st.markdown("**Peu Efficace (x1/2 ou x1/4)**")
         for a in sorted(weak, key=lambda x: x['multiplier']):
             st.markdown(
                 f"{type_badge(a[type_key])} "
                 f"<span style='color:{multiplier_color(a['multiplier'])}; font-weight:700;'>×{format_multiplier(a['multiplier'])}</span>",
                 unsafe_allow_html=True)
     if immune:
-        st.markdown("**🛡️ Sans Effet (×0)**")
+        st.markdown("**Sans Effet (x0)**")
         for a in immune:
             st.markdown(
                 f"{type_badge(a[type_key])} "
@@ -99,14 +99,14 @@ types_list, affinities = load_types_data()
 # ======================================================
 # Page Header
 # ======================================================
-page_header("Types Pokémon", "Matrice complète des 18 types avec toutes les affinités", "🌈")
+page_header("Types Pokémon", "Matrice complète des 18 types avec toutes les affinités")
 st.markdown(f"**Explore les {len(types_list)} types et leurs {len(affinities)} interactions !**")
 st.divider()
 
 # ======================================================
 # Type Dropdown + Details
 # ======================================================
-st.subheader("🔍 Analyse d'un Type Spécifique")
+st.subheader("Analyse d'un Type Spécifique")
 col1, col2 = st.columns(2)
 with col1:
     type_names = sorted([t['name'] for t in types_list])
@@ -119,16 +119,16 @@ defending = [a for a in affinities if a['defending_type'] == selected_type]
 
 col_attack, col_defend = st.columns(2)
 with col_attack:
-    display_affinities_grouped(f"⚔️ {selected_type} Attaque", attacking, "defending_type")
+    display_affinities_grouped(f"{selected_type} Attaque", attacking, "defending_type")
 with col_defend:
-    display_affinities_grouped(f"🛡️ {selected_type} Défend", defending, "attacking_type")
+    display_affinities_grouped(f"{selected_type} Défend", defending, "attacking_type")
 
 st.divider()
 
 # ======================================================
 # Full Type Matrix
 # ======================================================
-st.subheader("📊 Matrice Complète des Affinités")
+st.subheader("Matrice Complète des Affinités")
 st.caption("Lignes = type attaquant | Colonnes = type défenseur | Couleurs = efficacité")
 
 type_names_sorted = sorted([t['name'] for t in types_list])
@@ -144,17 +144,19 @@ def style_matrix(val):
     val_clean = val.replace("¼", "0.25").replace("½", "0.5")
     try:
         m = float(val_clean)
-    except ValueError:
+    except BaseException:
         m = 1.0
     return f'background-color:{multiplier_color(m)}; color:white; font-weight:600; text-align:center;'
 
 
-st.dataframe(matrix.style.applymap(style_matrix), use_container_width=True, height=700)
+# Render styled matrix as HTML
+styled_html = matrix.style.map(style_matrix).to_html()
+st.markdown(styled_html, unsafe_allow_html=True)
 
 # ======================================================
 # Legend
 # ======================================================
-st.markdown("### 📖 Légende")
+st.markdown("### Légende")
 for mult, desc, color in [(0, "Sans Effet", "#1f77b4"), (0.5, "Peu efficace", "#2ca02c"),
                           (1, "Neutre", "#888888"), (2, "Efficace", "#ff7f0e")]:
     st.markdown(
@@ -165,17 +167,17 @@ for mult, desc, color in [(0, "Sans Effet", "#1f77b4"), (0.5, "Peu efficace", "#
 # ======================================================
 # Tips Section
 # ======================================================
-with st.expander("💡 Astuces - Comment utiliser cette page"):
+with st.expander("Astuces - Comment utiliser cette page"):
     st.markdown("""
-    ### 🎯 Utilisation
-    1. Sélectionne un type pour voir ses forces (⚔️ Attaque) et faiblesses (🛡️ Défend)
+    ### Utilisation
+    1. Sélectionne un type pour voir ses forces (Attaque) et faiblesses (Défend)
     2. Matrice complète: Lignes = Type attaquant, Colonnes = Type défenseur, Couleurs = efficacité
     3. Exemples:
-       - Feu attaque Plante : ×2 (super efficace) 🔥
-       - Eau attaque Feu : ×2 (super efficace) 💧
-       - Électrik attaque Sol : ×0 (sans effet) ⚡
-       - Spectre attaque Normal : ×0 (sans effet) 👻
+       - Feu attaque Plante : x2 (super efficace)
+       - Eau attaque Feu : x2 (super efficace)
+       - Électrik attaque Sol : x0 (sans effet)
+       - Spectre attaque Normal : x0 (sans effet)
     4. Double types: Les multiplicateurs se multiplient
-       - Bulbizarre (Plante/Poison) contre Feu = ×2 × ×1 = ×2
-       - Insécateur (Insecte/Vol) contre Roche = ×2 × ×2 = ×4
+       - Bulbizarre (Plante/Poison) contre Feu = x2 * x1 = x2
+       - Insécateur (Insecte/Vol) contre Roche = x2 * x2 = x4
     """)

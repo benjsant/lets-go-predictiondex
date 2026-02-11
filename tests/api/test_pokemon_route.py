@@ -28,7 +28,7 @@ def client():
 
 
 # ============================================================
-# 🔹 TESTS: GET /pokemon/
+# TESTS: GET /pokemon/
 # ============================================================
 
 class TestListPokemon:
@@ -98,7 +98,7 @@ class TestListPokemon:
 
 
 # ============================================================
-# 🔹 TESTS: GET /pokemon/search
+# TESTS: GET /pokemon/search
 # ============================================================
 
 class TestSearchPokemon:
@@ -174,7 +174,7 @@ class TestSearchPokemon:
         response = client.get("/pokemon/search")
 
         # Assertions
-        assert response.status_code == 422  # Validation error
+        assert response.status_code == 422 # Validation error
 
     @patch('api_pokemon.routes.pokemon_route.search_pokemon_by_species_name')
     @patch('api_pokemon.routes.pokemon_route.get_db')
@@ -197,7 +197,7 @@ class TestSearchPokemon:
 
 
 # ============================================================
-# 🔹 TESTS: GET /pokemon/{pokemon_id}
+# TESTS: GET /pokemon/{pokemon_id}
 # ============================================================
 
 class TestGetPokemonById:
@@ -299,7 +299,7 @@ class TestGetPokemonById:
 
 
 # ============================================================
-# 🔹 TESTS: GET /pokemon/{pokemon_id}/weaknesses
+# TESTS: GET /pokemon/{pokemon_id}/weaknesses
 # ============================================================
 
 class TestGetPokemonWeaknesses:

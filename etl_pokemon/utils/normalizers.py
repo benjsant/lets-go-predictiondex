@@ -75,7 +75,7 @@ def normalize_key(value: str) -> str:
         Normalized lowercase key
 
     Examples:
-        >>> normalize_key("  Fire  ")
+        >>> normalize_key(" Fire ")
         'fire'
         >>> normalize_key("WATER")
         'water'
@@ -123,7 +123,7 @@ def normalize_string(value: Optional[str], default: str = "") -> str:
         Normalized string
 
     Examples:
-        >>> normalize_string("  hello  ")
+        >>> normalize_string(" hello ")
         'hello'
         >>> normalize_string(None, "default")
         'default'

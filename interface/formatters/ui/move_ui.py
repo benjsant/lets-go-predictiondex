@@ -6,9 +6,7 @@ from pydantic import BaseModel
 
 
 class MoveSelectItem(BaseModel):
-    """
-    Pydantic model for Pokémon moves in Streamlit.
-    """
+    """Pydantic model for a Pokemon move in the Streamlit UI."""
     id: Optional[int] = None
     name: str
     label: str
@@ -18,4 +16,4 @@ class MoveSelectItem(BaseModel):
     learn_level: Optional[int] = None
     power: Optional[int] = None
     accuracy: Optional[int] = None
-    damage_type: Optional[str] = None  # <-- pour priorités et moves spéciaux
+    damage_type: Optional[str] = None

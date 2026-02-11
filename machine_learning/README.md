@@ -6,12 +6,12 @@ Ce dossier contient tous les scripts pour entraîner et évaluer le modèle de p
 
 ```
 machine_learning/
-├── build_battle_winner_dataset.py       # Génère le dataset v1 (best_move uniquement)
-├── build_battle_winner_dataset_v2.py    # **NOUVEAU** Génère le dataset v2 (multi-scénarios)
-├── run_machine_learning.py              # Pipeline ML complet (orchestration v1/v2)
-├── train_model.py                        # Script de production pour entraîner le modèle
-├── test_model_inference.py               # Test rapide des prédictions
-└── README.md                             # Ce fichier
+├── build_battle_winner_dataset.py # Génère le dataset v1 (best_move uniquement)
+├── build_battle_winner_dataset_v2.py # **NOUVEAU** Génère le dataset v2 (multi-scénarios)
+├── run_machine_learning.py # Pipeline ML complet (orchestration v1/v2)
+├── train_model.py # Script de production pour entraîner le modèle
+├── test_model_inference.py # Test rapide des prédictions
+└── README.md # Ce fichier
 ```
 
 ## Workflow Complet
@@ -60,9 +60,9 @@ python machine_learning/run_machine_learning.py --mode=all
 #### Dataset v2 (multi-scénarios) - NOUVEAU
 - **~880,000 échantillons** (3 scénarios combinés)
 - **3 types de scénarios**:
-  1. `best_move` (~34k): Identique à v1, les deux utilisent leur meilleur move
-  2. `random_move` (~10k configurables): B utilise un move aléatoire parmi ses moves offensifs
-  3. `all_combinations` (~836k): Toutes les combinaisons possibles de moves A vs moves B
+ 1. `best_move` (~34k): Identique à v1, les deux utilisent leur meilleur move
+ 2. `random_move` (~10k configurables): B utilise un move aléatoire parmi ses moves offensifs
+ 3. `all_combinations` (~836k): Toutes les combinaisons possibles de moves A vs moves B
 - **Avantage**: Modèle plus robuste, capable de prédire dans des situations variées
 - **Inconvénient**: Entraînement plus long (25x plus de données)
 
@@ -71,9 +71,9 @@ python machine_learning/run_machine_learning.py --mode=all
 ```bash
 source .venv/bin/activate
 POSTGRES_HOST=localhost python machine_learning/build_battle_winner_dataset_v2.py \
-  --scenario-type=all \
-  --num-random-samples=10000 \
-  --max-combinations=100000
+ --scenario-type=all \
+ --num-random-samples=10000 \
+ --max-combinations=100000
 ```
 
 **Options:**
@@ -83,7 +83,7 @@ POSTGRES_HOST=localhost python machine_learning/build_battle_winner_dataset_v2.p
 
 ### Option 2: Étapes Manuelles
 
-#### 1️⃣ Générer le Dataset (v1)
+#### 1 Générer le Dataset (v1)
 
 Génère 34,040 matchups (188 Pokémon × 188 Pokémon) avec sélection automatique du meilleur move pour **chaque** Pokémon (A et B) afin de simuler des combats réalistes.
 
@@ -99,7 +99,7 @@ POSTGRES_HOST=localhost python machine_learning/build_battle_winner_dataset_orm.
 
 **Note**: Utilise SQLAlchemy ORM pour la cohérence avec le reste du projet (API, ETL).
 
-#### 2️⃣ Entraîner le Modèle
+#### 2 Entraîner le Modèle
 
 Entraîne un modèle XGBoost sur le dataset généré.
 
@@ -117,10 +117,10 @@ python machine_learning/train_model.py
 **Opérations effectuées**:
 1. Charge les datasets train/test depuis les fichiers parquet
 2. Feature engineering:
-   - One-hot encoding des types (6 features → ~102 colonnes)
-   - Normalisation des features numériques (StandardScaler)
-   - Création de 6 features dérivées (stat_ratio, effective_power_diff, etc.)
-   - Normalisation des features dérivées (deuxième StandardScaler)
+ - One-hot encoding des types (6 features → ~102 colonnes)
+ - Normalisation des features numériques (StandardScaler)
+ - Création de 6 features dérivées (stat_ratio, effective_power_diff, etc.)
+ - Normalisation des features dérivées (deuxième StandardScaler)
 3. Entraînement du modèle XGBoost
 4. Évaluation des performances (accuracy, precision, recall, F1, ROC-AUC)
 5. Export des artifacts
@@ -181,7 +181,7 @@ python machine_learning/test_model_inference.py
 python machine_learning/train_model.py [OPTIONS]
 
 Options:
-  --skip-export-features    Ne pas exporter les features normalisées (gain de temps/espace)
+ --skip-export-features Ne pas exporter les features normalisées (gain de temps/espace)
 ```
 
 ## Architecture du Modèle
@@ -190,14 +190,14 @@ Options:
 
 ```python
 {
-    'n_estimators': 100,
-    'max_depth': 8,
-    'learning_rate': 0.1,
-    'subsample': 0.8,
-    'colsample_bytree': 0.8,
-    'random_state': 42,
-    'n_jobs': -1,
-    'eval_metric': 'logloss'
+ 'n_estimators': 100,
+ 'max_depth': 8,
+ 'learning_rate': 0.1,
+ 'subsample': 0.8,
+ 'colsample_bytree': 0.8,
+ 'random_state': 42,
+ 'n_jobs': -1,
+ 'eval_metric': 'logloss'
 }
 ```
 
@@ -205,15 +205,15 @@ Options:
 
 ```
 Raw Features (38 colonnes)
-    ↓
+ ↓
 [One-Hot Encoding] → Types Pokémon + Types Move (~102 colonnes)
-    ↓
+ ↓
 [Normalisation 1] → Stats numériques (StandardScaler)
-    ↓
+ ↓
 [Derived Features] → 6 nouvelles features calculées
-    ↓
+ ↓
 [Normalisation 2] → Features dérivées (StandardScaler)
-    ↓
+ ↓
 Final Features (133 colonnes)
 ```
 
@@ -235,8 +235,8 @@ Voir `requirements.txt` à la racine du projet:
 
 ## Documentation Complète
 
-- **API**: Endpoint `/predict/best-move` intégré dans FastAPI ✅
-- **Tests**: Tests unitaires dans `tests/ml/` ✅
-- **Monitoring**: Prometheus + Grafana + drift detection ✅
-- **CI/CD**: GitHub Actions workflows ✅
-- **MLflow**: Experiment tracking + Model Registry ✅
+- **API**: Endpoint `/predict/best-move` intégré dans FastAPI 
+- **Tests**: Tests unitaires dans `tests/ml/` 
+- **Monitoring**: Prometheus + Grafana + drift detection 
+- **CI/CD**: GitHub Actions workflows 
+- **MLflow**: Experiment tracking + Model Registry 

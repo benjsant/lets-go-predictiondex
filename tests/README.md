@@ -1,38 +1,38 @@
 # Tests Organization
 
-## 📁 Structure
+## Structure
 
 ```
 tests/
-├── api/                    # API tests (routes + services)
-│   ├── test_pokemon_route.py
-│   ├── test_pokemon_service.py
-│   ├── test_move_route.py
-│   ├── test_move_service.py
-│   ├── test_type_route.py
-│   ├── test_type_service.py
-│   ├── test_prediction_route.py
-│   └── test_prediction_service.py
-├── core/                   # Core models and database tests
-│   └── (existing tests)
-├── etl/                    # ETL pipeline tests
-│   └── test_pipeline.py        (NEW)
-├── integration/            # Integration tests
-│   └── test_mlflow_to_api.py   (NEW)
-├── interface/              # Streamlit interface tests
-│   └── test_streamlit_app.py   (NEW)
-├── ml/                     # Machine Learning tests
-│   ├── test_dataset.py
-│   ├── test_model_inference.py
-│   └── test_preprocessing.py
-├── mlflow/                 # MLflow Model Registry tests
-│   ├── test_mlflow_tracker.py
-│   └── test_model_registry.py  (NEW)
-├── conftest.py             # Shared fixtures
+├── api/ # API tests (routes + services)
+│ ├── test_pokemon_route.py
+│ ├── test_pokemon_service.py
+│ ├── test_move_route.py
+│ ├── test_move_service.py
+│ ├── test_type_route.py
+│ ├── test_type_service.py
+│ ├── test_prediction_route.py
+│ └── test_prediction_service.py
+├── core/ # Core models and database tests
+│ └── (existing tests)
+├── etl/ # ETL pipeline tests
+│ └── test_pipeline.py (NEW)
+├── integration/ # Integration tests
+│ └── test_mlflow_to_api.py (NEW)
+├── interface/ # Streamlit interface tests
+│ └── test_streamlit_app.py (NEW)
+├── ml/ # Machine Learning tests
+│ ├── test_dataset.py
+│ ├── test_model_inference.py
+│ └── test_preprocessing.py
+├── mlflow/ # MLflow Model Registry tests
+│ ├── test_mlflow_tracker.py
+│ └── test_model_registry.py (NEW)
+├── conftest.py # Shared fixtures
 └── __init__.py
 ```
 
-## 🧪 Test Categories
+## Test Categories
 
 ### API Tests (64 tests)
 **Location**: `tests/api/`
@@ -140,7 +140,7 @@ Tests for MLflow integration and Model Registry:
 
 ---
 
-## 🚀 Running Tests
+## Running Tests
 
 ### Run All Tests
 ```bash
@@ -149,10 +149,10 @@ pytest tests/ -v
 
 ### Run Specific Category
 ```bash
-pytest tests/api/ -v           # API tests only
-pytest tests/ml/ -v            # ML tests only
-pytest tests/mlflow/ -v        # MLflow tests only
-pytest tests/integration/ -v   # Integration tests only
+pytest tests/api/ -v # API tests only
+pytest tests/ml/ -v # ML tests only
+pytest tests/mlflow/ -v # MLflow tests only
+pytest tests/integration/ -v # Integration tests only
 ```
 
 ### Run with Coverage
@@ -167,27 +167,27 @@ pytest tests/ -v -m "not integration"
 
 ### Run with Parallel Execution
 ```bash
-pytest tests/ -n auto  # Requires pytest-xdist
+pytest tests/ -n auto # Requires pytest-xdist
 ```
 
 ---
 
-## 📊 Test Statistics
+## Test Statistics
 
 | Category | Tests | Status | Coverage |
 |----------|-------|--------|----------|
-| **API** | 64 | ✅ Passing | ~85% |
-| **Core** | 15 | ✅ Passing | ~90% |
+| **API** | 64 | Passing | ~85% |
+| **Core** | 15 | Passing | ~90% |
 | **ETL** | 30 | 🆕 New | ~70% |
-| **Integration** | 9 | ✅ Passing | ~80% |
+| **Integration** | 9 | Passing | ~80% |
 | **Interface** | 20+ | 🆕 New | ~60% |
-| **ML** | 50 | ✅ Passing | ~75% |
-| **MLflow** | 17 | ✅ Passing | ~85% |
-| **TOTAL** | **~252** | **✅** | **~82%** |
+| **ML** | 50 | Passing | ~75% |
+| **MLflow** | 17 | Passing | ~85% |
+| **TOTAL** | **~252** | **** | **~82%** |
 
 ---
 
-## 🔧 Test Fixtures
+## Test Fixtures
 
 ### Shared Fixtures (`conftest.py`)
 - `db_session`: Database session for tests
@@ -209,50 +209,50 @@ pytest tests/ -n auto  # Requires pytest-xdist
 
 ---
 
-## 📝 Writing New Tests
+## Writing New Tests
 
 ### Test Naming Convention
 ```python
-# ✅ Good
+# Good
 def test_get_pokemon_by_id_returns_correct_pokemon():
-    pass
+ pass
 
 def test_predict_battle_winner_with_type_advantage():
-    pass
+ pass
 
-# ❌ Bad
+# Bad
 def test1():
-    pass
+ pass
 
 def test_function():
-    pass
+ pass
 ```
 
 ### Test Structure (AAA Pattern)
 ```python
 def test_example():
-    # Arrange: Set up test data and dependencies
-    pokemon = create_sample_pokemon()
-    
-    # Act: Execute the code under test
-    result = get_pokemon_by_id(pokemon.id)
-    
-    # Assert: Verify the results
-    assert result.name == pokemon.name
-    assert result.type1 == pokemon.type1
+ # Arrange: Set up test data and dependencies
+ pokemon = create_sample_pokemon()
+ 
+ # Act: Execute the code under test
+ result = get_pokemon_by_id(pokemon.id)
+ 
+ # Assert: Verify the results
+ assert result.name == pokemon.name
+ assert result.type1 == pokemon.type1
 ```
 
 ### Mocking External Dependencies
 ```python
 @patch('api_pokemon.services.prediction_service.load_model')
 def test_prediction_with_mocked_model(mock_load_model):
-    mock_load_model.return_value = Mock(predict=Mock(return_value=[1]))
-    # Test code here
+ mock_load_model.return_value = Mock(predict=Mock(return_value=[1]))
+ # Test code here
 ```
 
 ---
 
-## 🐛 Debugging Failed Tests
+## Debugging Failed Tests
 
 ### Run Single Test
 ```bash
@@ -281,33 +281,33 @@ pytest tests/api/ --pdb
 
 ---
 
-## 🏷️ Test Markers
+## Test Markers
 
 ### Mark Tests
 ```python
 @pytest.mark.integration
 def test_full_pipeline():
-    pass
+ pass
 
 @pytest.mark.slow
 def test_large_dataset():
-    pass
+ pass
 
 @pytest.mark.skip(reason="Not implemented yet")
 def test_future_feature():
-    pass
+ pass
 ```
 
 ### Run Marked Tests
 ```bash
-pytest -m integration       # Only integration tests
-pytest -m "not slow"        # Skip slow tests
+pytest -m integration # Only integration tests
+pytest -m "not slow" # Skip slow tests
 pytest -m "api and not slow" # API tests that aren't slow
 ```
 
 ---
 
-## 📈 Continuous Integration
+## Continuous Integration
 
 Tests run automatically on:
 - Every commit (fast tests)
@@ -319,7 +319,7 @@ See `.github/workflows/tests.yml` for CI setup.
 
 ---
 
-## 🎯 Coverage Goals
+## Coverage Goals
 
 - **Minimum**: 70% overall coverage
 - **Target**: 80% overall coverage
@@ -333,7 +333,7 @@ open htmlcov/index.html
 
 ---
 
-## 📚 Additional Resources
+## Additional Resources
 
 - [pytest documentation](https://docs.pytest.org/)
 - [FastAPI testing](https://fastapi.tiangolo.com/tutorial/testing/)

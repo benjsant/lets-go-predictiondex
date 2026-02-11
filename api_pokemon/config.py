@@ -84,7 +84,7 @@ API_KEY = os.getenv('API_KEY', 'default_key')
 
 # Rate limiting
 RATE_LIMIT_REQUESTS = int(os.getenv('RATE_LIMIT_REQUESTS', '100'))
-RATE_LIMIT_PERIOD = int(os.getenv('RATE_LIMIT_PERIOD', '60'))  # seconds
+RATE_LIMIT_PERIOD = int(os.getenv('RATE_LIMIT_PERIOD', '60')) # seconds
 
 # ================================================================
 # LOGGING CONFIGURATION

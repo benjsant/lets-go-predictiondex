@@ -44,14 +44,14 @@ def calculate_psi(expected: np.ndarray, actual: np.ndarray, bins: int = 10) -> f
     """
     # Create bins based on expected distribution
     breakpoints = np.quantile(expected, np.linspace(0, 1, bins + 1))
-    breakpoints = np.unique(breakpoints)  # Remove duplicates
+    breakpoints = np.unique(breakpoints) # Remove duplicates
 
     # Count samples in each bin
     expected_counts = np.histogram(expected, bins=breakpoints)[0]
     actual_counts = np.histogram(actual, bins=breakpoints)[0]
 
     # Convert to percentages
-    expected_pct = expected_counts / len(expected) + 1e-10  # Avoid division by zero
+    expected_pct = expected_counts / len(expected) + 1e-10 # Avoid division by zero
     actual_pct = actual_counts / len(actual) + 1e-10
 
     # Calculate PSI
@@ -114,7 +114,7 @@ def check_prediction_drift(
 
 
 # ============================================================
-# 🔹 TESTS: PSI (Population Stability Index) Calculation
+# TESTS: PSI (Population Stability Index) Calculation
 # ============================================================
 
 class TestPSICalculation:
@@ -134,7 +134,7 @@ class TestPSICalculation:
         """Test PSI with slight distribution shift (0.1 < PSI < 0.25)."""
         np.random.seed(42)
         expected = np.random.normal(0, 1, 1000)
-        actual = np.random.normal(0.2, 1, 1000)  # Mean shift of 0.2
+        actual = np.random.normal(0.2, 1, 1000) # Mean shift of 0.2
 
         psi = calculate_psi(expected, actual, bins=10)
 
@@ -145,7 +145,7 @@ class TestPSICalculation:
         """Test PSI with significant distribution shift (PSI > 0.25)."""
         np.random.seed(42)
         expected = np.random.normal(0, 1, 1000)
-        actual = np.random.normal(2, 1, 1000)  # Mean shift of 2
+        actual = np.random.normal(2, 1, 1000) # Mean shift of 2
 
         psi = calculate_psi(expected, actual, bins=10)
 
@@ -156,7 +156,7 @@ class TestPSICalculation:
         """Test PSI detects variance change."""
         np.random.seed(42)
         expected = np.random.normal(0, 1, 1000)
-        actual = np.random.normal(0, 3, 1000)  # Same mean, different variance
+        actual = np.random.normal(0, 3, 1000) # Same mean, different variance
 
         psi = calculate_psi(expected, actual, bins=10)
 
@@ -165,7 +165,7 @@ class TestPSICalculation:
 
 
 # ============================================================
-# 🔹 TESTS: Kolmogorov-Smirnov Test
+# TESTS: Kolmogorov-Smirnov Test
 # ============================================================
 
 class TestKolmogorovSmirnovTest:
@@ -188,7 +188,7 @@ class TestKolmogorovSmirnovTest:
         """Test KS test detects mean shift."""
         np.random.seed(42)
         reference = np.random.normal(0, 1, 500)
-        current = np.random.normal(2, 1, 500)  # Mean shift
+        current = np.random.normal(2, 1, 500) # Mean shift
 
         is_drift, p_value, statistic = kolmogorov_smirnov_test(
             reference, current, alpha=0.05
@@ -201,7 +201,7 @@ class TestKolmogorovSmirnovTest:
         """Test KS test with different significance levels."""
         np.random.seed(42)
         reference = np.random.normal(0, 1, 500)
-        current = np.random.normal(0.3, 1, 500)  # Small shift
+        current = np.random.normal(0.3, 1, 500) # Small shift
 
         # Stricter alpha (more likely to reject)
         is_drift_strict, _, _ = kolmogorov_smirnov_test(reference, current, alpha=0.01)
@@ -215,7 +215,7 @@ class TestKolmogorovSmirnovTest:
 
 
 # ============================================================
-# 🔹 TESTS: Feature-Level Drift Detection
+# TESTS: Feature-Level Drift Detection
 # ============================================================
 
 class TestFeatureDriftDetection:
@@ -234,9 +234,9 @@ class TestFeatureDriftDetection:
 
         # Current data: feature_2 has drifted
         df_current = pd.DataFrame({
-            'feature_1': np.random.normal(0, 1, 1000),  # No drift
-            'feature_2': np.random.normal(8, 2, 1000),  # Drift!
-            'feature_3': np.random.uniform(0, 10, 1000),  # No drift
+            'feature_1': np.random.normal(0, 1, 1000), # No drift
+            'feature_2': np.random.normal(8, 2, 1000), # Drift!
+            'feature_3': np.random.uniform(0, 10, 1000), # No drift
         })
 
         drift_results = detect_feature_drift(df_reference, df_current)
@@ -272,7 +272,7 @@ class TestFeatureDriftDetection:
 
 
 # ============================================================
-# 🔹 TESTS: Prediction Drift Monitoring
+# TESTS: Prediction Drift Monitoring
 # ============================================================
 
 class TestPredictionDriftMonitoring:
@@ -324,7 +324,7 @@ class TestPredictionDriftMonitoring:
 
 
 # ============================================================
-# 🔹 TESTS: DriftDetector Class
+# TESTS: DriftDetector Class
 # ============================================================
 
 class TestDriftDetectorClass:
@@ -368,7 +368,7 @@ class TestDriftDetectorClass:
 
         # Check with drifted data
         drifted_batch = pd.DataFrame({
-            'feature_1': np.random.normal(3, 1, 100)  # Mean shift
+            'feature_1': np.random.normal(3, 1, 100) # Mean shift
         })
 
         alerts = detector.check_drift(drifted_batch)
@@ -397,7 +397,7 @@ class TestDriftDetectorClass:
 
 
 # ============================================================
-# 🔹 TESTS: Edge Cases and Error Handling
+# TESTS: Edge Cases and Error Handling
 # ============================================================
 
 class TestEdgeCasesAndErrors:
@@ -426,7 +426,7 @@ class TestEdgeCasesAndErrors:
 
     def test_handles_constant_features(self):
         """Test handling of features with constant values."""
-        reference = np.ones(100)  # All values are 1
+        reference = np.ones(100) # All values are 1
         current = np.ones(100)
 
         # Should handle gracefully (PSI = 0 or small value)
@@ -448,7 +448,7 @@ class TestEdgeCasesAndErrors:
 
 
 # ============================================================
-# 🔹 TESTS: Integration with Monitoring System
+# TESTS: Integration with Monitoring System
 # ============================================================
 
 class TestMonitoringIntegration:
@@ -469,7 +469,7 @@ class TestMonitoringIntegration:
 
         # Critical drift
         drifted_batch = pd.DataFrame({
-            'feature_1': np.random.normal(5, 1, 100)  # Large mean shift
+            'feature_1': np.random.normal(5, 1, 100) # Large mean shift
         })
 
         alerts = detector.check_drift(drifted_batch)
@@ -502,7 +502,7 @@ class TestMonitoringIntegration:
 
 
 # ============================================================
-# 🔹 TESTS: Drift Detection Over Time
+# TESTS: Drift Detection Over Time
 # ============================================================
 
 class TestDriftDetectionOverTime:
@@ -520,7 +520,7 @@ class TestDriftDetectionOverTime:
         # Simulate gradual drift over 5 batches
         drift_detected_count = 0
         for batch_num in range(5):
-            mean_shift = batch_num * 0.3  # Gradual shift: 0, 0.3, 0.6, 0.9, 1.2
+            mean_shift = batch_num * 0.3 # Gradual shift: 0, 0.3, 0.6, 0.9, 1.2
             batch = pd.DataFrame({
                 'feature_1': np.random.normal(mean_shift, 1, 100)
             })

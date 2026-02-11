@@ -1,8 +1,8 @@
-# 🗄️ Core - Modèles et Base de Données
+# Core - Modèles et Base de Données
 
 > Couche d'abstraction pour la base de données PostgreSQL
 
-## 📋 Vue d'ensemble
+## Vue d'ensemble
 
 Ce module contient :
 - Les modèles SQLAlchemy ORM (11 tables)
@@ -10,37 +10,37 @@ Ce module contient :
 - Les schémas Pydantic de validation
 - Les guards et utilitaires
 
-## 📁 Structure
+## Structure
 
 ```
 core/
 ├── __init__.py
-├── db/                       # Configuration base de données
-│   ├── __init__.py
-│   ├── base.py               # DeclarativeBase SQLAlchemy
-│   ├── session.py            # SessionLocal, get_db()
-│   └── guards/               # Validators et guards
-├── models/                   # Modèles ORM SQLAlchemy
-│   ├── __init__.py
-│   ├── pokemon.py            # Pokemon
-│   ├── pokemon_type.py       # PokemonType (association)
-│   ├── pokemon_stat.py       # PokemonStat
-│   ├── pokemon_move.py       # PokemonMove (association)
-│   ├── pokemon_species.py    # PokemonSpecies
-│   ├── type.py               # Type
-│   ├── type_effectiveness.py # TypeEffectiveness
-│   ├── move.py               # Move
-│   ├── move_category.py      # MoveCategory
-│   ├── learn_method.py       # LearnMethod
-│   └── form.py               # Form (Alola, Mega)
-└── schemas/                  # Schémas Pydantic
-    ├── __init__.py
-    ├── pokemon.py
-    ├── move.py
-    └── type.py
+├── db/ # Configuration base de données
+│ ├── __init__.py
+│ ├── base.py # DeclarativeBase SQLAlchemy
+│ ├── session.py # SessionLocal, get_db()
+│ └── guards/ # Validators et guards
+├── models/ # Modèles ORM SQLAlchemy
+│ ├── __init__.py
+│ ├── pokemon.py # Pokemon
+│ ├── pokemon_type.py # PokemonType (association)
+│ ├── pokemon_stat.py # PokemonStat
+│ ├── pokemon_move.py # PokemonMove (association)
+│ ├── pokemon_species.py # PokemonSpecies
+│ ├── type.py # Type
+│ ├── type_effectiveness.py # TypeEffectiveness
+│ ├── move.py # Move
+│ ├── move_category.py # MoveCategory
+│ ├── learn_method.py # LearnMethod
+│ └── form.py # Form (Alola, Mega)
+└── schemas/ # Schémas Pydantic
+ ├── __init__.py
+ ├── pokemon.py
+ ├── move.py
+ └── type.py
 ```
 
-## 🗄️ Modèles ORM
+## Modèles ORM
 
 ### Entités principales
 
@@ -60,7 +60,7 @@ core/
 | `PokemonStat` | pokemon_stat | Stats (HP, Atk, Def, SpA, SpD, Spe) |
 | `TypeEffectiveness` | type_effectiveness | Matrice 18×18 affinités |
 
-## 💻 Utilisation
+## Utilisation
 
 ### Connexion à la base
 
@@ -69,11 +69,11 @@ from core.db.session import get_db, SessionLocal
 
 # Via dependency injection (FastAPI)
 def get_pokemon(db: Session = Depends(get_db)):
-    return db.query(Pokemon).all()
+ return db.query(Pokemon).all()
 
 # Via context manager
 with SessionLocal() as db:
-    pokemon = db.query(Pokemon).filter_by(name="Pikachu").first()
+ pokemon = db.query(Pokemon).filter_by(name="Pikachu").first()
 ```
 
 ### Requêtes ORM
@@ -87,10 +87,10 @@ types = [pt.type.name for pt in pokemon.pokemon_types]
 
 # Jointure complexe
 query = (
-    db.query(Pokemon, Move)
-    .join(PokemonMove)
-    .join(Move)
-    .filter(Pokemon.id == 25)
+ db.query(Pokemon, Move)
+ .join(PokemonMove)
+ .join(Move)
+ .filter(Pokemon.id == 25)
 )
 ```
 
@@ -103,7 +103,7 @@ from core.schemas import PokemonResponse, MoveResponse
 pokemon_data = PokemonResponse.model_validate(pokemon)
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 Variables d'environnement pour la connexion :
 
@@ -121,25 +121,25 @@ Construction de l'URL dans `session.py` :
 DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db}"
 ```
 
-## 🧪 Tests
+## Tests
 
 ```bash
 pytest tests/core/ -v
 ```
 
-## 📊 Schéma Relationnel
+## Schéma Relationnel
 
 ```
 pokemon ─────┬───── pokemon_type ───── type
-             │                           │
-             ├───── pokemon_stat         │
-             │                           │
-             ├───── pokemon_move ── move ┴── move_category
-             │             │
-             └── pokemon_species    learn_method
-                    │
-                   form
+ │ │
+ ├───── pokemon_stat │
+ │ │
+ ├───── pokemon_move ── move ┴── move_category
+ │ │
+ └── pokemon_species learn_method
+ │
+ form
 
 type ───── type_effectiveness ───── type
-(attacking_type)              (defending_type)
+(attacking_type) (defending_type)
 ```

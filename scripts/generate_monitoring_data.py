@@ -59,16 +59,16 @@ class MetricsGenerator:
 
     def initialize(self) -> bool:
         """Initialize the generator and load Pokemon."""
-        print("🔧 Initializing...")
+        print("[RUN] Initializing...")
 
         try:
             # Check API
             response = requests.get(f"{self.api_url}/health", timeout=5)
             if response.status_code != 200:
-                print(f"❌ API not accessible: {response.status_code}")
+                print(f"[ERROR] API not accessible: {response.status_code}")
                 return False
 
-            print("   ✅ API accessible")
+            print("   [OK] API accessible")
 
             # Load Pokemon
             response = requests.get(
@@ -77,36 +77,36 @@ class MetricsGenerator:
                 timeout=10
             )
             if response.status_code != 200:
-                print(f"❌ Unable to load Pokemon: {response.status_code}")
+                print(f"[ERROR] Unable to load Pokemon: {response.status_code}")
                 return False
 
             self.pokemon_list = response.json()
-            print(f"   ✅ {len(self.pokemon_list)} Pokemon loaded")
+            print(f"   [OK] {len(self.pokemon_list)} Pokemon loaded")
 
             # Check Prometheus
             try:
                 response = requests.get(f"{PROMETHEUS_URL}/api/v1/status/config", timeout=5)
                 if response.status_code == 200:
-                    print("   ✅ Prometheus accessible")
+                    print("   [OK] Prometheus accessible")
                 else:
-                    print("   ⚠️  Prometheus not accessible")
+                    print("   [WARN] Prometheus not accessible")
             except requests.exceptions.RequestException:
-                print("   ⚠️  Prometheus not accessible")
+                print("   [WARN] Prometheus not accessible")
 
             # Check Grafana
             try:
                 response = requests.get(f"{GRAFANA_URL}/api/health", timeout=5)
                 if response.status_code == 200:
-                    print("   ✅ Grafana accessible")
+                    print("   [OK] Grafana accessible")
                 else:
-                    print("   ⚠️  Grafana not accessible")
+                    print("   [WARN] Grafana not accessible")
             except requests.exceptions.RequestException:
-                print("   ⚠️  Grafana not accessible")
+                print("   [WARN] Grafana not accessible")
 
             return True
 
         except requests.exceptions.RequestException as exc:
-            print(f"❌ Initialization error: {exc}")
+            print(f"[ERROR] Initialization error: {exc}")
             return False
 
     def generate_prediction(self) -> Tuple[bool, float]:
@@ -213,7 +213,7 @@ class MetricsGenerator:
         Args:
             duration_minutes: Duration in minutes.
         """
-        print(f"\n🚀 BURST Mode - {duration_minutes} minutes")
+        print(f"\n[BURST] BURST Mode - {duration_minutes} minutes")
         print("=" * 80)
 
         duration = duration_minutes * 60
@@ -243,7 +243,7 @@ class MetricsGenerator:
             time.sleep(0.1)
 
         print("\n" + "=" * 80)
-        print("✅ Burst mode completed!")
+        print("[OK] Burst mode completed!")
         self.print_final_stats()
 
     def run_realistic_mode(self, duration_minutes: int):
@@ -252,7 +252,7 @@ class MetricsGenerator:
         Args:
             duration_minutes: Duration in minutes.
         """
-        print(f"\n👥 REALISTIC Mode - {duration_minutes} minutes")
+        print(f"\n[REALISTIC] REALISTIC Mode - {duration_minutes} minutes")
         print("=" * 80)
         print("Simulation: 5-10 users with realistic patterns")
 
@@ -282,7 +282,7 @@ class MetricsGenerator:
             time.sleep(random.uniform(0.5, 3.0))
 
         print("\n" + "=" * 80)
-        print("✅ Realistic mode completed!")
+        print("[OK] Realistic mode completed!")
         self.print_final_stats()
 
     def run_spike_mode(self, duration_minutes: int):
@@ -291,7 +291,7 @@ class MetricsGenerator:
         Args:
             duration_minutes: Duration in minutes.
         """
-        print(f"\n📈 SPIKE Mode - {duration_minutes} minutes")
+        print(f"\n[SPIKE] SPIKE Mode - {duration_minutes} minutes")
         print("=" * 80)
         print("Simulation: Random traffic spikes (variable load)")
 
@@ -304,7 +304,7 @@ class MetricsGenerator:
 
             if is_spike:
                 # Spike: many requests
-                print("   🔥 TRAFFIC SPIKE!")
+                print("   [SPIKE] TRAFFIC SPIKE!")
                 for _ in range(50):
                     action = random.choices(
                         ["predict", "read"],
@@ -341,7 +341,7 @@ class MetricsGenerator:
                 last_report = time.time()
 
         print("\n" + "=" * 80)
-        print("✅ Spike mode completed!")
+        print("[OK] Spike mode completed!")
         self.print_final_stats()
 
     def print_final_stats(self):
@@ -349,7 +349,7 @@ class MetricsGenerator:
         elapsed = time.time() - self.stats["start_time"]
         total = self.stats["predictions"] + self.stats["reads"] + self.stats["errors"]
 
-        print("\n📊 Final statistics:")
+        print("\n[STATS] Final statistics:")
         print(f"   Total duration: {elapsed/60:.1f} minutes")
         print(f"   Total requests: {total}")
         print(f"   Predictions: {self.stats['predictions']} ({self.stats['predictions']/total*100:.1f}%)")
@@ -370,8 +370,8 @@ class MetricsGenerator:
             print(f"      P95: {p95:.1f}ms")
             print(f"      P99: {p99:.1f}ms")
 
-        print(f"\n💡 Check Grafana: {GRAFANA_URL}")
-        print(f"💡 Check Prometheus: {PROMETHEUS_URL}")
+        print(f"\n[TIP] Check Grafana: {GRAFANA_URL}")
+        print(f"[TIP] Check Prometheus: {PROMETHEUS_URL}")
 
 
 def main():
@@ -400,14 +400,14 @@ def main():
     args = parser.parse_args()
 
     print("\n" + "=" * 80)
-    print("🎯 Prometheus/Grafana Metrics Generator")
+    print("[START] Prometheus/Grafana Metrics Generator")
     print("=" * 80)
 
     generator = MetricsGenerator(api_url=args.api_url)
 
     if not generator.initialize():
-        print("\n❌ Initialization failed")
-        print("\n💡 Make sure services are started:")
+        print("\n[ERROR] Initialization failed")
+        print("\n[TIP] Make sure services are started:")
         print("   docker-compose up -d")
         sys.exit(1)
 
@@ -422,7 +422,7 @@ def main():
             generator.run_spike_mode(args.duration)
 
     except KeyboardInterrupt:
-        print("\n\n⚠️  Generation interrupted by user")
+        print("\n\n[WARN] Generation interrupted by user")
         generator.print_final_stats()
 
 

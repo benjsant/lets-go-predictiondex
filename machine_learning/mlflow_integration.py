@@ -1,29 +1,5 @@
 #!/usr/bin/env python3
-"""
-MLflow Integration for Machine Learning Pipeline
-================================================
-
-This module provides MLflow tracking integration for the ML pipeline,
-automatically logging experiments, parameters, metrics, and models.
-
-Features:
-- Automatic experiment tracking
-- Hyperparameter logging
-- Metrics logging (accuracy, precision, recall, F1, AUC)
-- Model artifact logging
-- Dataset metadata logging
-- Comparison between runs
-
-Usage:
-    from machine_learning.mlflow_integration import MLflowTracker
-
-    tracker = MLflowTracker(experiment_name="battle_winner_v2")
-
-    with tracker.start_run(run_name="xgboost_training"):
-        tracker.log_params(hyperparams)
-        tracker.log_metrics(metrics)
-        tracker.log_model(model, "model")
-"""
+"""MLflow tracking integration for the ML pipeline."""
 
 import os
 from datetime import datetime
@@ -53,7 +29,7 @@ class MLflowTracker:
         """
         # Check if MLflow tracking is explicitly disabled
         if os.getenv("DISABLE_MLFLOW_TRACKING", "false").lower() == "true":
-            print("ℹ️  MLflow tracking disabled via DISABLE_MLFLOW_TRACKING environment variable")
+            print("MLflow tracking disabled via DISABLE_MLFLOW_TRACKING environment variable")
             self.experiment_name = None
             self.experiment_id = None
             return
@@ -72,16 +48,16 @@ class MLflowTracker:
                     try:
                         socket.create_connection(("mlflow", 5001), timeout=3)
                         tracking_uri = "http://mlflow:5001"
-                        print(f"✅ MLflow detected at mlflow:5001 (attempt {attempt + 1})")
+                        print(f"MLflow detected at mlflow:5001 (attempt {attempt + 1})")
                         break
                     except (socket.error, socket.timeout):
                         if attempt < 9:
-                            print(f"⏳ Waiting for MLflow... (attempt {attempt + 1}/10)")
+                            print(f"Waiting for MLflow... (attempt {attempt + 1}/10)")
                             time.sleep(3)
                         else:
                             # Fallback to localhost for local dev (Docker host)
                             tracking_uri = "http://localhost:5001"
-                            print("⚠️ MLflow not detected, trying localhost:5001")
+                            print("MLflow not detected, trying localhost:5001")
 
         # Set or create experiment
         try:
@@ -90,18 +66,18 @@ class MLflowTracker:
             experiment = mlflow.get_experiment_by_name(experiment_name)
             if experiment is None:
                 experiment_id = mlflow.create_experiment(experiment_name)
-                print(f"✅ Created new experiment: {experiment_name} (ID: {experiment_id})")
+                print(f"Created new experiment: {experiment_name} (ID: {experiment_id})")
             else:
                 experiment_id = experiment.experiment_id
-                print(f"✅ Using existing experiment: {experiment_name} (ID: {experiment_id})")
+                print(f"Using existing experiment: {experiment_name} (ID: {experiment_id})")
 
             mlflow.set_experiment(experiment_name)
             self.experiment_name = experiment_name
             self.experiment_id = experiment_id
 
         except Exception as e:
-            print(f"⚠️ MLflow connection error: {e}")
-            print(f"⚠️ Continuing without MLflow tracking...")
+            print(f"MLflow connection error: {e}")
+            print(f"Continuing without MLflow tracking...")
             self.experiment_name = None
             self.experiment_id = None
 
@@ -149,9 +125,9 @@ class MLflowTracker:
                     flat_params[key] = value
 
             mlflow.log_params(flat_params)
-            print(f"✅ Logged {len(flat_params)} parameters")
+            print(f"Logged {len(flat_params)} parameters")
         except Exception as e:
-            print(f"⚠️ Error logging params: {e}")
+            print(f"Error logging params: {e}")
 
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None):
         """
@@ -166,9 +142,9 @@ class MLflowTracker:
 
         try:
             mlflow.log_metrics(metrics, step=step)
-            print(f"✅ Logged {len(metrics)} metrics")
+            print(f"Logged {len(metrics)} metrics")
         except Exception as e:
-            print(f"⚠️ Error logging metrics: {e}")
+            print(f"Error logging metrics: {e}")
 
     def log_model(
         self,
@@ -197,7 +173,7 @@ class MLflowTracker:
             else:
                 mlflow.sklearn.log_model(model, artifact_path)
 
-            print(f"✅ Logged {model_type} model to: {artifact_path}")
+            print(f"Logged {model_type} model to: {artifact_path}")
 
             # Log scalers as artifact
             if scalers is not None:
@@ -207,7 +183,7 @@ class MLflowTracker:
                     pickle.dump(scalers, f)
                     scalers_path = f.name
                 mlflow.log_artifact(scalers_path, ".")
-                print(f"✅ Logged scalers artifact")
+                print(f"Logged scalers artifact")
                 import os
                 os.remove(scalers_path)
 
@@ -219,12 +195,12 @@ class MLflowTracker:
                     pickle.dump(metadata, f)
                     metadata_path = f.name
                 mlflow.log_artifact(metadata_path, ".")
-                print(f"✅ Logged metadata artifact")
+                print(f"Logged metadata artifact")
                 import os
                 os.remove(metadata_path)
 
         except Exception as e:
-            print(f"⚠️ Error logging model: {e}")
+            print(f"Error logging model: {e}")
 
     def log_artifact(self, local_path: str, artifact_path: Optional[str] = None):
         """
@@ -239,9 +215,9 @@ class MLflowTracker:
 
         try:
             mlflow.log_artifact(local_path, artifact_path)
-            print(f"✅ Logged artifact: {local_path}")
+            print(f"Logged artifact: {local_path}")
         except Exception as e:
-            print(f"⚠️ Error logging artifact: {e}")
+            print(f"Error logging artifact: {e}")
 
     def log_dataset_info(self, dataset_info: Dict[str, Any]):
         """
@@ -259,9 +235,9 @@ class MLflowTracker:
                 f"dataset_{key}": str(value)
                 for key, value in dataset_info.items()
             })
-            print(f"✅ Logged dataset metadata")
+            print(f"Logged dataset metadata")
         except Exception as e:
-            print(f"⚠️ Error logging dataset info: {e}")
+            print(f"Error logging dataset info: {e}")
 
     def set_tags(self, tags: Dict[str, str]):
         """
@@ -275,9 +251,9 @@ class MLflowTracker:
 
         try:
             mlflow.set_tags(tags)
-            print(f"✅ Set {len(tags)} tags")
+            print(f"Set {len(tags)} tags")
         except Exception as e:
-            print(f"⚠️ Error setting tags: {e}")
+            print(f"Error setting tags: {e}")
 
     def register_model(
         self,
@@ -295,14 +271,14 @@ class MLflowTracker:
             Model version string (e.g., "1", "2") or None if failed
         """
         if self.experiment_name is None:
-            print("⚠️ MLflow not available, skipping model registration")
+            print("MLflow not available, skipping model registration")
             return None
 
         try:
             # Get current run
             run = mlflow.active_run()
             if run is None:
-                print("⚠️ No active run, cannot register model")
+                print("No active run, cannot register model")
                 return None
 
             run_id = run.info.run_id
@@ -321,11 +297,11 @@ class MLflowTracker:
                     description=description
                 )
 
-            print(f"✅ Registered model '{model_name}' version {version}")
+            print(f"Registered model '{model_name}' version {version}")
             return version
 
         except Exception as e:
-            print(f"⚠️ Error registering model: {e}")
+            print(f"Error registering model: {e}")
             return None
 
     def promote_to_production(
@@ -346,7 +322,7 @@ class MLflowTracker:
             True if successful, False otherwise
         """
         if self.experiment_name is None:
-            print("⚠️ MLflow not available, skipping promotion")
+            print("MLflow not available, skipping promotion")
             return False
 
         try:
@@ -362,9 +338,9 @@ class MLflowTracker:
                             version=model.version,
                             stage="Archived"
                         )
-                        print(f"📦 Archived previous Production version {model.version}")
+                        print(f"Archived previous Production version {model.version}")
                 except Exception as e:
-                    print(f"⚠️ Could not archive existing models: {e}")
+                    print(f"Could not archive existing models: {e}")
 
             # Promote new version to Production
             client.transition_model_version_stage(
@@ -373,11 +349,11 @@ class MLflowTracker:
                 stage="Production"
             )
 
-            print(f"🚀 Promoted '{model_name}' version {version} to Production")
+            print(f"Promoted '{model_name}' version {version} to Production")
             return True
 
         except Exception as e:
-            print(f"⚠️ Error promoting model: {e}")
+            print(f"Error promoting model: {e}")
             return False
 
     def promote_best_model(
@@ -398,7 +374,7 @@ class MLflowTracker:
             True if a model was promoted, False otherwise
         """
         if self.experiment_name is None:
-            print("⚠️ MLflow not available")
+            print("MLflow not available")
             return False
 
         try:
@@ -408,7 +384,7 @@ class MLflowTracker:
             versions = client.search_model_versions(f"name='{model_name}'")
 
             if not versions:
-                print(f"⚠️ No versions found for model '{model_name}'")
+                print(f"No versions found for model '{model_name}'")
                 return False
 
             # Find best version based on metric
@@ -424,14 +400,14 @@ class MLflowTracker:
                     best_version = version.version
 
             if best_version:
-                print(f"🎯 Best model: version {best_version} with {metric}={best_metric_value:.4f}")
+                print(f"Best model: version {best_version} with {metric}={best_metric_value:.4f}")
                 return self.promote_to_production(model_name, best_version)
             else:
-                print(f"⚠️ No model meets threshold ({metric} > {minimum_metric_value})")
+                print(f"No model meets threshold ({metric} > {minimum_metric_value})")
                 return False
 
         except Exception as e:
-            print(f"⚠️ Error promoting best model: {e}")
+            print(f"Error promoting best model: {e}")
             return False
 
     def compare_models(
@@ -450,7 +426,7 @@ class MLflowTracker:
             DataFrame with model versions and their metrics
         """
         if self.experiment_name is None:
-            print("⚠️ MLflow not available")
+            print("MLflow not available")
             return pd.DataFrame()
 
         if metrics is None:
@@ -463,7 +439,7 @@ class MLflowTracker:
             versions = client.search_model_versions(f"name='{model_name}'")
 
             if not versions:
-                print(f"⚠️ No versions found for model '{model_name}'")
+                print(f"No versions found for model '{model_name}'")
                 return pd.DataFrame()
 
             # Build comparison table
@@ -483,12 +459,12 @@ class MLflowTracker:
                 data.append(row)
 
             df = pd.DataFrame(data).sort_values("version", ascending=False)
-            print(f"\n📊 Model Comparison: {model_name}")
+            print(f"\nModel Comparison: {model_name}")
             print(df.to_string(index=False))
             return df
 
         except Exception as e:
-            print(f"⚠️ Error comparing models: {e}")
+            print(f"Error comparing models: {e}")
             return pd.DataFrame()
 
 
@@ -548,11 +524,11 @@ def load_model_from_registry(
             # Get latest version in specified stage
             versions = client.get_latest_versions(model_name, stages=[stage])
             if not versions:
-                print(f"⚠️ No model found in stage '{stage}'")
+                print(f"No model found in stage '{stage}'")
                 return None
             model_version = versions[0]
 
-        print(f"📥 Loading model from registry: {model_name} v{model_version.version} ({model_version.current_stage})")
+        print(f" Loading model from registry: {model_name} v{model_version.version} ({model_version.current_stage})")
 
         # Load the model itself
         model_uri = f"models:/{model_name}/{model_version.version}"
@@ -582,21 +558,21 @@ def load_model_from_registry(
                     scalers_path = client.download_artifacts(run_id, "scalers.pkl", tmpdir)
                     with open(scalers_path, 'rb') as f:
                         scalers = pickle.load(f)
-                    print(f"✅ Scalers loaded from artifacts")
+                    print(f"Scalers loaded from artifacts")
                 except Exception:
-                    print(f"⚠️ Scalers not found in artifacts")
+                    print(f"Scalers not found in artifacts")
 
                 # Try to download metadata
                 try:
                     metadata_path = client.download_artifacts(run_id, "metadata.pkl", tmpdir)
                     with open(metadata_path, 'rb') as f:
                         metadata = pickle.load(f)
-                    print(f"✅ Metadata loaded from artifacts")
+                    print(f"Metadata loaded from artifacts")
                 except Exception:
-                    print(f"⚠️ Metadata not found in artifacts")
+                    print(f"Metadata not found in artifacts")
 
         except Exception as e:
-            print(f"⚠️ Could not load artifacts: {e}")
+            print(f"Could not load artifacts: {e}")
 
         bundle = {
             'model': model,
@@ -607,11 +583,11 @@ def load_model_from_registry(
             'run_id': model_version.run_id
         }
 
-        print(f"✅ Model bundle loaded successfully")
+        print(f"Model bundle loaded successfully")
         return bundle
 
     except Exception as e:
-        print(f"⚠️ Error loading model from registry: {e}")
+        print(f"Error loading model from registry: {e}")
         import traceback
         traceback.print_exc()
         return None

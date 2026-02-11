@@ -1,22 +1,5 @@
 # api_pokemon/services/type_service.py
-"""
-Pokémon Type service layer
-=========================
-
-This module provides database access functions related to Pokémon elemental
-types, type effectiveness (affinities), and Pokémon filtering by type.
-
-Responsibilities:
-- Fetch all elemental types
-- Resolve a type by name (tolerant matching)
-- Retrieve type effectiveness relationships
-- Retrieve Pokémon by elemental type (ID or name)
-
-This layer:
-- Returns SQLAlchemy ORM objects only
-- Contains no FastAPI / HTTP logic
-- Is reusable for API, ML pipelines, and batch jobs
-"""
+"""Database access functions for Pokemon types and effectiveness."""
 
 import unicodedata
 from typing import List, Optional
@@ -32,20 +15,10 @@ from core.models import (
 
 
 # -------------------------------------------------------------------
-# 🔹 Internal helpers
+# Internal helpers
 # -------------------------------------------------------------------
 def normalize(text: str) -> str:
-    """
-    Normalize a string for tolerant comparison.
-
-    Operations:
-    - lowercase
-    - remove accents (diacritics)
-
-    Example:
-    - "Ténèbres" → "tenebres"
-    - "Fée" → "fee"
-    """
+    """Normalize string for comparison (lowercase, remove accents)."""
     return "".join(
         c
         for c in unicodedata.normalize("NFD", text.lower())
@@ -54,23 +27,7 @@ def normalize(text: str) -> str:
 
 
 def find_type_by_name(db: Session, name: str) -> Optional[Type]:
-    """
-    Resolve a Pokémon type using tolerant name matching.
-
-    Matching rules:
-    - accent-insensitive
-    - case-insensitive
-    - prefix-based (starts with)
-
-    Examples:
-    - "fee" → "Fée"
-    - "teneb" → "Ténèbres"
-
-    Returns
-    -------
-    Optional[Type]
-        Matching Type ORM object, or None if not found.
-    """
+    """Find a type by name (accent and case insensitive, prefix match)."""
     normalized_input = normalize(name)
 
     for t in db.query(Type).all():
@@ -81,17 +38,10 @@ def find_type_by_name(db: Session, name: str) -> Optional[Type]:
 
 
 # -------------------------------------------------------------------
-# 🔹 Types
+# Types
 # -------------------------------------------------------------------
 def list_types(db: Session) -> List[Type]:
-    """
-    Retrieve all Pokémon elemental types.
-
-    Returns
-    -------
-    List[Type]
-        Ordered list of all types.
-    """
+    """Retrieve all Pokemon elemental types."""
     return (
         db.query(Type)
         .order_by(Type.id)
@@ -100,28 +50,14 @@ def list_types(db: Session) -> List[Type]:
 
 
 # -------------------------------------------------------------------
-# 🔹 Type effectiveness (affinities)
+# Type effectiveness (affinities)
 # -------------------------------------------------------------------
 def get_type_affinities(
     db: Session,
     attacking_type_id: Optional[int] = None,
     defending_type_id: Optional[int] = None,
 ) -> List[TypeEffectiveness]:
-    """
-    Retrieve type effectiveness relationships.
-
-    Parameters
-    ----------
-    attacking_type_id : Optional[int]
-        Filter by attacking type ID.
-    defending_type_id : Optional[int]
-        Filter by defending type ID.
-
-    Returns
-    -------
-    List[TypeEffectiveness]
-        Matching effectiveness relationships.
-    """
+    """Retrieve type effectiveness relationships, optionally filtered."""
     query = db.query(TypeEffectiveness)
 
     if attacking_type_id is not None:
@@ -142,23 +78,7 @@ def get_type_affinities_by_name(
     attacking_type_name: Optional[str] = None,
     defending_type_name: Optional[str] = None,
 ) -> List[TypeEffectiveness]:
-    """
-    Retrieve type effectiveness relationships using type names.
-
-    Name matching is tolerant (accent- and case-insensitive).
-
-    Parameters
-    ----------
-    attacking_type_name : Optional[str]
-        Name of the attacking type.
-    defending_type_name : Optional[str]
-        Name of the defending type.
-
-    Returns
-    -------
-    List[TypeEffectiveness]
-        Matching effectiveness relationships.
-    """
+    """Retrieve type effectiveness by type names (tolerant matching)."""
     attacking_type = (
         find_type_by_name(db, attacking_type_name)
         if attacking_type_name else None
@@ -184,27 +104,13 @@ def get_type_affinities_by_name(
 
 
 # -------------------------------------------------------------------
-# 🔹 Pokémon by type
+# Pokémon by type
 # -------------------------------------------------------------------
 def list_pokemon_by_type(
     db: Session,
     type_id: int,
 ) -> List[Pokemon]:
-    """
-    List all Pokémon having a given elemental type.
-
-    The type can appear in slot 1 or slot 2.
-
-    Parameters
-    ----------
-    type_id : int
-        Elemental type ID.
-
-    Returns
-    -------
-    List[Pokemon]
-        Pokémon ORM objects with form, species and types loaded.
-    """
+    """List Pokemon having a given elemental type."""
     return (
         db.query(Pokemon)
         .join(PokemonType)
@@ -224,19 +130,7 @@ def list_pokemon_by_type_name(
     db: Session,
     type_name: str,
 ) -> List[Pokemon]:
-    """
-    List all Pokémon having a given elemental type, resolved by name.
-
-    Parameters
-    ----------
-    type_name : str
-        Elemental type name (tolerant matching).
-
-    Returns
-    -------
-    List[Pokemon]
-        Pokémon ORM objects.
-    """
+    """List Pokemon having a given type by name."""
     type_obj = find_type_by_name(db, type_name)
 
     if not type_obj:

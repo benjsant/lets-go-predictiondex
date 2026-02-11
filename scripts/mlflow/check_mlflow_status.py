@@ -29,22 +29,22 @@ def print_header(text):
 
 def print_success(text):
     """Display a success message."""
-    print(f"{GREEN}✅ {text}{RESET}")
+    print(f"{GREEN}{text}{RESET}")
 
 
 def print_error(text):
     """Display an error message."""
-    print(f"{RED}❌ {text}{RESET}")
+    print(f"{RED}{text}{RESET}")
 
 
 def print_warning(text):
     """Display a warning message."""
-    print(f"{YELLOW}⚠️  {text}{RESET}")
+    print(f"{YELLOW}{text}{RESET}")
 
 
 def print_info(text):
     """Display an info message."""
-    print(f"{CYAN}ℹ️  {text}{RESET}")
+    print(f"{CYAN}{text}{RESET}")
 
 
 def check_mlflow_server():
@@ -99,7 +99,7 @@ def check_experiments():
                 created_date = datetime.fromtimestamp(created / 1000).strftime("%Y-%m-%d %H:%M:%S")
             else:
                 created_date = "N/A"
-            print(f"   • ID {exp_id}: {exp_name} (created {created_date})")
+            print(f" • ID {exp_id}: {exp_name} (created {created_date})")
 
         return True
 
@@ -134,7 +134,7 @@ def check_runs():
 
         print_success(f"{len(runs)} training run(s) found:")
 
-        for i, run in enumerate(runs[:5], 1):  # Display max 5 runs
+        for i, run in enumerate(runs[:5], 1): # Display max 5 runs
             info = run.get("info", {})
             data_run = run.get("data", {})
 
@@ -147,17 +147,17 @@ def check_runs():
             metrics = data_run.get("metrics", [])
             metrics_dict = {m["key"]: m["value"] for m in metrics}
 
-            print(f"\n   {i}. Run: {run_name} (ID: {run_id}...)")
-            print(f"      Status: {status}")
-            print(f"      Experiment ID: {exp_id}")
+            print(f"\n {i}. Run: {run_name} (ID: {run_id}...)")
+            print(f" Status: {status}")
+            print(f" Experiment ID: {exp_id}")
 
             if metrics_dict:
-                print("      Metrics:")
+                print(" Metrics:")
                 for key, value in sorted(metrics_dict.items()):
                     if isinstance(value, float):
-                        print(f"         - {key}: {value:.4f}")
+                        print(f" - {key}: {value:.4f}")
                     else:
-                        print(f"         - {key}: {value}")
+                        print(f" - {key}: {value}")
 
         return True
 
@@ -186,7 +186,7 @@ def check_registered_models():
         if not models:
             print_warning("No models registered in Model Registry")
             print_info("To register existing model:")
-            print_info("   python3 scripts/mlflow/register_existing_model.py")
+            print_info(" python3 scripts/mlflow/register_existing_model.py")
             return False
 
         print_success(f"{len(models)} registered model(s):")
@@ -199,13 +199,13 @@ def check_registered_models():
                 created_date = "N/A"
             latest_versions = model.get("latest_versions", [])
 
-            print(f"   • {model_name} (created {created_date})")
+            print(f" • {model_name} (created {created_date})")
 
             if latest_versions:
                 for version in latest_versions:
                     version_num = version.get("version")
                     stage = version.get("current_stage", "None")
-                    print(f"      - Version {version_num} ({stage})")
+                    print(f" - Version {version_num} ({stage})")
 
         return True
 
@@ -233,13 +233,13 @@ def check_local_models():
 
     print_success(f"{len(pkl_files)} model(s) found:")
     for pkl_file in pkl_files:
-        size = os.path.getsize(pkl_file) / (1024 * 1024)  # MB
-        print(f"   • {pkl_file.name} ({size:.2f} MB)")
+        size = os.path.getsize(pkl_file) / (1024 * 1024) # MB
+        print(f" • {pkl_file.name} ({size:.2f} MB)")
 
     if json_files:
         print_success(f"{len(json_files)} metadata file(s) found:")
         for json_file in json_files:
-            print(f"   • {json_file.name}")
+            print(f" • {json_file.name}")
 
     return True
 
@@ -254,23 +254,23 @@ def print_summary(checks):
     print(f"Checks: {passed}/{total} passed\n")
 
     for check_name, check_result in checks.items():
-        status = f"{GREEN}✅ PASS{RESET}" if check_result else f"{RED}❌ FAIL{RESET}"
-        print(f"   {status}  {check_name}")
+        status = f"{GREEN}PASS{RESET}" if check_result else f"{RED}FAIL{RESET}"
+        print(f" {status} {check_name}")
 
     print()
 
     if passed == total:
-        print_success("🎉 MLflow is fully operational!")
+        print_success("MLflow is fully operational!")
         print_info("Access UI: http://localhost:5001")
     elif checks.get("MLflow Server", False):
         print_warning("MLflow works but some elements are missing")
         if not checks.get("Registered Models", False):
             print_info("\nTo register existing model:")
-            print(f"{CYAN}   python3 scripts/mlflow/register_existing_model.py{RESET}")
+            print(f"{CYAN} python3 scripts/mlflow/register_existing_model.py{RESET}")
     else:
         print_error("MLflow is not operational")
         print_info("\nTo start MLflow:")
-        print(f"{CYAN}   docker compose up -d mlflow{RESET}")
+        print(f"{CYAN} docker compose up -d mlflow{RESET}")
 
     print()
 
@@ -279,7 +279,7 @@ def main():
     """Main function."""
     print(f"{CYAN}")
     print("╔════════════════════════════════════════════════════════════╗")
-    print("║         MLFLOW STATUS CHECK - PREDICTIONDEX               ║")
+    print("║ MLFLOW STATUS CHECK - PREDICTIONDEX ║")
     print("╚════════════════════════════════════════════════════════════╝")
     print(RESET)
 

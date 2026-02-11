@@ -1,19 +1,5 @@
 # core/models/type_effectiveness.py
-
-"""
-SQLAlchemy Model – TypeEffectiveness
-===================================
-
-This module defines the `TypeEffectiveness` model, which represents the
-**damage multiplier between two elemental types** in Pokémon Let's Go Pikachu / Eevee.
-
-It is an enriched association table linking:
-- an attacking type (`Type`),
-- a defending type (`Type`),
-- a numeric multiplier indicating effectiveness.
-
-This table is central for battle calculations and machine learning simulations.
-"""
+"""SQLAlchemy model for type effectiveness multipliers."""
 
 from sqlalchemy import Column, ForeignKey, Integer, Numeric
 
@@ -41,9 +27,9 @@ class TypeEffectiveness(Base):
 
     Example:
     ┌───────────────┬─────────────────┬─────────────┐
-    │ attacking_id  │ defending_id    │ multiplier  │
+    │ attacking_id │ defending_id │ multiplier │
     ├───────────────┼─────────────────┼─────────────┤
-    │ 5             │ 8               │ 2.0         │
+    │ 5 │ 8 │ 2.0 │
     └───────────────┴─────────────────┴─────────────┘
     """
 

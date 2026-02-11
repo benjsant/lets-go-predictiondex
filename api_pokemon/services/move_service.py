@@ -1,15 +1,5 @@
 # api_pokemon/services/move_service.py
-"""
-Move service layer
-==================
-
-Service functions for accessing Pokémon move data.
-
-Design principles:
-- Stable return types
-- Streamlit-friendly
-- No presentation logic
-"""
+"""Database access functions for Pokemon moves."""
 
 import unicodedata
 from typing import Any, Dict, List, Optional
@@ -20,14 +10,10 @@ from core.models import Move, PokemonMove, Type
 
 
 # ============================================================
-# 🔹 Utility
+# Utility
 # ============================================================
 def normalize(text: str) -> str:
-    """
-    Normalize a string for tolerant comparison:
-    - lowercase
-    - remove accents
-    """
+    """Normalize string for comparison (lowercase, remove accents)."""
     return "".join(
         c
         for c in unicodedata.normalize("NFD", text.lower())
@@ -36,7 +22,7 @@ def normalize(text: str) -> str:
 
 
 # ============================================================
-# 🔹 List all moves
+# List all moves
 # ============================================================
 def list_moves(db: Session) -> List[Move]:
     return (
@@ -51,7 +37,7 @@ def list_moves(db: Session) -> List[Move]:
 
 
 # ============================================================
-# 🔹 Get move by ID
+# Get move by ID
 # ============================================================
 def get_move_by_id(db: Session, move_id: int) -> Optional[Move]:
     return (
@@ -66,7 +52,7 @@ def get_move_by_id(db: Session, move_id: int) -> Optional[Move]:
 
 
 # ============================================================
-# 🔹 Search moves by name (FR)
+# Search moves by name (FR)
 # ============================================================
 def search_moves_by_name(db: Session, name: str) -> List[Move]:
     normalized_name = normalize(name)
@@ -88,25 +74,16 @@ def search_moves_by_name(db: Session, name: str) -> List[Move]:
 
 
 # ============================================================
-# 🔹 List moves by type (+ optional Pokémon filter)
+# List moves by type (+ optional Pokémon filter)
 # ============================================================
 def list_moves_by_type(
     db: Session,
     type_name: str,
     pokemon_id: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
-    """
-    Return a list of moves for a given type.
+    """Return moves for a given type with optional Pokemon learning info."""
 
-    Always returns a normalized structure:
-    {
-        "move": Move,
-        "learn_method": Optional[str],
-        "learn_level": Optional[int],
-    }
-    """
-
-    # 🔹 Resolve type (tolerant)
+    # Resolve type (tolerant)
     type_obj = next(
         (
             t for t in db.query(Type).all()
@@ -119,7 +96,7 @@ def list_moves_by_type(
         return []
 
     # --------------------------------------------------------
-    # 🔹 Base query (no Pokémon context)
+    # Base query (no Pokémon context)
     # --------------------------------------------------------
     if pokemon_id is None:
         moves = (
@@ -143,7 +120,7 @@ def list_moves_by_type(
         ]
 
     # --------------------------------------------------------
-    # 🔹 Pokémon-specific learning info
+    # Pokémon-specific learning info
     # --------------------------------------------------------
     rows = (
         db.query(Move, PokemonMove)

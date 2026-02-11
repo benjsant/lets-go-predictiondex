@@ -116,36 +116,36 @@ class DemoLauncher:
             urls: List of (name, url) tuples to open.
         """
         for name, url in urls:
-            print(f"   Opening {name}...")
+            print(f" Opening {name}...")
             time.sleep(1)
             webbrowser.open_new_tab(url)
 
     def display_demo_guide(self):
         """Display the demonstration guide."""
-        self.print_header("DEMONSTRATION GUIDE - E1/E3 CERTIFICATION", "🎯")
+        self.print_header("DEMONSTRATION GUIDE - E1/E3 CERTIFICATION", "")
 
         print("""
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    SUMMARY TABLE                                     │
+│ SUMMARY TABLE │
 ├─────────────────────────────────────────────────────────────────────┤
-│ Component            │ URL/Command               │ Competency       │
+│ Component │ URL/Command │ Competency │
 ├─────────────────────────────────────────────────────────────────────┤
-│ 1. Streamlit         │ http://localhost:8502     │ C10 - Interface  │
-│ 2. Swagger API       │ http://localhost:8080     │ C9 - API + AI    │
-│ 3. Grafana           │ http://localhost:3001     │ C11 - Monitoring │
-│ 4. Prometheus        │ http://localhost:9091     │ C11 - Metrics    │
-│ 5. MLflow            │ http://localhost:5001     │ C13 - MLOps      │
-│ 6. PostgreSQL        │ Via Swagger API           │ E1.3 - Database  │
-│ 7. ETL Pipeline      │ docker logs letsgo_etl    │ E1.1, E1.2       │
-│ 8. ML Training       │ docker logs letsgo_ml     │ C12 - AI Optim   │
-│ 9. Notebooks         │ code notebooks/           │ E1.4 - Analysis  │
-│ 10. Documentation    │ README.md                 │ E1.5 - Docs      │
+│ 1. Streamlit │ http://localhost:8502 │ C10 - Interface │
+│ 2. Swagger API │ http://localhost:8080 │ C9 - API + AI │
+│ 3. Grafana │ http://localhost:3001 │ C11 - Monitoring │
+│ 4. Prometheus │ http://localhost:9091 │ C11 - Metrics │
+│ 5. MLflow │ http://localhost:5001 │ C13 - MLOps │
+│ 6. PostgreSQL │ Via Swagger API │ E1.3 - Database │
+│ 7. ETL Pipeline │ docker logs letsgo_etl │ E1.1, E1.2 │
+│ 8. ML Training │ docker logs letsgo_ml │ C12 - AI Optim │
+│ 9. Notebooks │ code notebooks/ │ E1.4 - Analysis │
+│ 10. Documentation │ README.md │ E1.5 - Docs │
 └─────────────────────────────────────────────────────────────────────┘
         """)
 
     def display_shortcuts(self):
         """Display useful shortcuts."""
-        self.print_section("USEFUL COMMANDS", "💡")
+        self.print_section("USEFUL COMMANDS", "")
 
         print("""
 # Validate stack
@@ -169,15 +169,15 @@ ls -lh api_pokemon/monitoring/reports/
 
     def display_demo_order(self):
         """Display recommended demonstration order."""
-        self.print_section("RECOMMENDED DEMONSTRATION ORDER (30 min)", "📋")
+        self.print_section("RECOMMENDED DEMONSTRATION ORDER (30 min)", "")
 
         print("""
 Phase 1: INTERACTIVE WEB INTERFACES (12 min)
-  1. Streamlit (4 min) - Battle and Prediction Page ⭐
+  1. Streamlit (4 min) - Battle and Prediction Page [*]
      → Show ML prediction in action
-  2. Swagger API (3 min) - Endpoint /predict/best-move ⭐
+  2. Swagger API (3 min) - Endpoint /predict/best-move [*]
      → Test API with JSON
-  3. Grafana (3 min) - API Performance Dashboard ⭐
+  3. Grafana (3 min) - API Performance Dashboard [*]
      → Real-time metrics (latency, throughput)
   4. Prometheus (1 min) - Targets UP
   5. MLflow (2 min) - Experiments + Model Registry
@@ -198,25 +198,25 @@ Phase 3: ADVANCED TECHNICAL (8 min)
 
     def display_competences_mapping(self):
         """Display component to competency mapping."""
-        self.print_section("E1/E3 COMPETENCIES MAPPING", "🎓")
+        self.print_section("E1/E3 COMPETENCIES MAPPING", "")
 
         print("""
 ╔═════════════════════════════════════════════════════════════════════╗
-║                        BLOCK E1 - DATA                              ║
+║ BLOCK E1 - DATA ║
 ╠═════════════════════════════════════════════════════════════════════╣
-║ E1.1 - Data Collection   │ ETL Pipeline (3 sources)                 ║
-║ E1.2 - Data Cleaning     │ Validation, normalization                ║
-║ E1.3 - Database Design   │ PostgreSQL 11 tables 3NF                 ║
-║ E1.4 - Data Analysis     │ Feature engineering 133 features         ║
-║ E1.5 - Documentation     │ README + docs/ + diagrams                ║
+║ E1.1 - Data Collection │ ETL Pipeline (3 sources) ║
+║ E1.2 - Data Cleaning │ Validation, normalization ║
+║ E1.3 - Database Design │ PostgreSQL 11 tables 3NF ║
+║ E1.4 - Data Analysis │ Feature engineering 133 features ║
+║ E1.5 - Documentation │ README + docs/ + diagrams ║
 ╠═════════════════════════════════════════════════════════════════════╣
-║                        BLOCK E3 - AI PRODUCTION                     ║
+║ BLOCK E3 - AI PRODUCTION ║
 ╠═════════════════════════════════════════════════════════════════════╣
-║ C9  - REST API + AI      │ FastAPI + XGBoost 94.46%                 ║
-║ C10 - App Integration    │ Streamlit 8 pages                        ║
-║ C11 - AI Monitoring      │ Prometheus + Grafana + Evidently         ║
-║ C12 - AI Optimization    │ XGBoost optimized < 500ms                ║
-║ C13 - MLOps CI/CD        │ MLflow + GitHub Actions                  ║
+║ C9 - REST API + AI │ FastAPI + XGBoost 94.46% ║
+║ C10 - App Integration │ Streamlit 8 pages ║
+║ C11 - AI Monitoring │ Prometheus + Grafana + Evidently ║
+║ C12 - AI Optimization │ XGBoost optimized < 500ms ║
+║ C13 - MLOps CI/CD │ MLflow + GitHub Actions ║
 ╚═════════════════════════════════════════════════════════════════════╝
         """)
 
@@ -226,16 +226,16 @@ Phase 3: ADVANCED TECHNICAL (8 min)
         Args:
             web_only: If True, only open web interfaces without full guide.
         """
-        self.print_header("LAUNCHING E1/E3 CERTIFICATION DEMONSTRATION", "🚀")
+        self.print_header("LAUNCHING E1/E3 CERTIFICATION DEMONSTRATION", "")
 
         # 1. Check Docker
-        self.print_section("Docker Stack Verification", "🔍")
+        self.print_section("Docker Stack Verification", "")
         if not self.check_docker():
-            print("❌ Docker is not running")
-            print("\n💡 Start the services:")
-            print("   python scripts/start_docker_stack.py")
+            print("Docker is not running")
+            print("\nStart the services:")
+            print(" python scripts/start_docker_stack.py")
             sys.exit(1)
-        print("✅ Docker is active")
+        print("Docker is active")
 
         # 2. Check services
         print("\nVerifying web services...")
@@ -243,16 +243,16 @@ Phase 3: ADVANCED TECHNICAL (8 min)
             if name == "github_actions":
                 continue
             if self.check_service(name, url):
-                print(f"   ✅ {name:20s} - {url}")
+                print(f" {name:20s} - {url}")
             else:
-                print(f"   ❌ {name:20s} - {url}")
+                print(f" {name:20s} - {url}")
 
         # 3. Display guide
         self.display_demo_guide()
 
         # 4. Open web interfaces
-        self.print_section("Opening Web Interfaces", "🌐")
-        print("\n⏳ Opening 5 browser tabs...")
+        self.print_section("Opening Web Interfaces", "")
+        print("\nOpening 5 browser tabs...")
 
         web_urls = [
             ("Streamlit", URLS["streamlit"]),
@@ -264,13 +264,13 @@ Phase 3: ADVANCED TECHNICAL (8 min)
 
         self.open_urls(web_urls)
 
-        print("\n✅ Web interfaces opened!")
+        print("\nWeb interfaces opened!")
 
         # 5. Generate metrics (optional)
         if self.generate_metrics and not web_only:
-            self.print_section("Generating Monitoring Metrics", "📊")
-            print("\n⏳ Generating realistic traffic (5 min)...")
-            print("   This will populate Grafana dashboards with data")
+            self.print_section("Generating Monitoring Metrics", "")
+            print("\nGenerating realistic traffic (5 min)...")
+            print(" This will populate Grafana dashboards with data")
 
             try:
                 # pylint: disable=consider-using-with
@@ -283,10 +283,10 @@ Phase 3: ADVANCED TECHNICAL (8 min)
                         "--duration", "5"
                     ]
                 )
-                print("✅ Metrics generation started in background")
-                print("   Check Grafana: http://localhost:3001")
+                print("Metrics generation started in background")
+                print(" Check Grafana: http://localhost:3001")
             except OSError as exc:
-                print(f"⚠️  Unable to start generation: {exc}")
+                print(f"Unable to start generation: {exc}")
 
         # 6. Display demo order
         if not web_only:
@@ -299,29 +299,29 @@ Phase 3: ADVANCED TECHNICAL (8 min)
         self.display_shortcuts()
 
         # 9. Final summary
-        self.print_header("DEMONSTRATION READY", "✅")
+        self.print_header("DEMONSTRATION READY", "[OK]")
 
         if self.services_ok:
-            print(f"\n✅ {len(self.services_ok)} services accessible:")
+            print(f"\n{len(self.services_ok)} services accessible:")
             for service in self.services_ok:
-                print(f"   • {service}")
+                print(f" • {service}")
 
         if self.services_failed:
-            print(f"\n⚠️  {len(self.services_failed)} services not accessible:")
+            print(f"\n{len(self.services_failed)} services not accessible:")
             for service in self.services_failed:
-                print(f"   • {service}")
-            print("\n💡 Start missing services:")
-            print("   docker-compose up -d")
+                print(f" • {service}")
+            print("\nStart missing services:")
+            print(" docker-compose up -d")
 
-        print("\n📋 CHECKLIST BEFORE DEMO:")
-        print("   [ ] 5 browser tabs open")
-        print("   [ ] All services UP (green)")
-        print("   [ ] Metrics generated (Grafana)")
-        print("   [ ] Notebooks open in VSCode")
-        print("   [ ] README.md and docs/ prepared")
+        print("\n CHECKLIST BEFORE DEMO:")
+        print(" [ ] 5 browser tabs open")
+        print(" [ ] All services UP (green)")
+        print(" [ ] Metrics generated (Grafana)")
+        print(" [ ] Notebooks open in VSCode")
+        print(" [ ] README.md and docs/ prepared")
 
-        print("\n🎯 READY FOR CERTIFICATION!")
-        print("\n💡 Full guide: GUIDE_DEMONSTRATION_VISUELLE.md")
+        print("\nREADY FOR CERTIFICATION!")
+        print("\nFull guide: GUIDE_DEMONSTRATION_VISUELLE.md")
 
         print("\n" + "=" * 80 + "\n")
 
@@ -350,7 +350,7 @@ def main():
         launcher.run_demo(web_only=args.web_only)
         return 0
     except KeyboardInterrupt:
-        print("\n\n⚠️  Demonstration interrupted")
+        print("\n\nDemonstration interrupted")
         return 1
 
 

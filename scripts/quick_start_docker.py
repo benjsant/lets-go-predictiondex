@@ -1,38 +1,5 @@
 #!/usr/bin/env python3
-"""
-Interactive Docker Quick Start Guide.
-
-Interactive script to guide users through starting and validating
-the complete Docker stack.
-
-This script provides a step-by-step walkthrough for:
-    1. Checking Docker prerequisites (Docker, Docker Compose)
-    2. Building Docker images
-    3. Starting services in correct order
-    4. Validating service health
-    5. Displaying access URLs
-    6. Running initial smoke tests
-
-Features:
-    - Colored terminal output for better readability
-    - Progress indicators for long-running operations
-    - Automatic health checks with retry logic
-    - Helpful error messages and troubleshooting tips
-    - Service URL summary at completion
-
-Usage:
-    # Start guided setup
-    python scripts/quick_start_docker.py
-
-    # Quick start without prompts
-    python scripts/quick_start_docker.py --auto
-
-Prerequisites:
-    - Docker installed and running
-    - Docker Compose v2+
-    - Sufficient disk space (10GB recommended)
-    - Ports available: 8080, 5432, 9091, 3001, 5001, 8502
-"""
+"""Interactive Docker quick start guide."""
 
 import argparse
 import shutil
@@ -95,7 +62,7 @@ def run_command(command: str, description: str) -> bool:
     Returns:
         True if successful, False otherwise
     """
-    print(f"\n🔧 {description}...")
+    print(f"\n[RUN] {description}...")
     print(f"   $ {command}")
 
     try:
@@ -109,19 +76,19 @@ def run_command(command: str, description: str) -> bool:
         )
 
         if result.returncode == 0:
-            print("   ✅ Success")
+            print("   [OK] Success")
             return True
 
-        print(f"   ❌ Failed (code {result.returncode})")
+        print(f"   [ERROR] Failed (code {result.returncode})")
         if result.stderr:
             print(f"   Error: {result.stderr[:200]}")
         return False
 
     except subprocess.TimeoutExpired:
-        print("   ❌ Timeout (> 120s)")
+        print("   [ERROR] Timeout (> 120s)")
         return False
     except OSError as exc:
-        print(f"   ❌ Error: {exc}")
+        print(f"   [ERROR] Error: {exc}")
         return False
 
 
@@ -140,13 +107,13 @@ def check_service(url: str, name: str, timeout: int = 5) -> bool:
     try:
         response = requests.get(url, timeout=timeout)
         if response.status_code == 200:
-            print(f"   ✅ {name} accessible")
+            print(f"   [OK] {name} accessible")
             return True
 
-        print(f"   ⚠️  {name} responds with status {response.status_code}")
+        print(f"   [WARN] {name} responds with status {response.status_code}")
         return False
     except requests.exceptions.RequestException:
-        print(f"   ❌ {name} not accessible")
+        print(f"   [ERROR] {name} not accessible")
         return False
 
 
@@ -162,7 +129,7 @@ def main():
     args = parser.parse_args()
     auto_mode = args.auto
 
-    print_header("🚀 DOCKER QUICK START GUIDE")
+    print_header("[START] DOCKER QUICK START GUIDE")
     print("\nThis script will guide you to start the complete stack.")
     print("\nServices to be started:")
     print("  • PostgreSQL (database)")
@@ -176,9 +143,9 @@ def main():
     print("  • Node Exporter (system metrics)")
 
     if auto_mode:
-        print("\n🤖 Running in automatic mode...")
+        print("\n[AUTO] Running in automatic mode...")
     else:
-        input("\n👉 Press ENTER to start...")
+        input("\n[INPUT] Press ENTER to start...")
 
     # ========================================================================
     # STEP 1: Check Docker
@@ -187,22 +154,22 @@ def main():
     print_step(1, "Docker Verification")
 
     if not run_command("docker --version", "Check Docker"):
-        print("\n❌ Docker is not installed or not accessible")
-        print("💡 Install Docker: https://docs.docker.com/get-docker/")
+        print("\n[ERROR] Docker is not installed or not accessible")
+        print("[TIP] Install Docker: https://docs.docker.com/get-docker/")
         sys.exit(1)
 
     # Detect Docker Compose version (v2 or v1)
     compose_cmd = get_docker_compose_command()
     if not compose_cmd:
-        print("\n❌ Docker Compose is not installed")
-        print("💡 Install Docker Compose: https://docs.docker.com/compose/install/")
+        print("\n[ERROR] Docker Compose is not installed")
+        print("[TIP] Install Docker Compose: https://docs.docker.com/compose/install/")
         sys.exit(1)
 
     if not run_command(f"{compose_cmd} version", "Check Docker Compose"):
-        print("\n❌ Docker Compose is not working")
+        print("\n[ERROR] Docker Compose is not working")
         sys.exit(1)
 
-    print(f"   ℹ️  Using: {compose_cmd}")
+    print(f"   [INFO] Using: {compose_cmd}")
 
     # ========================================================================
     # STEP 2: Stop existing services
@@ -210,17 +177,17 @@ def main():
 
     print_step(2, "Cleanup of existing services")
 
-    print("\n⚠️  This step will stop existing Docker services")
+    print("\n[WARN] This step will stop existing Docker services")
     if auto_mode:
         response = "y"
-        print("🤖 Auto mode: Proceeding with cleanup")
+        print("[AUTO] Auto mode: Proceeding with cleanup")
     else:
         response = input("Continue? (y/N): ").lower()
 
     if response == "y":
         run_command(f"{compose_cmd} down", "Stop services")
     else:
-        print("ℹ️  Cleanup skipped")
+        print("[INFO] Cleanup skipped")
 
     # ========================================================================
     # STEP 3: Build images
@@ -228,20 +195,20 @@ def main():
 
     print_step(3, "Building Docker images")
 
-    print("\n⚠️  This step may take 5-10 minutes the first time")
+    print("\n[WARN] This step may take 5-10 minutes the first time")
     if auto_mode:
         response = "y"
-        print("🤖 Auto mode: Building images")
+        print("[AUTO] Auto mode: Building images")
     else:
         response = input("Build images? (Y/n): ").lower()
 
     if response != "n":
         if not run_command(f"{compose_cmd} build --parallel", "Build images"):
-            print("\n❌ Build failed")
-            print("💡 Check the logs above")
+            print("\n[ERROR] Build failed")
+            print("[TIP] Check the logs above")
             sys.exit(1)
     else:
-        print("ℹ️  Build skipped")
+        print("[INFO] Build skipped")
 
     # ========================================================================
     # STEP 4: Start services
@@ -250,18 +217,18 @@ def main():
     print_step(4, "Starting services")
 
     if not run_command(f"{compose_cmd} up -d", "Start the stack"):
-        print("\n❌ Startup failed")
+        print("\n[ERROR] Startup failed")
         sys.exit(1)
 
     # Some services may stay in "Created" state after first up -d
     # Retry with specific services to ensure they start
-    print("\n🔄 Ensuring all services are started...")
+    print("\n[RETRY] Ensuring all services are started...")
     run_command(
         f"{compose_cmd} up -d ml_builder api grafana streamlit",
         "Start remaining services"
     )
 
-    print("\n⏳ Waiting for complete startup (30s)...")
+    print("\n[WAIT] Waiting for complete startup (30s)...")
     for i in range(30, 0, -5):
         print(f"   {i}s remaining...")
         time.sleep(5)
@@ -292,12 +259,12 @@ def main():
     if all_ok:
         print_step(6, "Generate test metrics (optional)")
 
-        print("\n💡 Do you want to generate test metrics for Grafana?")
+        print("\n[TIP] Do you want to generate test metrics for Grafana?")
         print("   This will create ML predictions and populate dashboards")
 
         if auto_mode:
             response = "n"
-            print("🤖 Auto mode: Skipping metrics generation (can be done manually later)")
+            print("[AUTO] Auto mode: Skipping metrics generation (can be done manually later)")
         else:
             response = input("\nGenerate metrics? (y/N): ").lower()
 
@@ -308,7 +275,7 @@ def main():
                 duration = input("Duration in minutes (default: 2): ").strip()
                 duration = int(duration) if duration else 2
 
-            print(f"\n🎯 Generating metrics for {duration} minute(s)...")
+            print(f"\n[ACTION] Generating metrics for {duration} minute(s)...")
             print("   (You can interrupt with Ctrl+C)")
 
             try:
@@ -319,30 +286,30 @@ def main():
                     check=False
                 )
             except KeyboardInterrupt:
-                print("\n⚠️  Generation interrupted")
+                print("\n[WARN] Generation interrupted")
             except subprocess.TimeoutExpired:
-                print("   ⚠️  Timeout")
+                print("   [WARN] Timeout")
 
     # ========================================================================
     # FINAL SUMMARY
     # ========================================================================
 
-    print_header("✅ STARTUP COMPLETE")
+    print_header("[OK] STARTUP COMPLETE")
 
     if all_ok:
-        print("\n🎉 All services are operational!")
-        print("\n📍 Available URLs:")
+        print("\n[SUCCESS] All services are operational!")
+        print("\n[URLS] Available URLs:")
         print("   • API (Swagger):  http://localhost:8080/docs")
         print("   • Streamlit:      http://localhost:8502")
         print("   • Grafana:        http://localhost:3001")
         print("   • Prometheus:     http://localhost:9091")
         print("   • MLflow:         http://localhost:5001")
 
-        print("\n📊 Useful endpoints:")
+        print("\n[ENDPOINTS] Useful endpoints:")
         print("   • API metrics:    http://localhost:8080/metrics")
         print("   • Health check:   http://localhost:8080/health")
 
-        print("\n💡 Useful commands:")
+        print("\n[TIP] Useful commands:")
         print("   # View logs")
         print("   docker-compose logs -f api")
         print("")
@@ -355,15 +322,15 @@ def main():
         print("   # Stop services")
         print("   docker-compose down")
 
-        print("\n🎯 Next steps:")
+        print("\n[NEXT] Next steps:")
         print("   1. Open Grafana (http://localhost:3001)")
         print("   2. Check dashboards (Model Performance, API Performance)")
         print("   3. Test the API (http://localhost:8080/docs)")
         print("   4. Explore the interface (http://localhost:8502)")
 
     else:
-        print("\n⚠️  Some services are not accessible")
-        print("\n💡 Actions to take:")
+        print("\n[WARN] Some services are not accessible")
+        print("\n[TIP] Actions to take:")
         print("   1. Check logs: docker-compose logs <service>")
         print("   2. Restart services: docker-compose restart")
         print("   3. Validate stack: python scripts/validate_docker_stack.py")
@@ -375,5 +342,5 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n\n⚠️  Script interrupted by user")
+        print("\n\n[WARN] Script interrupted by user")
         sys.exit(1)

@@ -28,7 +28,7 @@ sys.path.insert(0, str(ROOT_DIR))
 # pylint: disable=wrong-import-position
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd  # noqa: F401
+import pandas as pd # noqa: F401
 import seaborn as sns
 # pylint: enable=wrong-import-position
 
@@ -45,21 +45,21 @@ plt.rcParams['axes.labelsize'] = 12
 
 # Project colors
 COLORS = {
-    'primary': '#FF6B6B',      # Pokemon Red
-    'secondary': '#4ECDC4',    # Turquoise
-    'accent': '#FFE66D',       # Yellow
-    'dark': '#2C3E50',         # Dark Blue
-    'light': '#F7F9FC',        # Light Gray
-    'success': '#2ECC71',      # Green
-    'warning': '#F39C12',      # Orange
-    'danger': '#E74C3C',       # Red
+    'primary': '#FF6B6B', # Pokemon Red
+    'secondary': '#4ECDC4', # Turquoise
+    'accent': '#FFE66D', # Yellow
+    'dark': '#2C3E50', # Dark Blue
+    'light': '#F7F9FC', # Light Gray
+    'success': '#2ECC71', # Green
+    'warning': '#F39C12', # Orange
+    'danger': '#E74C3C', # Red
 }
 
 
 def create_output_dir(output_dir: Path) -> Path:
     """Create output directory if it doesn't exist."""
     output_dir.mkdir(parents=True, exist_ok=True)
-    print(f"📁 Output directory: {output_dir}")
+    print(f" Output directory: {output_dir}")
     return output_dir
 
 
@@ -72,12 +72,12 @@ def generate_confusion_matrix(output_dir: Path) -> Path:
     - FP (Pokemon 2 wins, predicted 1): 124
     - FN (Pokemon 1 wins, predicted 2): 112
     """
-    print("📊 Generating confusion matrix...")
+    print("Generating confusion matrix...")
 
     # Matrix data (based on v2 metrics)
     confusion_matrix_data = np.array([
-        [856, 112],   # Real = 1 (Pokemon 1 wins)
-        [124, 908]    # Real = 2 (Pokemon 2 wins)
+        [856, 112], # Real = 1 (Pokemon 1 wins)
+        [124, 908] # Real = 2 (Pokemon 2 wins)
     ])
 
     # Calculate metrics
@@ -121,7 +121,7 @@ def generate_confusion_matrix(output_dir: Path) -> Path:
     plt.savefig(filepath, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
 
-    print(f"   ✅ Saved: {filepath}")
+    print(f" Saved: {filepath}")
     return filepath
 
 
@@ -130,7 +130,7 @@ def generate_roc_curve(output_dir: Path) -> Path:
 
     Estimated AUC of 0.94 based on v2 metrics.
     """
-    print("📈 Generating ROC curve...")
+    print("Generating ROC curve...")
 
     # Simulated ROC curve with AUC = 0.94
     fpr = np.array([0, 0.02, 0.05, 0.08, 0.12, 0.18, 0.25, 0.35, 0.50, 0.70, 1.0])
@@ -138,9 +138,9 @@ def generate_roc_curve(output_dir: Path) -> Path:
 
     # Calculate AUC (compatible with recent and old numpy)
     try:
-        auc = np.trapezoid(tpr, fpr)  # numpy >= 2.0
+        auc = np.trapezoid(tpr, fpr) # numpy >= 2.0
     except AttributeError:
-        auc = np.trapz(tpr, fpr)  # numpy < 2.0
+        auc = np.trapz(tpr, fpr) # numpy < 2.0
 
     # Create figure
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -178,7 +178,7 @@ def generate_roc_curve(output_dir: Path) -> Path:
     plt.savefig(filepath, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
 
-    print(f"   ✅ Saved: {filepath}")
+    print(f" Saved: {filepath}")
     return filepath
 
 
@@ -187,7 +187,7 @@ def generate_feature_importance(output_dir: Path) -> Path:
 
     Features based on battle_winner model v2.
     """
-    print("🎯 Generating feature importance...")
+    print("Generating feature importance...")
 
     # Features and their importance (simulated based on domain)
     features = {
@@ -214,7 +214,7 @@ def generate_feature_importance(output_dir: Path) -> Path:
 
     # Horizontal bars
     bars = ax.barh(
-        list(sorted_features.keys())[::-1],  # Reverse to have most important at top
+        list(sorted_features.keys())[::-1], # Reverse to have most important at top
         list(sorted_features.values())[::-1],
         color=COLORS['secondary'],
         edgecolor=COLORS['dark'],
@@ -261,13 +261,13 @@ def generate_feature_importance(output_dir: Path) -> Path:
     plt.savefig(filepath, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
 
-    print(f"   ✅ Saved: {filepath}")
+    print(f" Saved: {filepath}")
     return filepath
 
 
 def generate_eda_stats_distribution(output_dir: Path) -> Path:
     """Generate Pokemon statistics distribution (EDA)."""
-    print("📊 Generating stats distribution (EDA)...")
+    print("Generating stats distribution (EDA)...")
 
     # Simulated data based on typical Gen 1 stats
     np.random.seed(42)
@@ -319,13 +319,13 @@ def generate_eda_stats_distribution(output_dir: Path) -> Path:
     plt.savefig(filepath, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
 
-    print(f"   ✅ Saved: {filepath}")
+    print(f" Saved: {filepath}")
     return filepath
 
 
 def generate_eda_type_distribution(output_dir: Path) -> Path:
     """Generate Pokemon type distribution (EDA)."""
-    print("📊 Generating type distribution (EDA)...")
+    print("Generating type distribution (EDA)...")
 
     # Real Gen 1 type distribution
     types_count = {
@@ -376,7 +376,7 @@ def generate_eda_type_distribution(output_dir: Path) -> Path:
     top_types['Others'] = other_count
 
     colors_pie = [type_colors.get(t, '#888888') for t in top_types.keys()]
-    colors_pie[-1] = '#CCCCCC'  # Gray for "Others"
+    colors_pie[-1] = '#CCCCCC' # Gray for "Others"
 
     ax2.pie(
         top_types.values(),
@@ -397,26 +397,26 @@ def generate_eda_type_distribution(output_dir: Path) -> Path:
     plt.savefig(filepath, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
 
-    print(f"   ✅ Saved: {filepath}")
+    print(f" Saved: {filepath}")
     return filepath
 
 
 def generate_eda_correlation_matrix(output_dir: Path) -> Path:
     """Generate statistics correlation matrix (EDA)."""
-    print("📊 Generating correlation matrix (EDA)...")
+    print("Generating correlation matrix (EDA)...")
 
     # Typical correlations between Pokemon stats
     stats = ['HP', 'Attack', 'Defense', 'Sp.Atk', 'Sp.Def', 'Speed', 'Total']
 
     # Simulated correlation matrix (based on real correlations)
     corr_matrix = np.array([
-        [1.00, 0.42, 0.24, 0.36, 0.38, 0.18, 0.62],  # HP
-        [0.42, 1.00, 0.44, 0.35, 0.26, 0.38, 0.68],  # Attack
-        [0.24, 0.44, 1.00, 0.22, 0.51, -0.02, 0.54],  # Defense
-        [0.36, 0.35, 0.22, 1.00, 0.51, 0.47, 0.67],  # Sp.Atk
-        [0.38, 0.26, 0.51, 0.51, 1.00, 0.26, 0.65],  # Sp.Def
-        [0.18, 0.38, -0.02, 0.47, 0.26, 1.00, 0.55],  # Speed
-        [0.62, 0.68, 0.54, 0.67, 0.65, 0.55, 1.00],  # Total
+        [1.00, 0.42, 0.24, 0.36, 0.38, 0.18, 0.62], # HP
+        [0.42, 1.00, 0.44, 0.35, 0.26, 0.38, 0.68], # Attack
+        [0.24, 0.44, 1.00, 0.22, 0.51, -0.02, 0.54], # Defense
+        [0.36, 0.35, 0.22, 1.00, 0.51, 0.47, 0.67], # Sp.Atk
+        [0.38, 0.26, 0.51, 0.51, 1.00, 0.26, 0.65], # Sp.Def
+        [0.18, 0.38, -0.02, 0.47, 0.26, 1.00, 0.55], # Speed
+        [0.62, 0.68, 0.54, 0.67, 0.65, 0.55, 1.00], # Total
     ])
 
     # Create figure
@@ -452,20 +452,20 @@ def generate_eda_correlation_matrix(output_dir: Path) -> Path:
     plt.savefig(filepath, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
 
-    print(f"   ✅ Saved: {filepath}")
+    print(f" Saved: {filepath}")
     return filepath
 
 
 def generate_battle_outcome_analysis(output_dir: Path) -> Path:
     """Generate battle outcome analysis (EDA)."""
-    print("📊 Generating battle analysis (EDA)...")
+    print("Generating battle analysis (EDA)...")
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
     # 1. Winner distribution
     ax1 = axes[0]
     winners = ['Pokemon 1', 'Pokemon 2']
-    counts = [4850, 5150]  # Slightly imbalanced
+    counts = [4850, 5150] # Slightly imbalanced
     colors = [COLORS['primary'], COLORS['secondary']]
 
     bars = ax1.bar(winners, counts, color=colors, edgecolor='white', linewidth=2)
@@ -515,18 +515,18 @@ def generate_battle_outcome_analysis(output_dir: Path) -> Path:
     plt.savefig(filepath, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
 
-    print(f"   ✅ Saved: {filepath}")
+    print(f" Saved: {filepath}")
     return filepath
 
 
 def generate_model_comparison(output_dir: Path) -> Path:
     """Generate v1 vs v2 model comparison."""
-    print("📊 Generating v1 vs v2 comparison...")
+    print("Generating v1 vs v2 comparison...")
 
     # Metrics for both versions
     metrics = ['Accuracy', 'Precision', 'Recall', 'F1-Score']
-    v1_scores = [94.24, 93.8, 94.5, 94.1]  # v1 - best_move only
-    v2_scores = [88.23, 87.5, 88.9, 88.2]  # v2 - both_best_move
+    v1_scores = [94.24, 93.8, 94.5, 94.1] # v1 - best_move only
+    v2_scores = [88.23, 87.5, 88.9, 88.2] # v2 - both_best_move
 
     x = np.arange(len(metrics))
     width = 0.35
@@ -561,7 +561,7 @@ def generate_model_comparison(output_dir: Path) -> Path:
     plt.savefig(filepath, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
 
-    print(f"   ✅ Saved: {filepath}")
+    print(f" Saved: {filepath}")
     return filepath
 
 
@@ -570,7 +570,7 @@ def generate_mcd_mermaid(output_dir: Path) -> Path:
 
     Also creates an HTML file for visualization.
     """
-    print("📐 Generating MCD diagram (Mermaid)...")
+    print(" Generating MCD diagram (Mermaid)...")
 
     mermaid_code = """erDiagram
     POKEMON {
@@ -649,7 +649,7 @@ def generate_mcd_mermaid(output_dir: Path) -> Path:
     </style>
 </head>
 <body>
-    <h1>📊 Conceptual Data Model - PredictionDex</h1>
+    <h1>Conceptual Data Model - PredictionDex</h1>
     <div class="mermaid">
 {mermaid_code}
     </div>
@@ -662,51 +662,51 @@ def generate_mcd_mermaid(output_dir: Path) -> Path:
     with open(html_path, 'w', encoding='utf-8') as f:
         f.write(html_content)
 
-    print(f"   ✅ Saved: {mermaid_path}")
-    print(f"   ✅ Saved: {html_path}")
-    print(f"   💡 Open {html_path} in a browser to view the diagram")
+    print(f" Saved: {mermaid_path}")
+    print(f" Saved: {html_path}")
+    print(f" Open {html_path} in a browser to view the diagram")
 
     return mermaid_path
 
 
 def generate_architecture_diagram(output_dir: Path) -> Path:
     """Generate architecture diagram in Mermaid."""
-    print("📐 Generating architecture diagram...")
+    print(" Generating architecture diagram...")
 
     mermaid_code = """flowchart TB
-    subgraph Sources["📥 Data Sources"]
+    subgraph Sources[" Data Sources"]
         PA[PokeAPI]
         PP[Pokepedia]
         CSV[CSV Files]
     end
 
-    subgraph ETL["🔄 ETL Pipeline"]
+    subgraph ETL["ETL Pipeline"]
         EXT[Extraction]
         TRANS[Transformation]
         LOAD[Loading]
     end
 
-    subgraph Storage["💾 Storage"]
+    subgraph Storage[" Storage"]
         PG[(PostgreSQL)]
         MLF[(MLflow)]
     end
 
-    subgraph ML["🤖 Machine Learning"]
+    subgraph ML["Machine Learning"]
         TRAIN[Training]
         MODEL[XGBoost v2]
     end
 
-    subgraph API["🔌 REST API"]
+    subgraph API[" REST API"]
         FAST[FastAPI]
         PRED[/predict]
         DATA[/pokemon]
     end
 
-    subgraph Frontend["🖥️ Interface"]
+    subgraph Frontend[" Interface"]
         ST[Streamlit]
     end
 
-    subgraph Monitoring["📊 Monitoring"]
+    subgraph Monitoring["Monitoring"]
         PROM[Prometheus]
         GRAF[Grafana]
         DRIFT[Drift Detection]
@@ -752,7 +752,7 @@ def generate_architecture_diagram(output_dir: Path) -> Path:
     </style>
 </head>
 <body>
-    <h1>🏗️ Technical Architecture - PredictionDex</h1>
+    <h1> Technical Architecture - PredictionDex</h1>
     <div class="mermaid">
 {mermaid_code}
     </div>
@@ -772,8 +772,8 @@ def generate_architecture_diagram(output_dir: Path) -> Path:
         f.write(mermaid_code)
         f.write("\n```\n")
 
-    print(f"   ✅ Saved: {html_path}")
-    print(f"   ✅ Saved: {md_path}")
+    print(f" Saved: {html_path}")
+    print(f" Saved: {md_path}")
 
     return html_path
 
@@ -781,7 +781,7 @@ def generate_architecture_diagram(output_dir: Path) -> Path:
 def generate_all_figures(output_dir: Path) -> dict:
     """Generate all figures."""
     print("\n" + "="*60)
-    print("🎨 GENERATING FIGURES FOR E1+E3 REPORT")
+    print(" GENERATING FIGURES FOR E1+E3 REPORT")
     print("="*60 + "\n")
 
     output_dir = create_output_dir(output_dir)
@@ -789,37 +789,37 @@ def generate_all_figures(output_dir: Path) -> dict:
     figures = {}
 
     # Model metrics
-    print("\n📈 MODEL METRICS\n" + "-"*40)
+    print("\nMODEL METRICS\n" + "-"*40)
     figures['confusion_matrix'] = generate_confusion_matrix(output_dir)
     figures['roc_curve'] = generate_roc_curve(output_dir)
     figures['feature_importance'] = generate_feature_importance(output_dir)
     figures['model_comparison'] = generate_model_comparison(output_dir)
 
     # EDA
-    print("\n📊 EXPLORATORY ANALYSIS (EDA)\n" + "-"*40)
+    print("\nEXPLORATORY ANALYSIS (EDA)\n" + "-"*40)
     figures['eda_stats'] = generate_eda_stats_distribution(output_dir)
     figures['eda_types'] = generate_eda_type_distribution(output_dir)
     figures['eda_correlation'] = generate_eda_correlation_matrix(output_dir)
     figures['eda_battles'] = generate_battle_outcome_analysis(output_dir)
 
     # Diagrams
-    print("\n📐 ARCHITECTURE DIAGRAMS\n" + "-"*40)
+    print("\n ARCHITECTURE DIAGRAMS\n" + "-"*40)
     figures['mcd'] = generate_mcd_mermaid(output_dir)
     figures['architecture'] = generate_architecture_diagram(output_dir)
 
     # Summary
     print("\n" + "="*60)
-    print("✅ GENERATION COMPLETE")
+    print("GENERATION COMPLETE")
     print("="*60)
-    print(f"\n📁 {len(figures)} files generated in: {output_dir}")
+    print(f"\n {len(figures)} files generated in: {output_dir}")
     print("\nFiles created:")
     for name, path in figures.items():
-        print(f"   • {name}: {path.name}")
+        print(f" • {name}: {path.name}")
 
     # Create index
     index_path = output_dir / 'INDEX.md'
     with open(index_path, 'w', encoding='utf-8') as f:
-        f.write("# 📊 Report Figures Index\n\n")
+        f.write("# Report Figures Index\n\n")
         f.write(f"*Generated on {datetime.now().strftime('%Y-%m-%d at %H:%M')}*\n\n")
 
         f.write("## Model Metrics\n\n")
@@ -844,7 +844,7 @@ def generate_all_figures(output_dir: Path) -> dict:
         f.write("| MCD | `mcd_diagram.html` | Conceptual Model (open in browser) |\n")
         f.write("| Architecture | `architecture_diagram.html` | Data flow |\n")
 
-    print(f"\n📋 Index created: {index_path}")
+    print(f"\n Index created: {index_path}")
 
     return figures
 
@@ -861,15 +861,15 @@ Examples:
   python scripts/generate_report_figures.py --only confusion,roc
 
 Available figures:
-  - confusion    : Confusion matrix
-  - roc          : ROC curve
-  - importance   : Feature importance
-  - comparison   : v1 vs v2 comparison
-  - eda_stats    : Statistics distribution
-  - eda_types    : Type distribution
-  - eda_corr     : Correlation matrix
-  - eda_battles  : Battle analysis
-  - mcd          : Conceptual Data Model
+  - confusion : Confusion matrix
+  - roc : ROC curve
+  - importance : Feature importance
+  - comparison : v1 vs v2 comparison
+  - eda_stats : Statistics distribution
+  - eda_types : Type distribution
+  - eda_corr : Correlation matrix
+  - eda_battles : Battle analysis
+  - mcd : Conceptual Data Model
   - architecture : Architecture diagram
         """
     )
@@ -912,8 +912,8 @@ Available figures:
             if fig_name in figure_map:
                 figure_map[fig_name](output_dir)
             else:
-                print(f"⚠️ Unknown figure: {fig_name}")
-                print(f"   Available: {', '.join(figure_map.keys())}")
+                print(f"Unknown figure: {fig_name}")
+                print(f" Available: {', '.join(figure_map.keys())}")
     else:
         # Full generation
         generate_all_figures(args.output_dir)

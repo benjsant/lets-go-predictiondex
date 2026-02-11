@@ -1,22 +1,5 @@
 # core/models/pokemon_stat.py
-
-"""
-SQLAlchemy Model – PokemonStat
-==============================
-
-This module defines the `PokemonStat` model, which represents the **base
-combat statistics** of a Pokémon in Pokémon Let's Go Pikachu / Eevee.
-
-These statistics are intrinsic to a Pokémon form and are independent of:
-- moves,
-- learn methods,
-- battle context.
-
-Each Pokémon has **exactly one** associated stat line, enforced through a
-one-to-one relationship using the Pokémon ID as the primary key.
-
-Data is primarily sourced from PokéAPI.
-"""
+"""SQLAlchemy model for Pokemon base combat statistics."""
 
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship

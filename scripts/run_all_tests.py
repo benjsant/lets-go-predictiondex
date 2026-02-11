@@ -33,22 +33,22 @@ def print_header(text):
 
 def print_success(text):
     """Display a success message."""
-    print(f"{GREEN}✅ {text}{RESET}")
+    print(f"{GREEN}{text}{RESET}")
 
 
 def print_error(text):
     """Display an error message."""
-    print(f"{RED}❌ {text}{RESET}")
+    print(f"{RED}{text}{RESET}")
 
 
 def print_warning(text):
     """Display a warning message."""
-    print(f"{YELLOW}⚠️  {text}{RESET}")
+    print(f"{YELLOW}{text}{RESET}")
 
 
 def print_info(text):
     """Display an info message."""
-    print(f"{CYAN}ℹ️  {text}{RESET}")
+    print(f"{CYAN}{text}{RESET}")
 
 
 def check_docker():
@@ -133,7 +133,7 @@ def check_services_running(compose_cmd):
                     except json.JSONDecodeError:
                         pass
 
-            if len(services) >= 5:  # At least 5 services (db, api, mlflow, prometheus, grafana)
+            if len(services) >= 5: # At least 5 services (db, api, mlflow, prometheus, grafana)
                 print_success(f"{len(services)} active services")
                 return True
 
@@ -189,9 +189,9 @@ def run_tests_in_docker(compose_cmd, build=False):
     print_header("RUNNING TESTS VIA DOCKER")
 
     print_info("Configuration:")
-    print("  - Environment: Docker (isolated)")
-    print(f"  - Build image: {'Yes' if build else 'No (using cache)'}")
-    print("  - Required services: PostgreSQL, API, MLflow, Prometheus, Grafana")
+    print(" - Environment: Docker (isolated)")
+    print(f" - Build image: {'Yes' if build else 'No (using cache)'}")
+    print(" - Required services: PostgreSQL, API, MLflow, Prometheus, Grafana")
 
     # Build command
     cmd = compose_cmd + ["--profile", "tests", "up"]
@@ -259,9 +259,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 scripts/run_all_tests.py              # Run via Docker (cache)
-  python3 scripts/run_all_tests.py --build      # Run via Docker (rebuild)
-  python3 scripts/run_all_tests.py --local      # Run from host (legacy)
+  python3 scripts/run_all_tests.py # Run via Docker (cache)
+  python3 scripts/run_all_tests.py --build # Run via Docker (rebuild)
+  python3 scripts/run_all_tests.py --local # Run from host (legacy)
         """
     )
 
@@ -297,14 +297,14 @@ Examples:
 
     # 1. Check Docker
     if not check_docker():
-        print_error("\n❌ Docker is not available")
+        print_error("\nDocker is not available")
         print_info("Install Docker: https://docs.docker.com/get-docker/")
         return 1
 
     # 2. Check Docker Compose
     compose_cmd = check_docker_compose()
     if not compose_cmd:
-        print_error("\n❌ Docker Compose is not available")
+        print_error("\nDocker Compose is not available")
         return 1
 
     # 3. Check/Start services
@@ -318,18 +318,18 @@ Examples:
             is_ci = os.getenv('CI') == 'true' or os.getenv('GITHUB_ACTIONS') == 'true'
 
             if is_ci:
-                print_info("🔄 CI environment detected - starting services automatically...")
+                print_info("CI environment detected - starting services automatically...")
                 if not start_services(compose_cmd):
-                    print_error("\n❌ Unable to start services")
+                    print_error("\nUnable to start services")
                     return 1
             else:
                 response = input(f"\n{YELLOW}Start services now? (y/N): {RESET}")
                 if response.lower() in ['y', 'yes', 'o', 'oui']:
                     if not start_services(compose_cmd):
-                        print_error("\n❌ Unable to start services")
+                        print_error("\nUnable to start services")
                         return 1
                 else:
-                    print_error("\n❌ Tests require services to be running")
+                    print_error("\nTests require services to be running")
                     print_info("Start manually: docker compose up -d")
                     return 1
 
@@ -343,11 +343,11 @@ Examples:
     print_header("FINAL RESULT")
 
     if exit_code == 0:
-        print_success("✅ ALL TESTS PASSED")
+        print_success("ALL TESTS PASSED")
         print_info("\nReports available in: ./reports/")
         return 0
 
-    print_error(f"❌ TESTS FAILED (code: {exit_code})")
+    print_error(f"TESTS FAILED (code: {exit_code})")
     print_info("\nCheck the logs above for details")
     return exit_code
 

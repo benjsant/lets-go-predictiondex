@@ -28,7 +28,7 @@ def client():
 
 
 # ============================================================
-# 🔹 TESTS: POST /predict/best-move
+# TESTS: POST /predict/best-move
 # ============================================================
 
 class TestPredictBestMove:
@@ -154,7 +154,7 @@ class TestPredictBestMove:
         )
 
         # Assertions
-        assert response.status_code == 422  # Validation error
+        assert response.status_code == 422 # Validation error
 
     @patch('api_pokemon.routes.prediction_route.get_db')
     def test_predict_best_move_missing_pokemon_b_id(self, mock_get_db, client):
@@ -169,7 +169,7 @@ class TestPredictBestMove:
         )
 
         # Assertions
-        assert response.status_code == 422  # Validation error
+        assert response.status_code == 422 # Validation error
 
     @patch('api_pokemon.routes.prediction_route.get_db')
     def test_predict_best_move_missing_moves(self, mock_get_db, client):
@@ -184,7 +184,7 @@ class TestPredictBestMove:
         )
 
         # Assertions
-        assert response.status_code == 422  # Validation error
+        assert response.status_code == 422 # Validation error
 
     @patch('api_pokemon.routes.prediction_route.get_db')
     def test_predict_best_move_empty_moves_list(self, mock_get_db, client):
@@ -200,7 +200,7 @@ class TestPredictBestMove:
         )
 
         # Assertions
-        assert response.status_code == 422  # Validation error (min_items=1)
+        assert response.status_code == 422 # Validation error (min_items=1)
 
     @patch('api_pokemon.routes.prediction_route.get_db')
     def test_predict_best_move_invalid_pokemon_id_zero(self, mock_get_db, client):
@@ -216,7 +216,7 @@ class TestPredictBestMove:
         )
 
         # Assertions
-        assert response.status_code == 422  # Validation error (gt=0)
+        assert response.status_code == 422 # Validation error (gt=0)
 
     @patch('api_pokemon.routes.prediction_route.get_db')
     def test_predict_best_move_invalid_pokemon_id_negative(self, mock_get_db, client):
@@ -232,7 +232,7 @@ class TestPredictBestMove:
         )
 
         # Assertions
-        assert response.status_code == 422  # Validation error
+        assert response.status_code == 422 # Validation error
 
     @patch('api_pokemon.routes.prediction_route.prediction_service.predict_best_move')
     @patch('api_pokemon.routes.prediction_route.get_db')
@@ -261,7 +261,7 @@ class TestPredictBestMove:
 
 
 # ============================================================
-# 🔹 TESTS: GET /predict/model-info
+# TESTS: GET /predict/model-info
 # ============================================================
 
 class TestModelInfo:

@@ -11,7 +11,7 @@ from machine_learning.mlflow_integration import MLflowTracker, get_mlflow_tracke
 
 class TestMLflowTracker:
     """Test MLflowTracker class"""
-    
+ 
     @pytest.mark.slow
     def test_tracker_initialization(self):
         """Test tracker initializes correctly"""
@@ -20,19 +20,19 @@ class TestMLflowTracker:
                 with patch('mlflow.create_experiment', return_value='1'):
                     tracker = MLflowTracker(experiment_name="test_exp")
                     assert tracker.experiment_name == "test_exp"
-    
+ 
     @pytest.mark.slow
     def test_tracker_with_existing_experiment(self):
         """Test tracker with existing experiment"""
         mock_exp = Mock()
         mock_exp.experiment_id = '42'
-        
+ 
         with patch('mlflow.set_tracking_uri'):
             with patch('mlflow.get_experiment_by_name', return_value=mock_exp):
                 with patch('mlflow.set_experiment'):
                     tracker = MLflowTracker(experiment_name="existing")
                     assert tracker.experiment_id == '42'
-    
+ 
     @pytest.mark.slow
     def test_tracker_auto_detection_docker(self):
         """Test auto-detection of Docker environment"""
@@ -43,14 +43,14 @@ class TestMLflowTracker:
                         tracker = MLflowTracker(experiment_name="test")
                         # Should detect mlflow:5000 in Docker
                         mock_set_uri.assert_called_once()
-    
+ 
     @pytest.mark.slow
     def test_tracker_graceful_fallback(self):
         """Test graceful fallback when MLflow unavailable"""
         with patch('mlflow.set_tracking_uri', side_effect=Exception("Connection failed")):
             tracker = MLflowTracker(experiment_name="test")
             assert tracker.experiment_name is None
-    
+ 
     @pytest.mark.slow
     def test_log_params(self):
         """Test logging parameters"""
@@ -62,7 +62,7 @@ class TestMLflowTracker:
                         params = {'n_estimators': 100, 'max_depth': 8}
                         tracker.log_params(params)
                         mock_log.assert_called_once_with(params)
-    
+ 
     @pytest.mark.slow
     def test_log_metrics(self):
         """Test logging metrics"""
@@ -74,7 +74,7 @@ class TestMLflowTracker:
                         metrics = {'accuracy': 0.95, 'f1': 0.92}
                         tracker.log_metrics(metrics)
                         mock_log.assert_called_once_with(metrics, step=None)
-    
+ 
     @pytest.mark.slow
     def test_log_model_xgboost(self):
         """Test logging XGBoost model"""
@@ -86,7 +86,7 @@ class TestMLflowTracker:
                         mock_model = Mock()
                         tracker.log_model(mock_model, "model", "xgboost")
                         mock_log.assert_called_once()
-    
+ 
     @pytest.mark.slow
     def test_log_model_sklearn(self):
         """Test logging sklearn model"""
@@ -98,7 +98,7 @@ class TestMLflowTracker:
                         mock_model = Mock()
                         tracker.log_model(mock_model, "model", "sklearn")
                         mock_log.assert_called_once()
-    
+ 
     @pytest.mark.slow
     def test_log_dataset_info(self):
         """Test logging dataset information"""
@@ -114,7 +114,7 @@ class TestMLflowTracker:
                         }
                         tracker.log_dataset_info(dataset_info)
                         mock_log.assert_called_once()
-    
+ 
     @pytest.mark.slow
     def test_start_run(self):
         """Test starting a run"""
@@ -125,7 +125,7 @@ class TestMLflowTracker:
                         tracker = MLflowTracker(experiment_name="test")
                         tracker.start_run(run_name="test_run")
                         mock_start.assert_called_once()
-    
+ 
     @pytest.mark.slow
     def test_set_tags(self):
         """Test setting tags"""

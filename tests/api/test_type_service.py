@@ -21,7 +21,7 @@ from api_pokemon.services.type_service import (
 
 
 # ============================================================
-# 🔹 TESTS: Text Normalization
+# TESTS: Text Normalization
 # ============================================================
 
 class TestNormalize:
@@ -49,7 +49,7 @@ class TestNormalize:
 
 
 # ============================================================
-# 🔹 TESTS: Find Type by Name
+# TESTS: Find Type by Name
 # ============================================================
 
 class TestFindTypeByName:
@@ -90,7 +90,7 @@ class TestFindTypeByName:
 
 
 # ============================================================
-# 🔹 TESTS: List Types
+# TESTS: List Types
 # ============================================================
 
 class TestListTypes:
@@ -100,7 +100,7 @@ class TestListTypes:
         """Test that list_types returns all types."""
         result = list_types(db_session)
 
-        assert len(result) == 8  # All sample types
+        assert len(result) == 8 # All sample types
         type_names = [t.name for t in result]
         assert "Feu" in type_names
         assert "Eau" in type_names
@@ -120,7 +120,7 @@ class TestListTypes:
 
 
 # ============================================================
-# 🔹 TESTS: Get Type Affinities
+# TESTS: Get Type Affinities
 # ============================================================
 
 class TestGetTypeAffinities:
@@ -130,7 +130,7 @@ class TestGetTypeAffinities:
         """Test retrieving all type affinities."""
         result = get_type_affinities(db_session)
 
-        assert len(result) == 8  # All sample effectiveness records
+        assert len(result) == 8 # All sample effectiveness records
 
     def test_get_affinities_filter_by_attacking_type(
         self,
@@ -183,7 +183,7 @@ class TestGetTypeAffinities:
 
 
 # ============================================================
-# 🔹 TESTS: Get Type Affinities by Name
+# TESTS: Get Type Affinities by Name
 # ============================================================
 
 class TestGetTypeAffinitiesByName:
@@ -231,8 +231,8 @@ class TestGetTypeAffinitiesByName:
         )
 
         assert len(result) == 1
-        assert result[0].attacking_type_id == 3  # Feu
-        assert result[0].defending_type_id == 4  # Plante
+        assert result[0].attacking_type_id == 3 # Feu
+        assert result[0].defending_type_id == 4 # Plante
         assert result[0].multiplier == 2.0
 
     def test_get_affinities_case_insensitive(
@@ -258,7 +258,7 @@ class TestGetTypeAffinitiesByName:
         """Test accent-insensitive type name matching."""
         result = get_type_affinities_by_name(
             db_session,
-            attacking_type_name="Electrik"  # Without accent
+            attacking_type_name="Electrik" # Without accent
         )
 
         assert len(result) >= 1
@@ -280,7 +280,7 @@ class TestGetTypeAffinitiesByName:
 
 
 # ============================================================
-# 🔹 TESTS: List Pokemon by Type
+# TESTS: List Pokemon by Type
 # ============================================================
 
 class TestListPokemonByType:
@@ -305,9 +305,9 @@ class TestListPokemonByType:
     def test_list_pokemon_by_type_multiple_pokemon(self, db_session, sample_pokemon):
         """Test type shared by multiple Pokemon."""
         # If we had multiple Water-type Pokemon, they would all be returned
-        result = list_pokemon_by_type(db_session, type_id=5)  # Eau
+        result = list_pokemon_by_type(db_session, type_id=5) # Eau
 
-        assert len(result) >= 1  # At least Blastoise
+        assert len(result) >= 1 # At least Blastoise
 
     def test_list_pokemon_by_type_no_match(self, db_session, sample_pokemon):
         """Test type with no Pokemon."""
@@ -336,7 +336,7 @@ class TestListPokemonByType:
 
 
 # ============================================================
-# 🔹 TESTS: List Pokemon by Type Name
+# TESTS: List Pokemon by Type Name
 # ============================================================
 
 class TestListPokemonByTypeName:

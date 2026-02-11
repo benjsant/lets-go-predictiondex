@@ -11,7 +11,7 @@ Le pipeline de machine learning utilisait `n_jobs=-1` partout, ce qui causait de
 | Multiprocessing | `fork` (efficace) | `spawn` (gourmand en RAM) |
 | Processus fils | Partage mémoire | Copie complète de l'instance Python |
 | RAM nécessaire | Modérée | **Très élevée** |
-| n_jobs=-1 sûr ? | ✅ Oui | ❌ Non (risque saturation) |
+| n_jobs=-1 sûr ? | Oui | Non (risque saturation) |
 
 ### Symptômes sur Windows
 
@@ -28,27 +28,27 @@ Nouveau module qui détecte automatiquement la plateforme et ajuste les paramèt
 
 ```python
 from machine_learning.platform_config import (
-    SAFE_N_JOBS,              # n_jobs pour XGBoost
-    SAFE_GRIDSEARCH_N_JOBS,   # n_jobs pour GridSearchCV
+ SAFE_N_JOBS, # n_jobs pour XGBoost
+ SAFE_GRIDSEARCH_N_JOBS, # n_jobs pour GridSearchCV
 )
 ```
 
 **Valeurs automatiques :**
 - **Windows** :
-  - `SAFE_N_JOBS = 6` (50% des cœurs sur PC 12 cœurs)
-  - `SAFE_GRIDSEARCH_N_JOBS = 4` (33% des cœurs)
-  - Garbage collector agressif activé
+ - `SAFE_N_JOBS = 6` (50% des cœurs sur PC 12 cœurs)
+ - `SAFE_GRIDSEARCH_N_JOBS = 4` (33% des cœurs)
+ - Garbage collector agressif activé
 
 - **Linux** :
-  - `SAFE_N_JOBS = -1` (tous les cœurs)
-  - `SAFE_GRIDSEARCH_N_JOBS = -1` ou 50% selon RAM disponible
+ - `SAFE_N_JOBS = -1` (tous les cœurs)
+ - `SAFE_GRIDSEARCH_N_JOBS = -1` ou 50% selon RAM disponible
 
 ### 2. Modifications appliquées
 
 **Fichiers modifiés :**
-- ✅ `machine_learning/config.py` - Utilise `SAFE_N_JOBS` au lieu de `-1`
-- ✅ `machine_learning/run_machine_learning.py` - GridSearchCV avec `SAFE_GRIDSEARCH_N_JOBS`
-- ✅ `machine_learning/train_model.py` - GridSearchCV avec `SAFE_GRIDSEARCH_N_JOBS`
+- `machine_learning/config.py` - Utilise `SAFE_N_JOBS` au lieu de `-1`
+- `machine_learning/run_machine_learning.py` - GridSearchCV avec `SAFE_GRIDSEARCH_N_JOBS`
+- `machine_learning/train_model.py` - GridSearchCV avec `SAFE_GRIDSEARCH_N_JOBS`
 
 **Changements clés :**
 
@@ -57,7 +57,7 @@ from machine_learning.platform_config import (
 n_jobs: int = -1
 
 # APRÈS (auto-ajusté)
-n_jobs: int = SAFE_N_JOBS  # 6 sur Windows, -1 sur Linux
+n_jobs: int = SAFE_N_JOBS # 6 sur Windows, -1 sur Linux
 ```
 
 ## Vérifier la configuration
@@ -94,7 +94,7 @@ python machine_learning/run_machine_learning.py --mode=all
 python machine_learning/run_machine_learning.py --mode=all --tune-hyperparams --grid-type fast
 ```
 
-**⚠️ NON RECOMMANDÉ : GridSearch EXTENDED**
+** NON RECOMMANDÉ : GridSearch EXTENDED**
 ```bash
 # Éviter sur Windows (12-20 GB RAM requis)
 # python machine_learning/run_machine_learning.py --mode=all --tune-hyperparams --grid-type extended
@@ -114,26 +114,26 @@ python machine_learning/run_machine_learning.py --mode=all --tune-hyperparams --
 |---------------|--------------|-------------------|---------------------|-------|
 | Sans GridSearch | 1 | ~2-4 GB | ~2-3 GB | 5-10 min |
 | GridSearch FAST | 12 (2×3×2) | ~4-6 GB | ~3-4 GB | 15-30 min |
-| GridSearch EXTENDED | 243 (3×3×3×3×3) | **12-20 GB** ⚠️ | ~8-12 GB | 2-4 h |
+| GridSearch EXTENDED | 243 (3×3×3×3×3) | **12-20 GB** | ~8-12 GB | 2-4 h |
 
 ## Optimisations mémoire Windows
 
 Le module `platform_config.py` active automatiquement sur Windows :
 
 1. **Garbage Collector agressif**
-   ```python
-   gc.set_threshold(500, 5, 5)  # Au lieu de (700, 10, 10)
-   ```
+ ```python
+ gc.set_threshold(500, 5, 5) # Au lieu de (700, 10, 10)
+ ```
 
 2. **Limitation du multiprocessing**
-   - XGBoost : 50% des cœurs
-   - GridSearchCV : 33% des cœurs
-   - Évite la surcharge mémoire
+ - XGBoost : 50% des cœurs
+ - GridSearchCV : 33% des cœurs
+ - Évite la surcharge mémoire
 
 3. **Warnings désactivés**
-   ```python
-   warnings.filterwarnings('ignore', category=UserWarning)
-   ```
+ ```python
+ warnings.filterwarnings('ignore', category=UserWarning)
+ ```
 
 ## Désactiver la détection automatique (avancé)
 
@@ -142,7 +142,7 @@ Si vous voulez forcer une configuration :
 ```python
 # Dans votre script
 import os
-os.environ['FORCE_N_JOBS'] = '4'  # Forcer 4 jobs
+os.environ['FORCE_N_JOBS'] = '4' # Forcer 4 jobs
 
 # Puis importer
 from machine_learning.config import XGBOOST_PARAMS
@@ -152,7 +152,7 @@ Ou modifier directement dans `platform_config.py` :
 
 ```python
 def get_safe_n_jobs(max_percentage: float = 0.5):
-    return 4  # Valeur fixe
+ return 4 # Valeur fixe
 ```
 
 ## Diagnostic des problèmes
@@ -165,7 +165,7 @@ def get_safe_n_jobs(max_percentage: float = 0.5):
 ```bash
 # Réduire encore plus le nombre de jobs
 # Modifier platform_config.py, ligne 60 :
-safe_jobs = max(1, cores // 4)  # Au lieu de cores // 2
+safe_jobs = max(1, cores // 4) # Au lieu de cores // 2
 ```
 
 ### GridSearchCV très lent
@@ -198,9 +198,9 @@ Les tests CI/CD utilisent automatiquement la configuration optimale :
 ```yaml
 # .github/workflows/ci.yml
 - name: Run ML pipeline
-  run: |
-    python machine_learning/run_machine_learning.py --mode=all --grid-type fast
-    # Auto-détection : fast sur CI runners (ressources limitées)
+ run: |
+ python machine_learning/run_machine_learning.py --mode=all --grid-type fast
+ # Auto-détection : fast sur CI runners (ressources limitées)
 ```
 
 ## Support

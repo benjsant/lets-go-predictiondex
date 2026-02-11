@@ -1,45 +1,5 @@
 #!/usr/bin/env python3
-"""
-Generate ML Dataset v2 for Pokemon Battle Winner Prediction - Multi-Scenarios
-=============================================================================
-
-This script extends v1 to support multiple battle scenarios:
-1. best_move: B uses its best offensive move (original behavior)
-2. random_move: B uses a random offensive move (N samples per matchup)
-3. all_combinations: Generate all possible moveA × moveB combinations
-
-Key Changes from v1:
-- Added --scenario-type argument to select generation mode
-- Added --num-random-samples for random_move scenario
-- Added 'scenario_type' column to output dataset
-- Support for filtering and combining scenarios
-
-This enables training ML models that generalize better across different
-opponent behavior patterns, improving prediction accuracy when opponent
-moves are partially or fully known.
-
-Output:
-- data/ml/battle_winner_v2/raw/matchups_{scenario}.parquet
-- data/ml/battle_winner_v2/processed/train.parquet (with scenario_type column)
-- data/ml/battle_winner_v2/processed/test.parquet (with scenario_type column)
-
-Usage:
-    # Generate only best_move scenario (similar to v1)
-    python machine_learning/build_battle_winner_dataset_v2.py --scenario-type best_move
-
-    # Generate random_move scenario with 5 random samples per matchup
-    python machine_learning/build_battle_winner_dataset_v2.py --scenario-type random_move --num-random-samples 5
-
-    # Generate all moveA × moveB combinations (large dataset)
-    python machine_learning/build_battle_winner_dataset_v2.py --scenario-type all_combinations
-
-    # Generate all scenarios and combine them
-    python machine_learning/build_battle_winner_dataset_v2.py --scenario-type all
-
-Validation:
-    - Compétence C12: Dataset quality checks per scenario
-    - Compétence C13: Versioned dataset generation for ML pipeline
-"""
+"""Generate ML dataset for Pokemon battle winner prediction with multi-scenario support."""
 
 import argparse
 import os
@@ -73,7 +33,7 @@ RAW_DIR = OUTPUT_DIR / "raw"
 PROCESSED_DIR = OUTPUT_DIR / "processed"
 
 # Battle parameters
-BATTLE_LEVEL = 50  # Fixed level for all Pokemon
+BATTLE_LEVEL = 50 # Fixed level for all Pokemon
 RANDOM_SEED = 42
 
 # Scenario types
@@ -87,21 +47,21 @@ SCENARIO_TYPES = {
 # Damage types to include (offensive calculable moves only)
 ALLOWED_DAMAGE_TYPES = {
     "offensif",
-    "multi_coups",           # Average x3 hits
-    "double_degats",         # x2 power
-    "deux_tours",            # /2 power (charge turn)
-    "prioritaire",           # +1 priority (but exclude Bluff)
-    "prioritaire_conditionnel",  # Coup Bas
-    "prioritaire_critique",      # Pika-Sprint
-    "prioritaire_deux",          # Ruse (+2 priority)
-    "fixe_niveau",           # Damage = level
-    "fixe_degat_20",         # Sonicboom = 20
-    "fixe_degat_40",         # Draco-Rage = 40
-    "attk_adversaire",       # Tricherie (uses opponent's ATK)
+    "multi_coups", # Average x3 hits
+    "double_degats", # x2 power
+    "deux_tours", # /2 power (charge turn)
+    "prioritaire", # +1 priority (but exclude Bluff)
+    "prioritaire_conditionnel", # Coup Bas
+    "prioritaire_critique", # Pika-Sprint
+    "prioritaire_deux", # Ruse (+2 priority)
+    "fixe_niveau", # Damage = level
+    "fixe_degat_20", # Sonicboom = 20
+    "fixe_degat_40", # Draco-Rage = 40
+    "attk_adversaire", # Tricherie (uses opponent's ATK)
 }
 
 # Moves to explicitly exclude
-EXCLUDED_MOVES = {"Bluff"}  # Only works on first turn
+EXCLUDED_MOVES = {"Bluff"} # Only works on first turn
 
 
 def get_db_connection():
@@ -160,7 +120,7 @@ def fetch_pokemon_data():
     df = pd.read_sql_query(query, conn)
     conn.close()
 
-    print(f"  Loaded {len(df)} Pokemon")
+    print(f" Loaded {len(df)} Pokemon")
     return df
 
 
@@ -194,7 +154,7 @@ def fetch_pokemon_moves():
     df = pd.read_sql_query(query, conn)
     conn.close()
 
-    print(f"  Loaded {len(df)} Pokemon-Move associations")
+    print(f" Loaded {len(df)} Pokemon-Move associations")
     return df
 
 
@@ -217,7 +177,7 @@ def fetch_type_effectiveness():
     for _, row in df.iterrows():
         type_eff[(row['attacking_type_id'], row['defending_type_id'])] = float(row['multiplier'])
 
-    print(f"  Loaded {len(df)} type effectiveness rules")
+    print(f" Loaded {len(df)} type effectiveness rules")
     return type_eff
 
 
@@ -312,7 +272,7 @@ def get_move_score_and_info(move, attacker, defender, type_eff):
 
     # Add priority bonus (moves first = advantage)
     priority = move['priority'] if pd.notna(move['priority']) else 0
-    score += priority * 50  # Priority bonus
+    score += priority * 50 # Priority bonus
 
     return {
         'move_id': move['move_id'],
@@ -369,7 +329,7 @@ def determine_who_moves_first(a_priority, a_speed, b_priority, b_speed):
         return 1
     if b_speed > a_speed:
         return 0
-    return 1  # Speed tie = A wins for determinism
+    return 1 # Speed tie = A wins for determinism
 
 
 def simulate_battle(attacker_a, attacker_b, move_a, move_b, type_eff):
@@ -429,11 +389,11 @@ def simulate_battle(attacker_a, attacker_b, move_a, move_b, type_eff):
     # Determine winner
     if a_moves_first:
         if turns_to_ko_b <= turns_to_ko_a:
-            return 1  # A wins
-        return 0  # B wins
+            return 1 # A wins
+        return 0 # B wins
     if turns_to_ko_a <= turns_to_ko_b:
-        return 0  # B wins
-    return 1  # A wins
+        return 0 # B wins
+    return 1 # A wins
 
 
 def build_sample_dict(pokemon_a, pokemon_b, move_a, move_b, winner, scenario_type):
@@ -509,7 +469,7 @@ def generate_best_move_scenario(pokemon_df, pokemon_moves_df, type_eff):
 
     For each matchup, both A and B use their best offensive move.
     """
-    print("\n🎯 Generating BEST_MOVE scenario...")
+    print("\nGenerating BEST_MOVE scenario...")
     samples = []
     skipped = 0
 
@@ -541,10 +501,10 @@ def generate_best_move_scenario(pokemon_df, pokemon_moves_df, type_eff):
             samples.append(sample)
 
         if (idx_a + 1) % 20 == 0:
-            print(f"  Progress: {idx_a + 1}/{len(pokemon_df)} Pokemon processed")
+            print(f" Progress: {idx_a + 1}/{len(pokemon_df)} Pokemon processed")
 
     df = pd.DataFrame(samples)
-    print(f"\n  Generated {len(df):,} samples (skipped {skipped:,})")
+    print(f"\n Generated {len(df):,} samples (skipped {skipped:,})")
     return df
 
 
@@ -556,7 +516,7 @@ def generate_random_move_scenario(pokemon_df, pokemon_moves_df, type_eff, num_sa
     - A uses its best move
     - B uses a random offensive move (repeated num_samples times)
     """
-    print(f"\n🎲 Generating RANDOM_MOVE scenario ({num_samples} samples per matchup)...")
+    print(f"\n Generating RANDOM_MOVE scenario ({num_samples} samples per matchup)...")
     samples = []
     skipped = 0
     np.random.seed(RANDOM_SEED)
@@ -600,10 +560,10 @@ def generate_random_move_scenario(pokemon_df, pokemon_moves_df, type_eff, num_sa
                 samples.append(sample)
 
         if (idx_a + 1) % 20 == 0:
-            print(f"  Progress: {idx_a + 1}/{len(pokemon_df)} Pokemon processed")
+            print(f" Progress: {idx_a + 1}/{len(pokemon_df)} Pokemon processed")
 
     df = pd.DataFrame(samples)
-    print(f"\n  Generated {len(df):,} samples (skipped {skipped:,})")
+    print(f"\n Generated {len(df):,} samples (skipped {skipped:,})")
     return df
 
 
@@ -614,7 +574,7 @@ def generate_all_combinations_scenario(pokemon_df, pokemon_moves_df, type_eff, m
     For each matchup, generate all possible moveA × moveB combinations.
     Limited to max_combinations_per_matchup to prevent explosion.
     """
-    print(f"\n🔄 Generating ALL_COMBINATIONS scenario (max {max_combinations_per_matchup} per matchup)...")
+    print(f"\nGenerating ALL_COMBINATIONS scenario (max {max_combinations_per_matchup} per matchup)...")
     samples = []
     skipped = 0
 
@@ -667,16 +627,16 @@ def generate_all_combinations_scenario(pokemon_df, pokemon_moves_df, type_eff, m
                 samples.append(sample)
 
         if (idx_a + 1) % 20 == 0:
-            print(f"  Progress: {idx_a + 1}/{len(pokemon_df)} Pokemon processed")
+            print(f" Progress: {idx_a + 1}/{len(pokemon_df)} Pokemon processed")
 
     df = pd.DataFrame(samples)
-    print(f"\n  Generated {len(df):,} samples (skipped {skipped:,})")
+    print(f"\n Generated {len(df):,} samples (skipped {skipped:,})")
     return df
 
 
 def split_and_save(df, scenario_type, test_size=0.2):
     """Split into train/test and save to Parquet."""
-    print(f"\n💾 Saving datasets for scenario: {scenario_type}...")
+    print(f"\n Saving datasets for scenario: {scenario_type}...")
 
     # Create directories
     RAW_DIR.mkdir(parents=True, exist_ok=True)
@@ -685,8 +645,8 @@ def split_and_save(df, scenario_type, test_size=0.2):
     # Save raw
     raw_path = RAW_DIR / f"matchups_{scenario_type}.parquet"
     df.to_parquet(raw_path, index=False, engine='pyarrow')
-    print(f"  Raw dataset: {raw_path}")
-    print(f"  Size: {raw_path.stat().st_size / (1024*1024):.2f} MB")
+    print(f" Raw dataset: {raw_path}")
+    print(f" Size: {raw_path.stat().st_size / (1024*1024):.2f} MB")
 
     # Split train/test (stratified on winner)
     train_df, test_df = train_test_split(
@@ -701,7 +661,7 @@ def split_and_save(df, scenario_type, test_size=0.2):
 
 def combine_and_save_all_scenarios(train_dfs, test_dfs):
     """Combine all scenarios into single train/test files."""
-    print("\n📦 Combining all scenarios into single train/test files...")
+    print("\nCombining all scenarios into single train/test files...")
 
     # Combine
     train_combined = pd.concat(train_dfs, ignore_index=True)
@@ -718,8 +678,8 @@ def combine_and_save_all_scenarios(train_dfs, test_dfs):
     train_combined.to_parquet(train_path, index=False, engine='pyarrow')
     test_combined.to_parquet(test_path, index=False, engine='pyarrow')
 
-    print(f"  Train: {len(train_combined):,} samples ({train_path})")
-    print(f"  Test: {len(test_combined):,} samples ({test_path})")
+    print(f" Train: {len(train_combined):,} samples ({train_path})")
+    print(f" Test: {len(test_combined):,} samples ({test_path})")
 
     return train_combined, test_combined
 
@@ -731,23 +691,23 @@ def print_summary(train_df, test_df, scenario_type):
     print("=" * 70)
 
     if 'scenario_type' in train_df.columns:
-        print("\n📊 Samples by Scenario:")
+        print("\nSamples by Scenario:")
         for scenario in train_df['scenario_type'].unique():
             train_count = (train_df['scenario_type'] == scenario).sum()
             test_count = (test_df['scenario_type'] == scenario).sum()
-            print(f"  {scenario:20s}: Train {train_count:,} | Test {test_count:,}")
+            print(f" {scenario:20s}: Train {train_count:,} | Test {test_count:,}")
 
-    print(f"\n📈 Total Samples:")
-    print(f"  Train: {len(train_df):,}")
-    print(f"  Test:  {len(test_df):,}")
+    print(f"\nTotal Samples:")
+    print(f" Train: {len(train_df):,}")
+    print(f" Test: {len(test_df):,}")
 
-    print(f"\n⚖️  Class Balance (Train):")
-    print(f"  A wins: {train_df['winner'].sum():,} ({train_df['winner'].mean()*100:.1f}%)")
-    print(f"  B wins: {(train_df['winner'] == 0).sum():,} ({(1-train_df['winner'].mean())*100:.1f}%)")
+    print(f"\nClass Balance (Train):")
+    print(f" A wins: {train_df['winner'].sum():,} ({train_df['winner'].mean()*100:.1f}%)")
+    print(f" B wins: {(train_df['winner'] == 0).sum():,} ({(1-train_df['winner'].mean())*100:.1f}%)")
 
-    print(f"\n⚖️  Class Balance (Test):")
-    print(f"  A wins: {test_df['winner'].sum():,} ({test_df['winner'].mean()*100:.1f}%)")
-    print(f"  B wins: {(test_df['winner'] == 0).sum():,} ({(1-test_df['winner'].mean())*100:.1f}%)")
+    print(f"\nClass Balance (Test):")
+    print(f" A wins: {test_df['winner'].sum():,} ({test_df['winner'].mean()*100:.1f}%)")
+    print(f" B wins: {(test_df['winner'] == 0).sum():,} ({(1-test_df['winner'].mean())*100:.1f}%)")
 
 
 def main():
@@ -850,14 +810,14 @@ def main():
             print_summary(train_dfs[0], test_dfs[0], args.scenario_type)
 
         print("\n" + "=" * 70)
-        print("✅ DATASET GENERATION COMPLETE")
+        print("DATASET GENERATION COMPLETE")
         print("=" * 70)
 
     except psycopg2.Error as e:
-        print(f"\n❌ Database error: {e}")
+        print(f"\nDatabase error: {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\nError: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
