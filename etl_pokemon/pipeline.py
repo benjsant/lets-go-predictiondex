@@ -1,19 +1,4 @@
-"""
-All-in-one ETL bootstrap script for Pokémon Let's Go.
-
-This script orchestrates the full ETL pipeline:
-- Initializes the database schema
-- Loads CSV reference data
-- Enriches data using PokéAPI
-- Scrapes Poképédia for LGPE moves
-- Applies post-processing transformations
-
-Features:
-- Checks database state instead of relying on file flags
-- Supports a --force flag to rerun the ETL
-- Pure Python, Windows-friendly
-- Path-safe (local execution and Docker-compatible)
-"""
+"""ETL pipeline bootstrap script for Pokemon Let's Go."""
 
 from __future__ import annotations
 
@@ -33,19 +18,7 @@ SCRAPER_DIR = BASE_DIR / "pokepedia_scraper"
 
 
 def run(cmd: Sequence[str], label: str, cwd: Path | None = None) -> None:
-    """
-    Execute a subprocess command as a single ETL step.
-
-    The execution stops immediately if the command fails.
-
-    Args:
-        cmd: Command and arguments to execute.
-        label: Human-readable label for logging.
-        cwd: Optional working directory for the command.
-
-    Raises:
-        SystemExit: If the subprocess returns a non-zero exit code.
-    """
+    """Execute a subprocess command as a single ETL step."""
     print(f"\n▶ {label}")
     result = subprocess.run(
         cmd,
@@ -55,7 +28,7 @@ def run(cmd: Sequence[str], label: str, cwd: Path | None = None) -> None:
     )
 
     if result.returncode != 0:
-        print(f"❌ Failed: {label}")
+        print(f"Failed: {label}")
         sys.exit(1)
 
 
@@ -70,7 +43,7 @@ def check_etl_already_done() -> bool:
         True if Pokémon data exists in the database, False otherwise.
     """
     try:
-        import psycopg2  # pylint: disable=import-outside-toplevel
+        import psycopg2 # pylint: disable=import-outside-toplevel
 
         connection = psycopg2.connect(
             host=os.getenv("POSTGRES_HOST", "localhost"),
@@ -108,12 +81,12 @@ def main(force: bool = False) -> None:
     """
     if check_etl_already_done() and not force:
         print(
-            "ℹ️  ETL already done (Pokémon data exists in DB). "
+            "ETL already done (Pokémon data exists in DB). "
             "Skipping. Use --force to rerun."
         )
         return
 
-    print("🚀 Running full ETL Pokémon Let's Go pipeline")
+    print("Running full ETL Pokémon Let's Go pipeline")
 
     # --------------------------------------------------
     # Initialization
@@ -161,7 +134,7 @@ def main(force: bool = False) -> None:
         "Transform: inherit Mega Pokémon moves",
     )
 
-    print("\n✅ ETL COMPLETED")
+    print("\nETL COMPLETED")
 
 
 if __name__ == "__main__":

@@ -213,7 +213,7 @@ def select_best_move_for_matchup(
 # ================================================================
 #
 # Note: prepare_features_for_prediction() and apply_feature_engineering()
-#       are now in api_pokemon/services/feature_engineering.py
+# are now in api_pokemon/services/feature_engineering.py
 #
 
 def predict_best_move(
@@ -321,7 +321,7 @@ def predict_best_move(
             'score': move_a_info['score'],
             'win_probability': float(win_prob),
             'predicted_winner': 'A' if prediction == 1 else 'B',
-            'features': features_final  # Store features for drift detection
+            'features': features_final # Store features for drift detection
         })
 
     if not move_results:
@@ -333,7 +333,7 @@ def predict_best_move(
     best_move = move_results[0]
 
     # Extract features from best move for drift detection
-    best_move_features = best_move.pop('features')  # Remove from move result to keep API clean
+    best_move_features = best_move.pop('features') # Remove from move result to keep API clean
 
     # Convert numpy array to dict for drift detection
     # features_final is a DataFrame with 1 row, extract as dict
@@ -355,5 +355,5 @@ def predict_best_move(
         'recommended_move': best_move['move_name'],
         'win_probability': best_move['win_probability'],
         'all_moves': move_results,
-        'best_move_features': features_dict  # Features for drift detection
+        'best_move_features': features_dict # Features for drift detection
     }

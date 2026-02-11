@@ -1,29 +1,4 @@
-"""
-Scrapy item definition for Pokémon move learnsets
-=================================================
-
-This module defines the Scrapy Item used to represent
-how a Pokémon learns a specific move in Pokémon Let's Go.
-
-Context:
-- Educational project: Pokémon Let's Go (LGPE)
-- Data source: Poképédia (scraping)
-- Integration target: relational database (PostgreSQL)
-
-This item represents a single learnset rule:
-- Which Pokémon
-- Which move
-- How the move is learned
-- At which level (if applicable)
-
-Validation strategy:
-- Lightweight validation at item level
-- Structural and type checks only
-- Business logic handled at ETL / DB layer
-
-Competency block:
-- E1: Data extraction, validation, and normalization
-"""
+"""Scrapy item for Pokemon move learnset data."""
 
 import scrapy
 

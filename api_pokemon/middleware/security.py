@@ -1,28 +1,5 @@
-"""
-API Security Middleware - API Key Authentication
-=================================================
+"""API key authentication middleware for FastAPI."""
 
-Security middleware for FastAPI application implementing API key authentication.
-
-This module provides:
-    - API key validation via X-API-Key header
-    - Support for multiple API keys (comma-separated)
-    - Development mode bypass (DEV_MODE=true)
-    - SHA-256 hashing for secure key storage in memory
-    - Clear HTTP 403 responses for unauthorized access
-
-Environment Variables:
-    API_KEYS: Comma-separated list of valid API keys
-    DEV_MODE: Set to "true" to bypass authentication in development
-    API_KEY_REQUIRED: Set to "false" to disable authentication entirely
-
-Usage:
-    from api_pokemon.middleware.security import verify_api_key
-
-    @app.get("/protected")
-    def protected_route(api_key: str = Depends(verify_api_key)):
-        return {"message": "Access granted"}
-"""
 import hashlib
 import os
 import secrets
@@ -90,22 +67,22 @@ def verify_api_key(api_key: Optional[str] = Security(api_key_header)) -> str:
     if dev_mode and not keys_str:
         return "dev-mode-bypass"
 
-    # Vérification de la présence de la clé
+    # Check if API key is present
     if not api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="API Key manquante. Fournir X-API-Key dans le header.",
+            detail="Missing API Key. Provide X-API-Key in header.",
             headers={"WWW-Authenticate": "ApiKey"},
         )
 
-    # Vérification de la validité (constant-time comparison contre timing attacks)
+    # Validate key (constant-time comparison to prevent timing attacks)
     valid_keys = get_api_keys()
     api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()
 
     if not any(secrets.compare_digest(api_key_hash, valid) for valid in valid_keys):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="API Key invalide",
+            detail="Invalid API Key",
         )
 
     return api_key
@@ -113,45 +90,45 @@ def verify_api_key(api_key: Optional[str] = Security(api_key_header)) -> str:
 
 def generate_api_key(length: int = 32) -> str:
     """
-    Génère une API key cryptographiquement sécurisée.
+    Generate a cryptographically secure API key.
 
     Args:
-        length: Longueur de la clé (défaut: 32 caractères)
+        length: Key length (default: 32 characters)
 
     Returns:
-        str: API key générée
+        str: Generated API key
     """
     return secrets.token_urlsafe(length)
 
 
 def hash_api_key(api_key: str) -> str:
     """
-    Hash une API key pour stockage sécurisé.
+    Hash an API key for secure storage.
 
     Args:
-        api_key: Clé API en clair
+        api_key: Plain text API key
 
     Returns:
-        str: Hash SHA-256 de la clé
+        str: SHA-256 hash of the key
     """
     return hashlib.sha256(api_key.encode()).hexdigest()
 
 
-# Fonction pour générer des clés pour .env (script d'initialisation)
+# CLI script for generating keys for .env
 if __name__ == "__main__":
-    print("=== Générateur d'API Keys ===\n")
-    nb_keys = int(input("Nombre de clés à générer (défaut: 3): ") or "3")
+    print("=== API Key Generator ===")
+    nb_keys = int(input("Number of keys to generate (default: 3): ") or "3")
 
-    print("\n📝 Ajoutez ces lignes à votre fichier .env:\n")
+    print("\n[CONFIG] Add these lines to your .env file:\n")
 
     keys = [generate_api_key() for _ in range(nb_keys)]
     print(f'API_KEYS="{",".join(keys)}"')
 
-    print("\n🔑 Clés générées (à distribuer aux clients):\n")
+    print("\n[KEYS] Generated keys (distribute to clients):\n")
     for i, key in enumerate(keys, 1):
-        print(f"Clé {i}: {key}")
+        print(f"Key {i}: {key}")
 
-    print("\n⚠️  IMPORTANT:")
-    print("- Stockez ces clés de manière sécurisée")
-    print("- Ne les commitez JAMAIS dans git")
-    print("- Distribuez-les via un canal sécurisé (email chiffré, vault, etc.)")
+    print("\n[WARN] IMPORTANT:")
+    print("- Store these keys securely")
+    print("- NEVER commit them to git")
+    print("- Distribute via secure channel (encrypted email, vault, etc.)")

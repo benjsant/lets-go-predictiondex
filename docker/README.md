@@ -1,8 +1,8 @@
-# 🐳 Docker - Configuration des Services
+# Docker - Configuration des Services
 
 > Images Docker et orchestration des services
 
-## 📋 Vue d'ensemble
+## Vue d'ensemble
 
 Le projet utilise Docker Compose pour orchestrer 9 services :
 - **3 services applicatifs** : API, ETL, ML Builder
@@ -11,30 +11,30 @@ Le projet utilise Docker Compose pour orchestrer 9 services :
 - **3 services monitoring** : Prometheus, Grafana, MLflow
 - **1 outil admin** : pgAdmin
 
-## 📁 Structure
+## Structure
 
 ```
 docker/
-├── Dockerfile.api            # Image API FastAPI
-├── Dockerfile.etl            # Image ETL Pipeline
-├── Dockerfile.ml             # Image ML Builder (XGBoost)
-├── Dockerfile.mlflow         # Image MLflow Server
-├── Dockerfile.streamlit      # Image Interface Streamlit
-├── Dockerfile.tests          # Image Tests (pytest)
-├── api_entrypoint.py         # Entrypoint API
-├── etl_entrypoint.py         # Entrypoint ETL
-├── ml_entrypoint.py          # Entrypoint ML
-├── wait_for_db.py            # Script d'attente BDD
-├── grafana/                  # Configuration Grafana
-│   ├── dashboards/           # Dashboards JSON
-│   └── provisioning/         # Auto-provisioning
-├── prometheus/               # Configuration Prometheus
-│   └── prometheus.yml        # Scrape config
-└── pgadmin4/                 # Configuration pgAdmin
-    └── servers.json          # Serveurs pré-configurés
+├── Dockerfile.api # Image API FastAPI
+├── Dockerfile.etl # Image ETL Pipeline
+├── Dockerfile.ml # Image ML Builder (XGBoost)
+├── Dockerfile.mlflow # Image MLflow Server
+├── Dockerfile.streamlit # Image Interface Streamlit
+├── Dockerfile.tests # Image Tests (pytest)
+├── api_entrypoint.py # Entrypoint API
+├── etl_entrypoint.py # Entrypoint ETL
+├── ml_entrypoint.py # Entrypoint ML
+├── wait_for_db.py # Script d'attente BDD
+├── grafana/ # Configuration Grafana
+│ ├── dashboards/ # Dashboards JSON
+│ └── provisioning/ # Auto-provisioning
+├── prometheus/ # Configuration Prometheus
+│ └── prometheus.yml # Scrape config
+└── pgadmin4/ # Configuration pgAdmin
+ └── servers.json # Serveurs pré-configurés
 ```
 
-## 🚀 Utilisation
+## Utilisation
 
 ### Démarrage complet
 
@@ -63,7 +63,7 @@ docker compose up etl
 docker compose up api
 ```
 
-## 📊 Services et Ports
+## Services et Ports
 
 | Service | Image | Port | URL |
 |---------|-------|------|-----|
@@ -77,7 +77,7 @@ docker compose up api
 | `etl` | Dockerfile.etl | - | (one-shot) |
 | `ml_builder` | Dockerfile.ml | - | (one-shot) |
 
-## 🔧 Configuration
+## Configuration
 
 ### Variables d'environnement (`.env`)
 
@@ -104,33 +104,33 @@ DEV_MODE=true
 
 ```yaml
 volumes:
-  postgres_data:    # Données PostgreSQL
-  pgadmin_data:     # Configuration pgAdmin
-  grafana_data:     # Dashboards Grafana
-  mlflow_data:      # Artifacts MLflow
+ postgres_data: # Données PostgreSQL
+ pgadmin_data: # Configuration pgAdmin
+ grafana_data: # Dashboards Grafana
+ mlflow_data: # Artifacts MLflow
 ```
 
-## 🏗️ Ordre de Démarrage
+## Ordre de Démarrage
 
 ```
 db (PostgreSQL)
-    │
-    ├──► etl (one-shot)
-    │         │
-    │         ▼
-    │    ml_builder (one-shot)
-    │         │
-    ▼         ▼
-    ├──► api ◄────────┐
-    │                 │
-    ├──► streamlit ───┘
-    │
-    ├──► prometheus ──► grafana
-    │
-    └──► mlflow
+ │
+ ├──► etl (one-shot)
+ │ │
+ │ ▼
+ │ ml_builder (one-shot)
+ │ │
+ ▼ ▼
+ ├──► api ◄────────┐
+ │ │
+ ├──► streamlit ───┘
+ │
+ ├──► prometheus ──► grafana
+ │
+ └──► mlflow
 ```
 
-## 🧪 Tests en Docker
+## Tests en Docker
 
 ```bash
 # Exécuter tous les tests
@@ -140,7 +140,7 @@ docker compose run --rm tests
 docker compose run --rm tests pytest --cov=api_pokemon --cov=machine_learning
 ```
 
-## 🔍 Commandes Utiles
+## Commandes Utiles
 
 ```bash
 # Voir les logs
@@ -158,14 +158,14 @@ docker compose down -v --rmi all
 docker compose build --no-cache
 ```
 
-## 📈 Monitoring
+## Monitoring
 
 ### Grafana
 - **URL** : http://localhost:3001
 - **Login** : admin / admin
 - **Dashboards** :
-  - API Performance
-  - Model Metrics
+ - API Performance
+ - Model Metrics
 
 ### Prometheus
 - **URL** : http://localhost:9091

@@ -28,7 +28,7 @@ def client():
 
 
 # ============================================================
-# 🔹 TESTS: GET /moves/
+# TESTS: GET /moves/
 # ============================================================
 
 class TestListMoves:
@@ -95,7 +95,7 @@ class TestListMoves:
 
 
 # ============================================================
-# 🔹 TESTS: GET /moves/search
+# TESTS: GET /moves/search
 # ============================================================
 
 class TestSearchMoves:
@@ -167,11 +167,11 @@ class TestSearchMoves:
         response = client.get("/moves/search")
 
         # Assertions
-        assert response.status_code == 422  # Validation error
+        assert response.status_code == 422 # Validation error
 
 
 # ============================================================
-# 🔹 TESTS: GET /moves/by-type/{type_name}
+# TESTS: GET /moves/by-type/{type_name}
 # ============================================================
 
 class TestListMovesByType:
@@ -287,7 +287,7 @@ class TestListMovesByType:
 
 
 # ============================================================
-# 🔹 TESTS: GET /moves/id/{move_id}
+# TESTS: GET /moves/id/{move_id}
 # ============================================================
 
 class TestGetMoveById:

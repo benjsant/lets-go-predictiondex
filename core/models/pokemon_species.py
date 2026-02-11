@@ -1,22 +1,5 @@
 # core/models/pokemon_species.py
-
-"""
-SQLAlchemy Model – PokemonSpecies
-================================
-
-This module defines the `PokemonSpecies` model, which represents a **Pokémon
-species** as defined in the Pokédex.
-
-A species is an abstract entity that groups together all its possible forms
-(base form, Mega Evolutions, regional variants, etc.).
-
-This model acts as the **root entity** of the Pokémon hierarchy:
-- one species → multiple Pokémon forms,
-- shared identity across forms,
-- stable reference for Pokédex indexing.
-
-Data for this table is primarily sourced from Poképédia and/or PokeAPI.
-"""
+"""SQLAlchemy model for Pokemon species (Pokedex entries)."""
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship

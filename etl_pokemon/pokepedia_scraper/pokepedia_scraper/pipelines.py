@@ -1,22 +1,4 @@
-"""
-Scrapy item pipeline for Pokémon ↔ Move persistence
-===================================================
-
-This module defines the Scrapy pipeline responsible for persisting
-Pokémon move learnsets scraped from Poképédia into the relational
-database.
-
-Context:
-- Educational project: Pokémon Let's Go (LGPE)
-- Part of the global ETL pipeline
-- Integrates scraped data with reference tables
-
-Responsibilities:
-- Validate scraped items
-- Normalize move naming inconsistencies
-- Resolve foreign keys using cached reference data
-- Perform idempotent upserts into the PokemonMove association table
-"""
+"""Scrapy pipeline for persisting Pokemon move learnsets."""
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
@@ -27,20 +9,10 @@ from core.models import LearnMethod, Move, PokemonMove
 
 
 class PokemonMovePipeline:
-    """
-    Scrapy pipeline for persisting Pokémon move learnsets.
-
-    This pipeline processes each scraped item representing
-    a Pokémon move acquisition rule and ensures reliable,
-    idempotent persistence in the database.
-    """
+    """Scrapy pipeline for persisting Pokemon move learnsets."""
 
     def open_spider(self, spider) -> None:
-        """
-        Initialize database session and reference caches.
-
-        Called once when the spider starts.
-        """
+        """Initialize database session and reference caches."""
         self.session: Session = Session(engine)
 
         self.learn_method_cache = {
@@ -65,7 +37,7 @@ class PokemonMovePipeline:
         """
         try:
             self.session.commit()
-        except Exception as exc:  # pylint: disable=broad-except
+        except Exception as exc: # pylint: disable=broad-except
             spider.logger.warning(
                 "[CLOSE SPIDER COMMIT ERROR] %s", exc
             )
@@ -88,7 +60,7 @@ class PokemonMovePipeline:
         """
         try:
             item.validate()
-        except Exception as exc:  # pylint: disable=broad-except
+        except Exception as exc: # pylint: disable=broad-except
             spider.logger.warning(
                 "[ITEM INVALID] %s -> %s", exc, dict(item)
             )
@@ -141,7 +113,7 @@ class PokemonMovePipeline:
         try:
             self.session.execute(stmt)
             self.session.flush()
-        except Exception as exc:  # pylint: disable=broad-except
+        except Exception as exc: # pylint: disable=broad-except
             spider.logger.warning(
                 "[UPSERT ERROR] %s -> %s", dict(item), exc
             )

@@ -43,17 +43,17 @@ def print_step(step: str):
 
 def print_success(text: str):
     """Display a success message."""
-    print(f"{GREEN}✅ {text}{RESET}")
+    print(f"{GREEN}{text}{RESET}")
 
 
 def print_error(text: str):
     """Display an error message."""
-    print(f"{RED}❌ {text}{RESET}")
+    print(f"{RED}{text}{RESET}")
 
 
 def print_warning(text: str):
     """Display a warning message."""
-    print(f"{YELLOW}⚠️  {text}{RESET}")
+    print(f"{YELLOW}{text}{RESET}")
 
 
 def run_command(cmd: List[str], cwd: Optional[Path] = None, env: Optional[Dict] = None) -> bool:
@@ -293,7 +293,7 @@ def test_e3_c13_mlops(env: Dict[str, str]) -> bool:
         workflows = list(workflows_dir.glob("*.yml"))
         print_success(f"{len(workflows)} workflows found:")
         for workflow in workflows:
-            print(f"  • {workflow.name}")
+            print(f" • {workflow.name}")
     else:
         print_error(".github/workflows/ directory missing")
         return False
@@ -324,13 +324,13 @@ def generate_report(results: Dict[str, bool]):
     print(f"\n{BOLD}Results by job:{RESET}\n")
 
     # E1
-    print(f"{BOLD}📊 BLOCK E1: Data Collection and Processing{RESET}")
+    print(f"{BOLD}BLOCK E1: Data Collection and Processing{RESET}")
     e1_result = results.get('e1-data-validation', False)
-    status = f"{GREEN}✅ VALIDATED{RESET}" if e1_result else f"{RED}❌ FAILED{RESET}"
-    print(f"  E1 Data Validation: {status}\n")
+    status = f"{GREEN}VALIDATED{RESET}" if e1_result else f"{RED}FAILED{RESET}"
+    print(f" E1 Data Validation: {status}\n")
 
     # E3
-    print(f"{BOLD}🤖 BLOCK E3: AI Production Integration{RESET}")
+    print(f"{BOLD}BLOCK E3: AI Production Integration{RESET}")
     e3_jobs = [
         ('e3-c9-api-rest', 'C9 - REST API with AI'),
         ('e3-c10-integration', 'C10 - App Integration'),
@@ -341,37 +341,37 @@ def generate_report(results: Dict[str, bool]):
 
     for job_id, job_name in e3_jobs:
         result = results.get(job_id, False)
-        status = f"{GREEN}✅ VALIDATED{RESET}" if result else f"{RED}❌ FAILED{RESET}"
-        print(f"  {job_name}: {status}")
+        status = f"{GREEN}VALIDATED{RESET}" if result else f"{RED}FAILED{RESET}"
+        print(f" {job_name}: {status}")
 
     # Global score
     total_jobs = len(results)
     passed_jobs = sum(1 for v in results.values() if v)
     score = (passed_jobs / total_jobs * 100) if total_jobs > 0 else 0
 
-    print(f"\n{BOLD}🎯 Global Score:{RESET}")
-    print(f"  {passed_jobs}/{total_jobs} jobs passed ({score:.1f}%)")
+    print(f"\n{BOLD}Global Score:{RESET}")
+    print(f" {passed_jobs}/{total_jobs} jobs passed ({score:.1f}%)")
 
     if score >= 80:
-        print(f"\n{GREEN}{BOLD}✅ PROJECT READY FOR CERTIFICATION{RESET}")
+        print(f"\n{GREEN}{BOLD}PROJECT READY FOR CERTIFICATION{RESET}")
     else:
-        print(f"\n{YELLOW}{BOLD}⚠️  IMPROVEMENTS NEEDED{RESET}")
+        print(f"\n{YELLOW}{BOLD}IMPROVEMENTS NEEDED{RESET}")
 
-    print(f"\n{BOLD}📚 Documentation:{RESET}")
-    print("  • README.md")
-    print("  • docs/certification/CI_CD_CERTIFICATION_E1_E3.md")
-    print("  • docs/CERTIFICATION_E1_E3_VALIDATION.md")
+    print(f"\n{BOLD} Documentation:{RESET}")
+    print(" • README.md")
+    print(" • docs/certification/CI_CD_CERTIFICATION_E1_E3.md")
+    print(" • docs/CERTIFICATION_E1_E3_VALIDATION.md")
 
-    print(f"\n{BOLD}🔗 Next steps:{RESET}")
+    print(f"\n{BOLD} Next steps:{RESET}")
     if score >= 80:
-        print("  1. ✅ Push to GitHub")
-        print("  2. ✅ Check GitHub Actions workflow")
-        print("  3. ✅ Download certification report")
-        print("  4. ✅ Prepare presentation")
+        print(" 1. Push to GitHub")
+        print(" 2. Check GitHub Actions workflow")
+        print(" 3. Download certification report")
+        print(" 4. Prepare presentation")
     else:
-        print("  1. 🔧 Fix failing tests")
-        print("  2. 🔄 Re-test locally")
-        print("  3. ✅ Push to GitHub")
+        print(" 1. Fix failing tests")
+        print(" 2. Re-test locally")
+        print(" 3. Push to GitHub")
 
 
 def main():

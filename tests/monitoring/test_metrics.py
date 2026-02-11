@@ -39,7 +39,7 @@ prediction_counter = model_predictions_total
 prediction_latency = model_prediction_duration_seconds
 prediction_errors = api_errors_total
 model_accuracy_gauge = model_confidence_score
-drift_score_gauge = model_confidence_score  # Placeholder
+drift_score_gauge = model_confidence_score # Placeholder
 
 def record_prediction(pokemon_a_id, pokemon_b_id, prediction, latency_seconds):
     """Wrapper pour track_prediction avec signature compatible."""
@@ -60,7 +60,7 @@ def update_model_metrics(accuracy, precision, recall, f1_score):
 
 
 # ============================================================
-# 🔹 TESTS: Metric Registration
+# TESTS: Metric Registration
 # ============================================================
 
 class TestMetricRegistration:
@@ -118,7 +118,7 @@ class TestMetricRegistration:
 
 
 # ============================================================
-# 🔹 TESTS: Counter Metrics
+# TESTS: Counter Metrics
 # ============================================================
 
 class TestCounterMetrics:
@@ -184,15 +184,15 @@ class TestCounterMetrics:
         """Test that labels are correctly applied to counters."""
         # Record predictions with different labels
         record_prediction(
-            pokemon_a_id=25,  # Pikachu
-            pokemon_b_id=6,   # Charizard
+            pokemon_a_id=25, # Pikachu
+            pokemon_b_id=6, # Charizard
             prediction='A',
             latency_seconds=0.1
         )
 
         record_prediction(
-            pokemon_a_id=1,   # Bulbasaur
-            pokemon_b_id=4,   # Charmander
+            pokemon_a_id=1, # Bulbasaur
+            pokemon_b_id=4, # Charmander
             prediction='B',
             latency_seconds=0.15
         )
@@ -207,7 +207,7 @@ class TestCounterMetrics:
 
 
 # ============================================================
-# 🔹 TESTS: Histogram Metrics
+# TESTS: Histogram Metrics
 # ============================================================
 
 class TestHistogramMetrics:
@@ -282,7 +282,7 @@ class TestHistogramMetrics:
 
 
 # ============================================================
-# 🔹 TESTS: Gauge Metrics
+# TESTS: Gauge Metrics
 # ============================================================
 
 class TestGaugeMetrics:
@@ -342,7 +342,7 @@ class TestGaugeMetrics:
 
 
 # ============================================================
-# 🔹 TESTS: Metric Labels
+# TESTS: Metric Labels
 # ============================================================
 
 class TestMetricLabels:
@@ -415,7 +415,7 @@ class TestMetricLabels:
 
 
 # ============================================================
-# 🔹 TESTS: Metric Exposition
+# TESTS: Metric Exposition
 # ============================================================
 
 class TestMetricExposition:
@@ -462,7 +462,7 @@ class TestMetricExposition:
 
 
 # ============================================================
-# 🔹 TESTS: Performance and Thread Safety
+# TESTS: Performance and Thread Safety
 # ============================================================
 
 class TestPerformanceAndThreadSafety:
@@ -513,7 +513,7 @@ class TestPerformanceAndThreadSafety:
 
 
 # ============================================================
-# 🔹 TESTS: Integration with API
+# TESTS: Integration with API
 # ============================================================
 
 class TestAPIIntegration:
@@ -542,7 +542,7 @@ class TestAPIIntegration:
                 }
             )
         except Exception:
-            pass  # Expected to fail without DB
+            pass # Expected to fail without DB
 
         # Metric recording might have been called (or not, depending on where it's placed)
         # Just verify the function exists and is importable
@@ -561,7 +561,7 @@ class TestAPIIntegration:
 
 
 # ============================================================
-# 🔹 TESTS: Metric Aggregation
+# TESTS: Metric Aggregation
 # ============================================================
 
 class TestMetricAggregation:

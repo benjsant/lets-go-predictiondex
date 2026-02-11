@@ -93,10 +93,16 @@ jobs:
           timeout 60 bash -c 'until curl -sf http://localhost:5001/health; do sleep 3; done'
           echo "✅ MLflow ready"
       
+      - name: 📦 Install test dependencies
+        run: |
+          pip install pytest requests
+
       - name: 🧪 Run integration tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           echo "🧪 Running integration tests..."
-          docker compose exec -T api pytest tests/integration/ -v --tb=short
+          pytest tests/integration/ -v --tb=short
       
       - name: 🤖 Test ML Model Prediction (MLOps)
         run: |

@@ -130,8 +130,8 @@ def sample_moves(db_session: Session, sample_types, sample_move_categories):
         Move(
             id=1,
             name="Lance-Flammes",
-            type_id=3,  # Feu
-            category_id=2,  # spécial
+            type_id=3, # Feu
+            category_id=2, # spécial
             power=90,
             accuracy=100,
             priority=0,
@@ -141,8 +141,8 @@ def sample_moves(db_session: Session, sample_types, sample_move_categories):
         Move(
             id=2,
             name="Surf",
-            type_id=5,  # Eau
-            category_id=2,  # spécial
+            type_id=5, # Eau
+            category_id=2, # spécial
             power=90,
             accuracy=100,
             priority=0,
@@ -152,8 +152,8 @@ def sample_moves(db_session: Session, sample_types, sample_move_categories):
         Move(
             id=3,
             name="Tranche-Herbe",
-            type_id=4,  # Plante
-            category_id=1,  # physique
+            type_id=4, # Plante
+            category_id=1, # physique
             power=55,
             accuracy=95,
             priority=0,
@@ -163,8 +163,8 @@ def sample_moves(db_session: Session, sample_types, sample_move_categories):
         Move(
             id=4,
             name="Vive-Attaque",
-            type_id=1,  # Normal
-            category_id=1,  # physique
+            type_id=1, # Normal
+            category_id=1, # physique
             power=40,
             accuracy=100,
             priority=1,
@@ -174,8 +174,8 @@ def sample_moves(db_session: Session, sample_types, sample_move_categories):
         Move(
             id=5,
             name="Tonnerre",
-            type_id=6,  # Électrik
-            category_id=2,  # spécial
+            type_id=6, # Électrik
+            category_id=2, # spécial
             power=110,
             accuracy=70,
             priority=0,
@@ -185,8 +185,8 @@ def sample_moves(db_session: Session, sample_types, sample_move_categories):
         Move(
             id=6,
             name="Abri",
-            type_id=1,  # Normal
-            category_id=3,  # autre
+            type_id=1, # Normal
+            category_id=3, # autre
             power=None,
             accuracy=None,
             priority=4,
@@ -283,7 +283,7 @@ def sample_pokemon(
     pikachu = Pokemon(
         id=1,
         species_id=1,
-        form_id=1,  # normal
+        form_id=1, # normal
         name_pokeapi="pikachu",
         name_pokepedia="Pikachu",
         height_m=0.4,
@@ -301,19 +301,19 @@ def sample_pokemon(
     pikachu.stats = pikachu_stats
 
     # Add types
-    pikachu_type = PokemonType(pokemon_id=1, type_id=6, slot=1)  # Électrik
+    pikachu_type = PokemonType(pokemon_id=1, type_id=6, slot=1) # Électrik
 
     # Add moves
     pikachu_move1 = PokemonMove(
         pokemon_id=1,
-        move_id=5,  # Tonnerre
-        learn_method_id=1,  # level_up
+        move_id=5, # Tonnerre
+        learn_method_id=1, # level_up
         learn_level=30
     )
     pikachu_move2 = PokemonMove(
         pokemon_id=1,
-        move_id=4,  # Vive-Attaque
-        learn_method_id=1,  # level_up
+        move_id=4, # Vive-Attaque
+        learn_method_id=1, # level_up
         learn_level=5
     )
 
@@ -327,7 +327,7 @@ def sample_pokemon(
     charizard = Pokemon(
         id=2,
         species_id=2,
-        form_id=1,  # normal
+        form_id=1, # normal
         name_pokeapi="charizard",
         name_pokepedia="Dracaufeu",
         height_m=1.7,
@@ -345,14 +345,14 @@ def sample_pokemon(
     charizard.stats = charizard_stats
 
     # Add types
-    charizard_type1 = PokemonType(pokemon_id=2, type_id=3, slot=1)  # Feu
-    charizard_type2 = PokemonType(pokemon_id=2, type_id=7, slot=2)  # Vol
+    charizard_type1 = PokemonType(pokemon_id=2, type_id=3, slot=1) # Feu
+    charizard_type2 = PokemonType(pokemon_id=2, type_id=7, slot=2) # Vol
 
     # Add moves
     charizard_move = PokemonMove(
         pokemon_id=2,
-        move_id=1,  # Lance-Flammes
-        learn_method_id=1,  # level_up
+        move_id=1, # Lance-Flammes
+        learn_method_id=1, # level_up
         learn_level=40
     )
 
@@ -366,7 +366,7 @@ def sample_pokemon(
     blastoise = Pokemon(
         id=3,
         species_id=3,
-        form_id=1,  # normal
+        form_id=1, # normal
         name_pokeapi="blastoise",
         name_pokepedia="Tortank",
         height_m=1.6,
@@ -384,13 +384,13 @@ def sample_pokemon(
     blastoise.stats = blastoise_stats
 
     # Add types
-    blastoise_type = PokemonType(pokemon_id=3, type_id=5, slot=1)  # Eau
+    blastoise_type = PokemonType(pokemon_id=3, type_id=5, slot=1) # Eau
 
     # Add moves
     blastoise_move = PokemonMove(
         pokemon_id=3,
-        move_id=2,  # Surf
-        learn_method_id=1,  # level_up
+        move_id=2, # Surf
+        learn_method_id=1, # level_up
         learn_level=45
     )
 

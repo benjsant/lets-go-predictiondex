@@ -2,17 +2,17 @@
 
 Ce dossier contient tous les tests d'intégration pour valider le fonctionnement complet du système.
 
-## 📋 Tests Disponibles
+## Tests Disponibles
 
 ### 1. **test_complete_system.py**
 Validation complète du système end-to-end.
 
 **Ce qui est testé**:
-- ✅ 7 services Docker (PostgreSQL, API, Streamlit, MLflow, Prometheus, Grafana, pgAdmin)
-- ✅ Stack monitoring (Prometheus targets, métriques, Grafana dashboards)
-- ✅ MLflow (expériences, Model Registry, runs)
-- ✅ API endpoints (health, Pokemon, moves, types, predictions)
-- ✅ Base de données (188 Pokemon, 226 moves, 18 types)
+- 7 services Docker (PostgreSQL, API, Streamlit, MLflow, Prometheus, Grafana, pgAdmin)
+- Stack monitoring (Prometheus targets, métriques, Grafana dashboards)
+- MLflow (expériences, Model Registry, runs)
+- API endpoints (health, Pokemon, moves, types, predictions)
+- Base de données (188 Pokemon, 226 moves, 18 types)
 
 **Usage**:
 ```bash
@@ -31,11 +31,11 @@ docker compose --profile tests up tests
 Test d'intégration complet de la stack monitoring.
 
 **Ce qui est testé**:
-- ✅ Services (Prometheus, Grafana, API, MLflow)
-- ✅ Collecte de métriques (via génération de trafic API)
-- ✅ Requêtes Prometheus (métriques, percentiles, alertes)
-- ✅ Dashboards Grafana (datasource, panels, variables)
-- ✅ Calcul des percentiles (P50, P95, P99) - sans NaN
+- Services (Prometheus, Grafana, API, MLflow)
+- Collecte de métriques (via génération de trafic API)
+- Requêtes Prometheus (métriques, percentiles, alertes)
+- Dashboards Grafana (datasource, panels, variables)
+- Calcul des percentiles (P50, P95, P99) - sans NaN
 
 **Usage**:
 ```bash
@@ -50,10 +50,10 @@ python3 tests/integration/test_monitoring_complete.py
 Validation du monitoring avec génération de rapport HTML.
 
 **Ce qui est testé**:
-- ✅ Collecte de métriques Prometheus
-- ✅ Requêtes PromQL fonctionnelles
-- ✅ Percentiles sans NaN
-- ✅ Génération de rapport HTML et JSON
+- Collecte de métriques Prometheus
+- Requêtes PromQL fonctionnelles
+- Percentiles sans NaN
+- Génération de rapport HTML et JSON
 
 **Usage**:
 ```bash
@@ -70,9 +70,9 @@ python3 tests/integration/test_monitoring_validation.py
 Test d'intégration entre MLflow et l'API.
 
 **Ce qui est testé**:
-- ✅ Chargement du modèle depuis MLflow Registry
-- ✅ Prédictions via API avec modèle MLflow
-- ✅ Cohérence entre modèle local et MLflow
+- Chargement du modèle depuis MLflow Registry
+- Prédictions via API avec modèle MLflow
+- Cohérence entre modèle local et MLflow
 
 **Usage**:
 ```bash
@@ -81,7 +81,7 @@ pytest tests/integration/test_mlflow_to_api.py -v
 
 ---
 
-## 🚀 Exécution des Tests
+## Exécution des Tests
 
 ### Option 1: Exécuter tous les tests (recommandé)
 
@@ -139,19 +139,19 @@ docker logs -f letsgo_tests
 
 ---
 
-## 📊 Rapports Générés
+## Rapports Générés
 
 Tous les rapports sont sauvegardés dans `reports/`:
 
 ```
 reports/
 ├── monitoring/
-│   ├── validation_report.html       # Rapport HTML interactif
-│   ├── validation_report.json       # Données JSON
-│   ├── monitoring_validation_report.html
-│   └── integration_test_results.json
+│ ├── validation_report.html # Rapport HTML interactif
+│ ├── validation_report.json # Données JSON
+│ ├── monitoring_validation_report.html
+│ └── integration_test_results.json
 └── validation/
-    └── system_validation_report.json  # Résultats validation système
+ └── system_validation_report.json # Résultats validation système
 ```
 
 **Consulter les rapports**:
@@ -165,7 +165,7 @@ cat reports/monitoring/validation_report.json | jq '.validation_score'
 
 ---
 
-## 🔧 Prérequis
+## Prérequis
 
 ### Services Docker requis
 
@@ -180,13 +180,13 @@ docker compose ps
 ```
 
 Services nécessaires:
-- ✅ `letsgo_postgres` - Base de données
-- ✅ `letsgo_api` - API FastAPI
-- ✅ `letsgo_streamlit` - Interface web
-- ✅ `letsgo_mlflow` - Tracking ML
-- ✅ `letsgo_prometheus` - Métriques
-- ✅ `letsgo_grafana` - Dashboards
-- ✅ `letsgo_pgadmin` - Admin PostgreSQL
+- `letsgo_postgres` - Base de données
+- `letsgo_api` - API FastAPI
+- `letsgo_streamlit` - Interface web
+- `letsgo_mlflow` - Tracking ML
+- `letsgo_prometheus` - Métriques
+- `letsgo_grafana` - Dashboards
+- `letsgo_pgadmin` - Admin PostgreSQL
 
 ### Dépendances Python
 
@@ -203,7 +203,7 @@ Dépendances principales:
 
 ---
 
-## 📈 Critères de Succès
+## Critères de Succès
 
 ### Validation Complète (test_complete_system.py)
 
@@ -229,7 +229,7 @@ Dépendances principales:
 
 ---
 
-## 🐛 Dépannage
+## Dépannage
 
 ### Tests échouent: "Connection refused"
 
@@ -238,7 +238,7 @@ Dépendances principales:
 **Solution**:
 ```bash
 docker compose up -d
-sleep 30  # Attendre que les services soient prêts
+sleep 30 # Attendre que les services soient prêts
 python3 tests/integration/test_complete_system.py
 ```
 
@@ -286,7 +286,7 @@ docker compose --profile tests up tests
 
 ---
 
-## 📝 Notes
+## Notes
 
 - Les tests d'intégration nécessitent que **tous les services soient UP**
 - Générer du trafic API avant de tester le monitoring
@@ -295,9 +295,9 @@ docker compose --profile tests up tests
 
 ---
 
-## 🎯 Prochaines Étapes
+## Prochaines Étapes
 
-1. ✅ Tous les tests passent (≥95%)
-2. ✅ Rapports générés et consultables
-3. ✅ Déploiement CI/CD fonctionnel (GitHub Actions)
-4. 🚀 **Projet prêt pour la certification E1/E3**
+1. Tous les tests passent (≥95%)
+2. Rapports générés et consultables
+3. Déploiement CI/CD fonctionnel (GitHub Actions)
+4. **Projet prêt pour la certification E1/E3**

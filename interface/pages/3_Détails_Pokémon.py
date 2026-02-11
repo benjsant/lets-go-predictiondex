@@ -18,7 +18,6 @@ from interface.utils.ui_helpers import (
 # ======================================================
 st.set_page_config(
     page_title="Détails Pokémon",
-    page_icon="📋",
     layout="wide",
 )
 
@@ -73,7 +72,7 @@ pokemon_lookup = {p.id: p for p in pokemon_options}
 # ======================================================
 # Pokemon Selector
 # ======================================================
-page_header("Fiche Pokémon Détaillée", "Découvre tous les détails de tes Pokémon favoris !", "📋")
+page_header("Fiche Pokémon Détaillée", "Découvre tous les détails de tes Pokémon favoris !")
 
 query_params = st.query_params
 pokemon_id_from_query = query_params.get('id', None)
@@ -84,7 +83,7 @@ if pokemon_id_from_query:
         default_id = int(pokemon_id_from_query)
         if default_id not in pokemon_lookup:
             default_id = list(pokemon_lookup.keys())[0]
-    except ValueError:
+    except BaseException:
         default_id = list(pokemon_lookup.keys())[0]
 else:
     default_id = list(pokemon_lookup.keys())[0]
@@ -94,7 +93,7 @@ if 'last_selected_pokemon_id' not in st.session_state:
     st.session_state.last_selected_pokemon_id = default_id
 
 selected_pokemon_id = st.selectbox(
-    "🔍 Sélectionne un Pokémon",
+    "Sélectionne un Pokémon",
     options=list(pokemon_lookup.keys()),
     format_func=lambda pid: f"#{pokemon_lookup[pid].pokedex_number:03d} - {pokemon_lookup[pid].name}",
     index=list(pokemon_lookup.keys()).index(default_id),
@@ -133,16 +132,16 @@ with col_info:
     # Types
     if selected.types:
         badges_html = " ".join([type_badge(t) for t in selected.types])
-        st.markdown(f"🧬 **Types :** {badges_html}", unsafe_allow_html=True)
+        st.markdown(f"**Types :** {badges_html}", unsafe_allow_html=True)
 
     # Physical characteristics
     col_a, col_b = st.columns(2)
     with col_a:
         if selected.height_m:
-            st.write(f"📏 **Taille :** {selected.height_m} m")
+            st.write(f"**Taille :** {selected.height_m} m")
     with col_b:
         if selected.weight_kg:
-            st.write(f"⚖️ **Poids :** {selected.weight_kg} kg")
+            st.write(f"**Poids :** {selected.weight_kg} kg")
 
 st.divider()
 
@@ -151,7 +150,7 @@ st.divider()
 # Stats with Progress Bars
 # ======================================================
 if selected.stats:
-    st.subheader("📊 Statistiques")
+    st.subheader("Statistiques")
 
     stats_order = [
         ("hp", "PV", "#FF5959"),
@@ -181,12 +180,12 @@ if selected.stats:
             """, unsafe_allow_html=True)
 
     if selected.total_stats:
-        st.caption(f"🔢 Total des stats : **{int(selected.total_stats)}**")
+        st.caption(f"Total des stats : **{int(selected.total_stats)}**")
         all_totals = [p.total_stats for p in pokemon_options if p.total_stats]
         all_totals_sorted = sorted(all_totals, reverse=True)
         rank = all_totals_sorted.index(selected.total_stats) + \
             1 if selected.total_stats in all_totals_sorted else len(pokemon_options)
-        st.caption(f"🏆 Classement: #{rank}/{len(pokemon_options)}")
+        st.caption(f"Classement: #{rank}/{len(pokemon_options)}")
 
 st.divider()
 
@@ -194,7 +193,7 @@ st.divider()
 # ======================================================
 # Weaknesses / Affinités
 # ======================================================
-st.subheader("⚠️ Faiblesses / Multiplicateurs")
+st.subheader("Faiblesses / Multiplicateurs")
 weaknesses = get_pokemon_weaknesses_ui(selected.id)
 
 if weaknesses:
@@ -222,7 +221,7 @@ st.divider()
 # ======================================================
 # Moves Section
 # ======================================================
-st.subheader("📋 Capacités")
+st.subheader("Capacités")
 pokemon_detail = get_pokemon_detail(selected.id)
 
 if pokemon_detail and pokemon_detail.get('moves'):
@@ -278,36 +277,30 @@ if pokemon_detail and pokemon_detail.get('moves'):
             elif learn_level == -1:
                 learn_label = "Évolution"
             elif learn_level == -2:
-                learn_label = "Hérité 🧬"
+                learn_label = "Hérité"
             elif learn_level is not None:
                 learn_label = f"Niv. {int(learn_level)}"
             else:
                 learn_label = None
         elif learn_method == "before_evolution":
-            learn_label = "Hérité 🧬"
+            learn_label = "Hérité"
         else:
             learn_label = learn_method_labels.get(learn_method)
 
+        power = m.get('power')
+        accuracy = m.get('accuracy')
         rows.append({
             "Capacité": m.get('name', ''),
             "Type": clean_text(m.get('type', '')).capitalize(),
             "Catégorie": m.get('category', '').capitalize(),
-            "Puissance": int(m['power']) if m.get('power') else None,
-            "Précision": int(m['accuracy']) if m.get('accuracy') else None,
+            "Puissance": str(int(power)) if power else "-",
+            "Précision": str(int(accuracy)) if accuracy else "-",
             "Méthode": learn_label,
-            "STAB": "⭐" if normalize_type(m.get('type', '')) in pokemon_types_normalized else "",
+            "STAB": "Oui" if normalize_type(m.get('type', '')) in pokemon_types_normalized else "",
         })
 
     if rows:
-        st.dataframe(
-            pd.DataFrame(rows),
-            width="stretch",
-            hide_index=True,
-            column_config={
-                "Puissance": st.column_config.NumberColumn(format="%d"),
-                "Précision": st.column_config.NumberColumn(format="%d"),
-            },
-        )
+        st.markdown(pd.DataFrame(rows).to_html(index=False, escape=False), unsafe_allow_html=True)
     else:
         st.info("Aucune capacité correspondant aux filtres.")
 else:
@@ -323,11 +316,11 @@ st.markdown("### Actions Rapides")
 col_a, col_b, col_c = st.columns(3)
 
 with col_a:
-    if st.button("⚔️ Comparer", use_container_width=True, key="btn_compare"):
+    if st.button("Comparer", use_container_width=True, key="btn_compare"):
         st.switch_page("pages/2_Combat_et_Prédiction.py")
 with col_b:
-    if st.button("💥 Capacités", use_container_width=True, key="btn_moves"):
+    if st.button("Capacités", use_container_width=True, key="btn_moves"):
         st.switch_page("pages/1_Capacités.py")
 with col_c:
-    if st.button("🌈 Types", use_container_width=True, key="btn_types"):
+    if st.button("Types", use_container_width=True, key="btn_types"):
         st.switch_page("pages/4_Types_et_Affinités.py")

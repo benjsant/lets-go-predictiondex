@@ -46,7 +46,7 @@ LOGGER = logging.getLogger(__name__)
 # Configuration constants
 # ---------------------------------------------------------------------
 MAX_WORKERS = 10
-REQUEST_DELAY = 0.05  # Delay between API requests to reduce rate-limiting
+REQUEST_DELAY = 0.05 # Delay between API requests to reduce rate-limiting
 REQUEST_TIMEOUT = 10
 RETRY_DELAY = 2
 MAX_RETRIES = 3
@@ -140,7 +140,7 @@ def process_pokemon(pokemon_id: int, starter_form_id: int) -> Optional[str]:
 
         data = get_pokemon_data(pokemon.name_pokeapi)
         if data is None:
-            LOGGER.error("❌ Failed to retrieve %s", pokemon.name_pokeapi)
+            LOGGER.error("Failed to retrieve %s", pokemon.name_pokeapi)
             return None
 
         # Update physical attributes
@@ -171,12 +171,12 @@ def process_pokemon(pokemon_id: int, starter_form_id: int) -> Optional[str]:
         )
 
         session.commit()
-        LOGGER.info("✔ %s enriched", pokemon.name_pokeapi)
+        LOGGER.info(" %s enriched", pokemon.name_pokeapi)
         return pokemon.name_pokeapi
 
-    except Exception as exc:  # pylint: disable=broad-except
+    except Exception as exc: # pylint: disable=broad-except
         session.rollback()
-        LOGGER.error("💥 Error while processing Pokémon %s: %s", pokemon_id, exc)
+        LOGGER.error(" Error while processing Pokémon %s: %s", pokemon_id, exc)
         return None
 
     finally:
@@ -206,7 +206,7 @@ def main() -> None:
     finally:
         session.close()
 
-    LOGGER.info("➡ %s Pokémon to enrich via PokeAPI", len(pokemon_ids))
+    LOGGER.info(" %s Pokémon to enrich via PokeAPI", len(pokemon_ids))
 
     updated = 0
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -219,7 +219,7 @@ def main() -> None:
             if future.result() is not None:
                 updated += 1
 
-    LOGGER.info("✅ PokeAPI enrichment completed: %s Pokémon enriched", updated)
+    LOGGER.info("PokeAPI enrichment completed: %s Pokémon enriched", updated)
 
 
 if __name__ == "__main__":

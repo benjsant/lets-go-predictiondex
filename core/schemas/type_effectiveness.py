@@ -1,60 +1,26 @@
 # core/schemas/type_effectiveness.py
-"""
-Pydantic schema – Type effectiveness
-===================================
-
-Ce module définit les schemas Pydantic exposant l'efficacité des types Pokémon.
-
-L'efficacité d'un type représente le multiplicateur de dégâts appliqué lorsqu'un
-move d'un type attaquant touche un Pokémon d'un type défenseur.
-
-Alignement SQLAlchemy :
-- Table : type_effectiveness
-- FK : attacking_type_id -> type.id
-- FK : defending_type_id -> type.id
-"""
+"""Pydantic schemas for type effectiveness (damage multipliers)."""
 
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict
 
 
-# -------------------------
-# 🔹 Type effectiveness (brut)
-# -------------------------
 class TypeEffectivenessOut(BaseModel):
-    """
-    Schema de sortie représentant une relation d'efficacité de type.
+ """Type effectiveness with IDs and damage multiplier."""
 
-    Exemple :
-    - attacking = Plante
-    - defending = Sol
-    - multiplier = 2.00
-    """
+ attacking_type_id: int
+ defending_type_id: int
+ multiplier: Decimal
 
-    attacking_type_id: int
-    defending_type_id: int
-    multiplier: Decimal
-
-    model_config = ConfigDict(from_attributes=True)
+ model_config = ConfigDict(from_attributes=True)
 
 
-# -------------------------
-# 🔹 Type effectiveness enrichi (lisible API)
-# -------------------------
 class TypeEffectivenessDetailedOut(BaseModel):
-    """
-    Schema enrichi exposant les noms des types au lieu des seuls IDs.
+ """Type effectiveness with type names instead of IDs."""
 
-    Ce schema est idéal pour :
-    - endpoints pédagogiques,
-    - API publiques,
-    - debugging,
-    - affichage frontend.
-    """
+ attacking_type: str
+ defending_type: str
+ multiplier: Decimal
 
-    attacking_type: str
-    defending_type: str
-    multiplier: Decimal
-
-    model_config = ConfigDict(from_attributes=True)
+ model_config = ConfigDict(from_attributes=True)

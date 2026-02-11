@@ -105,18 +105,18 @@ class DockerStackValidator:
             response = requests.get(config["url"], timeout=5)
 
             if response.status_code == 200:
-                return True, f"✅ Accessible (HTTP {response.status_code})"
+                return True, f"[OK] Accessible (HTTP {response.status_code})"
 
-            return False, f"⚠️  HTTP {response.status_code}"
+            return False, f"[WARN] HTTP {response.status_code}"
 
         except requests.exceptions.ConnectionError:
-            return False, "❌ Connection refused (service not started?)"
+            return False, "[ERROR] Connection refused (service not started?)"
 
         except requests.exceptions.Timeout:
-            return False, "❌ Timeout (service slow or not started?)"
+            return False, "[ERROR] Timeout (service slow or not started?)"
 
         except requests.exceptions.RequestException as exc:
-            return False, f"❌ Error: {str(exc)[:50]}"
+            return False, f"[ERROR] Error: {str(exc)[:50]}"
 
     def check_api_endpoints(self) -> Dict[str, bool]:
         """Check key API endpoints.
@@ -144,13 +144,13 @@ class DockerStackValidator:
                 results[endpoint] = response.status_code == 200
 
                 if self.verbose:
-                    status = "✅" if results[endpoint] else "❌"
+                    status = "[OK]" if results[endpoint] else "[ERROR]"
                     print(f"      {status} {endpoint:20s} - {description}")
 
             except requests.exceptions.RequestException:
                 results[endpoint] = False
                 if self.verbose:
-                    print(f"      ❌ {endpoint:20s} - {description}")
+                    print(f"      [ERROR] {endpoint:20s} - {description}")
 
         return results
 
@@ -178,7 +178,7 @@ class DockerStackValidator:
                 targets[job] = health
 
                 if self.verbose:
-                    status = "✅" if health == "up" else "❌"
+                    status = "[OK]" if health == "up" else "[ERROR]"
                     endpoint = target["scrapeUrl"]
                     print(f"      {status} {job:20s} - {endpoint}")
 
@@ -212,7 +212,7 @@ class DockerStackValidator:
                 results[name] = ds.get("basicAuth", False) or True
 
                 if self.verbose:
-                    print(f"      ✅ {name:20s} ({type_})")
+                    print(f"      [OK] {name:20s} ({type_})")
 
             return results
 
@@ -226,20 +226,20 @@ class DockerStackValidator:
             Exit code (0 for success, 1 for failure).
         """
         print("\n" + "=" * 80)
-        print("🔍 Docker Stack Validation")
+        print("[RUN] Docker Stack Validation")
         print("=" * 80)
 
         all_healthy = True
 
         # 1. Check services
-        print("\n1️⃣ Docker Services")
+        print("\n[1] Docker Services")
         print("-" * 80)
 
         for name, config in SERVICES.items():
             is_healthy, message = self.check_service(config)
             self.results[name] = is_healthy
 
-            status = "✅" if is_healthy else "❌"
+            status = "[OK]" if is_healthy else "[ERROR]"
             print(f"{status} {name:20s} [{config['port']:5d}] - {config['description']}")
 
             if not is_healthy:
@@ -250,7 +250,7 @@ class DockerStackValidator:
 
         # 2. Check API endpoints
         if self.results.get("api"):
-            print("\n2️⃣ API Endpoints")
+            print("\n[2] API Endpoints")
             print("-" * 80)
 
             endpoints = self.check_api_endpoints()
@@ -266,7 +266,7 @@ class DockerStackValidator:
 
         # 3. Check Prometheus targets
         if self.results.get("prometheus"):
-            print("\n3️⃣ Prometheus Targets")
+            print("\n[3] Prometheus Targets")
             print("-" * 80)
 
             targets = self.check_prometheus_targets()
@@ -278,14 +278,14 @@ class DockerStackValidator:
 
                 if not self.verbose:
                     for job, health in targets.items():
-                        status = "✅" if health == "up" else "❌"
+                        status = "[OK]" if health == "up" else "[ERROR]"
                         print(f"      {status} {job}")
             else:
-                print(f"   ⚠️  {targets['error']}")
+                print(f"   [WARN] {targets['error']}")
 
         # 4. Check Grafana datasources
         if self.results.get("grafana"):
-            print("\n4️⃣ Grafana Datasources")
+            print("\n[4] Grafana Datasources")
             print("-" * 80)
 
             datasources = self.check_grafana_datasources()
@@ -293,14 +293,14 @@ class DockerStackValidator:
             if "error" not in datasources:
                 print(f"   {len(datasources)} datasource(s) configured")
             else:
-                print(f"   ⚠️  {datasources['error']}")
+                print(f"   [WARN] {datasources['error']}")
 
         # 5. Summary
         print("\n" + "=" * 80)
 
         if all_healthy:
-            print("✅ All services are operational!")
-            print("\n💡 Useful URLs:")
+            print("[OK] All services are operational!")
+            print("\n[TIP] Useful URLs:")
             print("   API Swagger: http://localhost:8080/docs")
             print("   Streamlit: http://localhost:8502")
             print("   Grafana: http://localhost:3001")
@@ -308,10 +308,10 @@ class DockerStackValidator:
             print("   MLflow: http://localhost:5001")
             return 0
 
-        print("❌ Some services are not accessible")
-        print("\n💡 Start missing services:")
+        print("[ERROR] Some services are not accessible")
+        print("\n[TIP] Start missing services:")
         print("   docker-compose up -d")
-        print("\n💡 Check logs:")
+        print("\n[TIP] Check logs:")
         print("   docker-compose logs <service>")
         return 1
 

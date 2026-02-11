@@ -30,39 +30,7 @@ def predict_best_move(
     request: PredictBestMoveRequest,
     db: Session = Depends(get_db)
 ):
-    """
-    Predict the best move for Pokemon A against Pokemon B.
-
-    This endpoint uses a trained XGBoost model (94.24% accuracy) to predict
-    the outcome of a battle for each available move, and recommends the move
-    with the highest win probability.
-
-    **How it works:**
-    1. For each available move of Pokemon A:
-       - Simulates the move choice
-       - Selects the best counter-move for Pokemon B
-       - Calculates battle features (stats, types, STAB, effectiveness)
-       - Predicts win probability using ML model
-    2. Returns moves ranked by win probability
-
-    **Use case:**
-    Help children choose the best move against an opponent in Pokemon Let's Go.
-
-    **Args:**
-    - pokemon_a_id: ID of the user's Pokemon
-    - pokemon_b_id: ID of the opponent's Pokemon
-    - available_moves: List of move names that Pokemon A knows
-
-    **Returns:**
-    - recommended_move: The move with highest win probability
-    - win_probability: Probability of winning (0-1)
-    - all_moves: All moves ranked by win probability
-
-    **Errors:**
-    - 404: Pokemon not found
-    - 400: Invalid move names or Pokemon has no moves
-    - 500: Model inference error
-    """
+    """Predict the best move for Pokemon A against Pokemon B using ML."""
     try:
         start_time = time.time()
 

@@ -8,19 +8,19 @@ L'endpoint `/predict/best-move` utilise un modèle XGBoost entraîné (88.23% ac
 
 ```
 Client → POST /predict/best-move
-           ↓
-    prediction_route.py (FastAPI route)
-           ↓
-    prediction_service.py (Business logic)
-           ↓
-    ├─→ Charge modèle ML (XGBoost + scalers)
-    ├─→ Récupère données Pokémon (DB)
-    ├─→ Calcule efficacité de type
-    ├─→ Pour chaque move:
-    │    ├─→ Prépare features (38 colonnes raw)
-    │    ├─→ Apply feature engineering (133 colonnes finales)
-    │    └─→ Prédit win probability
-    └─→ Retourne moves classés par probabilité
+ ↓
+ prediction_route.py (FastAPI route)
+ ↓
+ prediction_service.py (Business logic)
+ ↓
+ ├─→ Charge modèle ML (XGBoost + scalers)
+ ├─→ Récupère données Pokémon (DB)
+ ├─→ Calcule efficacité de type
+ ├─→ Pour chaque move:
+ │ ├─→ Prépare features (38 colonnes raw)
+ │ ├─→ Apply feature engineering (133 colonnes finales)
+ │ └─→ Prédit win probability
+ └─→ Retourne moves classés par probabilité
 ```
 
 ## Endpoints
@@ -32,10 +32,10 @@ Prédit la meilleure capacité pour le Pokémon A contre le Pokémon B.
 **Request Body:**
 ```json
 {
-  "pokemon_a_id": 7,
-  "pokemon_b_id": 4,
-  "available_moves": ["Charge", "Pistolet à O", "Hydrocanon"],
-  "available_moves_b": null  // Optional: liste des moves connus de l'adversaire
+ "pokemon_a_id": 7,
+ "pokemon_b_id": 4,
+ "available_moves": ["Charge", "Pistolet à O", "Hydrocanon"],
+ "available_moves_b": null // Optional: liste des moves connus de l'adversaire
 }
 ```
 
@@ -44,33 +44,33 @@ Prédit la meilleure capacité pour le Pokémon A contre le Pokémon B.
 - `pokemon_b_id` (int, requis): ID du Pokémon défenseur
 - `available_moves` (list[str], optionnel): Moves disponibles pour A (si omis, tous les moves appris)
 - `available_moves_b` (list[str], optionnel): **NOUVEAU** - Moves connus de B pour simulation plus précise
-  - Si `null` ou omis: B utilise automatiquement son meilleur move offensif (comportement par défaut)
-  - Si spécifié: B est limité à ces moves lors de la simulation de combat
+ - Si `null` ou omis: B utilise automatiquement son meilleur move offensif (comportement par défaut)
+ - Si spécifié: B est limité à ces moves lors de la simulation de combat
 
 **Response:**
 ```json
 {
-  "pokemon_a_id": 7,
-  "pokemon_a_name": "Carapuce",
-  "pokemon_b_id": 4,
-  "pokemon_b_name": "Salamèche",
-  "recommended_move": "Hydrocanon",
-  "win_probability": 0.95,
-  "all_moves": [
-    {
-      "move_name": "Hydrocanon",
-      "move_type": "eau",
-      "move_power": 110,
-      "effective_power": 110.0,
-      "type_multiplier": 2.0,
-      "stab": 1.5,
-      "priority": 0,
-      "score": 330.0,
-      "win_probability": 0.95,
-      "predicted_winner": "A"
-    },
-    ...
-  ]
+ "pokemon_a_id": 7,
+ "pokemon_a_name": "Carapuce",
+ "pokemon_b_id": 4,
+ "pokemon_b_name": "Salamèche",
+ "recommended_move": "Hydrocanon",
+ "win_probability": 0.95,
+ "all_moves": [
+ {
+ "move_name": "Hydrocanon",
+ "move_type": "eau",
+ "move_power": 110,
+ "effective_power": 110.0,
+ "type_multiplier": 2.0,
+ "stab": 1.5,
+ "priority": 0,
+ "score": 330.0,
+ "win_probability": 0.95,
+ "predicted_winner": "A"
+ },
+ ...
+ ]
 }
 ```
 
@@ -81,23 +81,23 @@ Retourne les informations sur le modèle ML chargé.
 **Response:**
 ```json
 {
-  "model_type": "XGBClassifier",
-  "version": "v1",
-  "n_features": 133,
-  "metrics": {
-    "test_accuracy": 0.9424,
-    "test_precision": 0.9427,
-    "test_recall": 0.9421,
-    "test_f1": 0.9424,
-    "test_roc_auc": 0.9896
-  },
-  "trained_at": "2026-01-21T12:31:17",
-  "hyperparameters": {
-    "n_estimators": 100,
-    "max_depth": 8,
-    "learning_rate": 0.1,
-    ...
-  }
+ "model_type": "XGBClassifier",
+ "version": "v1",
+ "n_features": 133,
+ "metrics": {
+ "test_accuracy": 0.9424,
+ "test_precision": 0.9427,
+ "test_recall": 0.9421,
+ "test_f1": 0.9424,
+ "test_roc_auc": 0.9896
+ },
+ "trained_at": "2026-01-21T12:31:17",
+ "hyperparameters": {
+ "n_estimators": 100,
+ "max_depth": 8,
+ "learning_rate": 0.1,
+ ...
+ }
 }
 ```
 
@@ -110,7 +110,7 @@ from api_pokemon.services import prediction_service
 
 # Le modèle est chargé une seule fois au démarrage
 model = prediction_service.prediction_model
-model.load()  # Charge model, scalers, metadata
+model.load() # Charge model, scalers, metadata
 ```
 
 **Artifacts chargés:**
@@ -159,12 +159,12 @@ score = power * stab * type_mult * (accuracy/100) + priority * 50
 1. **One-hot encoding** des types → ~102 colonnes
 2. **Normalisation** des stats numériques (StandardScaler #1)
 3. **Création de 6 features dérivées**:
-   - `stat_ratio` = a_total_stats / (b_total_stats + 1)
-   - `type_advantage_diff` = a_type_mult - b_type_mult
-   - `effective_power_a` = power_a × stab_a × type_mult_a
-   - `effective_power_b` = power_b × stab_b × type_mult_b
-   - `effective_power_diff` = effective_power_a - effective_power_b
-   - `priority_advantage` = priority_a - priority_b
+ - `stat_ratio` = a_total_stats / (b_total_stats + 1)
+ - `type_advantage_diff` = a_type_mult - b_type_mult
+ - `effective_power_a` = power_a × stab_a × type_mult_a
+ - `effective_power_b` = power_b × stab_b × type_mult_b
+ - `effective_power_diff` = effective_power_a - effective_power_b
+ - `priority_advantage` = priority_a - priority_b
 4. **Normalisation** des features dérivées (StandardScaler #2)
 
 **Résultat:** 133 features finales
@@ -178,7 +178,7 @@ prediction = model.predict(features)
 # Prédit les probabilités [prob_B_wins, prob_A_wins]
 probabilities = model.predict_proba(features)
 
-win_probability = probabilities[0][1]  # Prob que A gagne
+win_probability = probabilities[0][1] # Prob que A gagne
 ```
 
 ### 7. Ranking
@@ -207,18 +207,18 @@ L'application aide un enfant à choisir la meilleure capacité:
 
 **Prédiction:**
 1. **Hydrocanon** (Eau, 110 puissance)
-   - STAB: 1.5x (Carapuce est type Eau)
-   - Type mult: 2x (Eau super efficace contre Feu)
-   - Puissance effective: 110 × 1.5 × 2 = 330
-   - **Win probability: 95%**
+ - STAB: 1.5x (Carapuce est type Eau)
+ - Type mult: 2x (Eau super efficace contre Feu)
+ - Puissance effective: 110 × 1.5 × 2 = 330
+ - **Win probability: 95%**
 
 2. **Pistolet à O** (Eau, 40 puissance)
-   - Puissance effective: 40 × 1.5 × 2 = 120
-   - Win probability: 75%
+ - Puissance effective: 40 × 1.5 × 2 = 120
+ - Win probability: 75%
 
 3. **Charge** (Normal, 40 puissance)
-   - Puissance effective: 40 × 1 × 1 = 40
-   - Win probability: 45%
+ - Puissance effective: 40 × 1 × 1 = 40
+ - Win probability: 45%
 
 **Recommandation**: "Utilise Hydrocanon !"
 
@@ -228,10 +228,10 @@ Si vous savez que Salamèche ne connaît que "Flammèche" et "Charge":
 
 ```json
 {
-  "pokemon_a_id": 7,
-  "pokemon_b_id": 4,
-  "available_moves": ["Charge", "Pistolet à O", "Hydrocanon"],
-  "available_moves_b": ["Flammèche", "Charge"]
+ "pokemon_a_id": 7,
+ "pokemon_b_id": 4,
+ "available_moves": ["Charge", "Pistolet à O", "Hydrocanon"],
+ "available_moves_b": ["Flammèche", "Charge"]
 }
 ```
 
@@ -281,10 +281,10 @@ from core.db.session import SessionLocal
 db = SessionLocal()
 
 result = prediction_service.predict_best_move(
-    db=db,
-    pokemon_a_id=7,  # Carapuce
-    pokemon_b_id=4,  # Salamèche
-    available_moves_a=["Charge", "Pistolet à O", "Hydrocanon"]
+ db=db,
+ pokemon_a_id=7, # Carapuce
+ pokemon_b_id=4, # Salamèche
+ available_moves_a=["Charge", "Pistolet à O", "Hydrocanon"]
 )
 
 print(f"Recommended: {result['recommended_move']}")
@@ -297,12 +297,12 @@ db.close()
 
 ```bash
 curl -X POST "http://localhost:8000/predict/best-move" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "pokemon_a_id": 7,
-    "pokemon_b_id": 4,
-    "available_moves": ["Charge", "Pistolet à O", "Hydrocanon"]
-  }'
+ -H "Content-Type: application/json" \
+ -d '{
+ "pokemon_a_id": 7,
+ "pokemon_b_id": 4,
+ "available_moves": ["Charge", "Pistolet à O", "Hydrocanon"]
+ }'
 ```
 
 ### Appel HTTP (Python requests)
@@ -311,12 +311,12 @@ curl -X POST "http://localhost:8000/predict/best-move" \
 import requests
 
 response = requests.post(
-    "http://localhost:8000/predict/best-move",
-    json={
-        "pokemon_a_id": 7,
-        "pokemon_b_id": 4,
-        "available_moves": ["Charge", "Pistolet à O", "Hydrocanon"]
-    }
+ "http://localhost:8000/predict/best-move",
+ json={
+ "pokemon_a_id": 7,
+ "pokemon_b_id": 4,
+ "available_moves": ["Charge", "Pistolet à O", "Hydrocanon"]
+ }
 )
 
 result = response.json()

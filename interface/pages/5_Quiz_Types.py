@@ -9,7 +9,6 @@ from interface.services.api_client import get_type_affinities, get_all_types
 # ======================================================
 st.set_page_config(
     page_title="Quiz des Types",
-    page_icon="🎯",
     layout="centered",
 )
 load_custom_css()
@@ -56,10 +55,10 @@ affinities = load_types_and_affinities()
 # Type Icons & Colors
 # ======================================================
 TYPE_ICONS = {
-    "feu": "🔥", "eau": "💧", "plante": "🌿", "electrik": "⚡", "glace": "🧊",
-    "combat": "🥊", "poison": "☠️", "sol": "⛰️", "vol": "🦅", "psy": "🔮",
-    "insecte": "🐛", "roche": "🪨", "spectre": "👻", "dragon": "🐲", "tenebres": "🌑",
-    "acier": "⚙️", "fee": "🧚", "normal": "⭐"
+    "feu": "", "eau": "", "plante": "", "electrik": "", "glace": "",
+    "combat": "", "poison": "", "sol": "", "vol": "", "psy": "",
+    "insecte": "", "roche": "", "spectre": "", "dragon": "", "tenebres": "",
+    "acier": "", "fee": "", "normal": ""
 }
 
 TYPE_COLORS = {
@@ -81,7 +80,7 @@ def normalize_type(name: str) -> str:
 
 
 def format_type_badge(type_name: str) -> str:
-    """Display a type as a colored badge with icon."""
+    """Return a colored HTML badge for a type name."""
     key = normalize_type(type_name)
     icon = TYPE_ICONS.get(key, "")
     color = TYPE_COLORS.get(key, "#999")
@@ -89,7 +88,7 @@ def format_type_badge(type_name: str) -> str:
 
 
 def generate_question() -> dict:
-    """Select a random type matchup that is not neutral."""
+    """Select a random non-neutral type matchup as a question."""
     interesting = [a for a in affinities if a['multiplier'] != 1.0]
     q = random.choice(interesting)
     return {
@@ -100,7 +99,7 @@ def generate_question() -> dict:
 
 
 def check_answer(user_choice: str, correct_multiplier: float) -> bool:
-    """Check if the selected category matches the multiplier."""
+    """Return True if user_choice matches the correct multiplier category."""
     if correct_multiplier == 0:
         correct_category = "immune"
     elif correct_multiplier < 1:
@@ -113,18 +112,18 @@ def check_answer(user_choice: str, correct_multiplier: float) -> bool:
 
 
 def get_feedback_text(multiplier: float) -> str:
-    """Return a descriptive string for a multiplier."""
+    """Return a descriptive feedback string for the given multiplier."""
     if multiplier == 0:
-        return "🛡️ **Immunisé (×0)** - Aucun dégât !"
+        return "**Immunisé (x0)** - Aucun dégât !"
     if multiplier < 1:
-        return f"🔵 **Peu efficace (×{multiplier})** - Dégâts réduits"
+        return f"**Peu efficace (x{multiplier})** - Dégâts réduits"
     if multiplier == 1:
-        return "⚪ **Normal (×1)** - Dégâts standards"
-    return f"🔴 **Super efficace (×{multiplier})** - Dégâts augmentés !"
+        return "**Normal (x1)** - Dégâts standards"
+    return f"**Super efficace (x{multiplier})** - Dégâts augmentés !"
 
 
 def handle_answer(user_choice: str):
-    """Process a user's answer."""
+    """Process the user's answer and update session state."""
     is_correct = check_answer(user_choice, st.session_state.current_question['correct_multiplier'])
     st.session_state.quiz_total += 1
     if is_correct:
@@ -135,7 +134,7 @@ def handle_answer(user_choice: str):
 
 
 def new_question():
-    """Generate a new question."""
+    """Generate a new quiz question and reset answer state."""
     st.session_state.current_question = generate_question()
     st.session_state.answered = False
     st.session_state.last_answer_correct = None
@@ -144,48 +143,48 @@ def new_question():
 # ======================================================
 # Page Header
 # ======================================================
-page_header("Quiz des Types Pokémon", "Teste tes connaissances sur les affinités de types !", "🎯")
+page_header("Quiz des Types Pokémon", "Teste tes connaissances sur les affinités de types !")
 st.markdown("**Teste tes connaissances sur les affinités de types !**")
 
 # ======================================================
 # Score Display
 # ======================================================
 col1, col2, col3 = st.columns(3)
-col1.metric("✅ Score Actuel", f"{st.session_state.quiz_score}/{st.session_state.quiz_total}")
+col1.metric("Score Actuel", f"{st.session_state.quiz_score}/{st.session_state.quiz_total}")
 accuracy = (st.session_state.quiz_score / st.session_state.quiz_total * 100) if st.session_state.quiz_total else 0
-col2.metric("📊 Précision", f"{accuracy:.0f}%")
-col3.metric("🏆 Meilleur Score", f"{st.session_state.quiz_high_score}")
+col2.metric("Précision", f"{accuracy:.0f}%")
+col3.metric("Meilleur Score", f"{st.session_state.quiz_high_score}")
 st.divider()
 
 # ======================================================
 # Generate Question Button
 # ======================================================
 if st.session_state.current_question is None or st.session_state.answered:
-    st.button("🎲 Nouvelle Question", type="primary", use_container_width=True, on_click=new_question)
+    st.button("Nouvelle Question", type="primary", use_container_width=True, on_click=new_question)
 
 # ======================================================
 # Display Question
 # ======================================================
 if st.session_state.current_question and not st.session_state.answered:
     q = st.session_state.current_question
-    st.markdown(f"### ❓ Question #{st.session_state.quiz_total + 1}")
+    st.markdown(f"### Question #{st.session_state.quiz_total + 1}")
     st.markdown(
         f"<div style='text-align:center;padding:20px;background:#f0f2f6;border-radius:12px;margin:20px 0;'>"
         f"<p style='font-size:1.2rem;margin-bottom:20px;'>Une attaque</p>"
         f"{format_type_badge(q['attacking_type'])}"
-        f"<p style='font-size:1.8rem;margin:20px 0;'>⚔️</p>"
+        f"<p style='font-size:1.8rem;margin:20px 0;'>VS</p>"
         f"<p style='font-size:1.2rem;margin-bottom:20px;'>contre un Pokémon</p>"
         f"{format_type_badge(q['defending_type'])}</div>",
         unsafe_allow_html=True
     )
 
-    st.markdown("### 🤔 C'est...")
+    st.markdown("### C'est...")
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.button("🛡️ Immunisé\n(×0)", key="immune", use_container_width=True, on_click=handle_answer, args=("immune",))
+        st.button("Immunisé\n(x0)", key="immune", use_container_width=True, on_click=handle_answer, args=("immune",))
     with col2:
         st.button(
-            "🔵 Peu efficace\n(×0.5)",
+            "Peu efficace\n(x0.5)",
             key="weak",
             use_container_width=True,
             on_click=handle_answer,
@@ -193,10 +192,10 @@ if st.session_state.current_question and not st.session_state.answered:
                 "weak",
             ))
     with col3:
-        st.button("⚪ Normal\n(×1)", key="normal", use_container_width=True, on_click=handle_answer, args=("normal",))
+        st.button("Normal\n(x1)", key="normal", use_container_width=True, on_click=handle_answer, args=("normal",))
     with col4:
         st.button(
-            "🔴 Super efficace\n(×2 ou ×4)",
+            "Super efficace\n(x2 ou x4)",
             key="strong",
             use_container_width=True,
             on_click=handle_answer,
@@ -210,15 +209,15 @@ if st.session_state.current_question and not st.session_state.answered:
 if st.session_state.answered and st.session_state.last_answer_correct is not None:
     q = st.session_state.current_question
     if st.session_state.last_answer_correct:
-        st.success("✅ **Bravo ! Bonne réponse !**")
+        st.success("**Bravo ! Bonne réponse !**")
         st.balloons()
     else:
-        st.error("❌ **Oups ! Mauvaise réponse...**")
-        st.info(f"💡 La bonne réponse était : {get_feedback_text(q['correct_multiplier'])}")
+        st.error("**Oups ! Mauvaise réponse...**")
+        st.info(f"La bonne réponse était : {get_feedback_text(q['correct_multiplier'])}")
 
     if st.session_state.quiz_score > st.session_state.quiz_high_score:
         st.session_state.quiz_high_score = st.session_state.quiz_score
-        st.success("🏆 **Nouveau record !**")
+        st.success("**Nouveau record !**")
 
 # ======================================================
 # Reset Buttons
@@ -226,56 +225,56 @@ if st.session_state.answered and st.session_state.last_answer_correct is not Non
 st.divider()
 col1, col2 = st.columns(2)
 with col1:
-    st.button("🔄 Recommencer à Zéro", use_container_width=True, on_click=lambda: [st.session_state.update(
+    st.button("Recommencer à Zéro", use_container_width=True, on_click=lambda: [st.session_state.update(
         {k: 0 if "score" in k or "total" in k else None for k in st.session_state}), st.rerun()])
 with col2:
-    st.button("🏆 Réinitialiser Record", use_container_width=True, on_click=lambda: [
+    st.button("Réinitialiser Record", use_container_width=True, on_click=lambda: [
               st.session_state.update({"quiz_high_score": 0}), st.rerun()])
 
 # ======================================================
 # Tips Section
 # ======================================================
-with st.expander("💡 Astuces pour réussir"):
+with st.expander("Astuces pour réussir"):
     st.markdown("""
-    ### 🎯 Rappels importants :
+    ### Rappels importants :
 
-    **Super efficace (×2 ou ×4) :**
-    - 🔥 Feu > 🌿 Plante, 🧊 Glace, 🐛 Insecte, ⚙️ Acier
-    - 💧 Eau > 🔥 Feu, ⛰️ Sol, 🪨 Roche
-    - 🌿 Plante > 💧 Eau, ⛰️ Sol, 🪨 Roche
-    - ⚡ Électrik > 💧 Eau, 🦅 Vol
+    **Super efficace (x2 ou x4) :**
+    - Feu > Plante, Glace, Insecte, Acier
+    - Eau > Feu, Sol, Roche
+    - Plante > Eau, Sol, Roche
+    - Électrik > Eau, Vol
 
-    **Peu efficace (×0.5) :**
-    - 🔥 Feu < 🔥 Feu, 💧 Eau, 🪨 Roche, 🐲 Dragon
-    - 💧 Eau < 💧 Eau, 🌿 Plante, 🐲 Dragon
-    - 🌿 Plante < 🔥 Feu, 🌿 Plante, ☠️ Poison, 🦅 Vol, 🐛 Insecte, 🐲 Dragon, ⚙️ Acier
+    **Peu efficace (x0.5) :**
+    - Feu < Feu, Eau, Roche, Dragon
+    - Eau < Eau, Plante, Dragon
+    - Plante < Feu, Plante, Poison, Vol, Insecte, Dragon, Acier
 
-    **Immunité (×0) :**
-    - ⭐ Normal < 👻 Spectre
-    - 🥊 Combat < 👻 Spectre
-    - 👻 Spectre < ⭐ Normal
-    - ⚡ Électrik < ⛰️ Sol
-    - ☠️ Poison < ⚙️ Acier
-    - ⛰️ Sol < 🦅 Vol
-    - 🔮 Psy < 🌑 Ténèbres
-    - 🐲 Dragon < 🧚 Fée
+    **Immunité (x0) :**
+    - Normal < Spectre
+    - Combat < Spectre
+    - Spectre < Normal
+    - Électrik < Sol
+    - Poison < Acier
+    - Sol < Vol
+    - Psy < Ténèbres
+    - Dragon < Fée
     """)
 
 # ======================================================
 # Statistics
 # ======================================================
 if st.session_state.quiz_total >= 5:
-    with st.expander("📊 Tes statistiques"):
+    with st.expander("Tes statistiques"):
         accuracy = (st.session_state.quiz_score / st.session_state.quiz_total) * 100
         st.metric("Précision globale", f"{accuracy:.1f}%")
         st.metric("Questions répondues", st.session_state.quiz_total)
         st.metric("Bonnes réponses", st.session_state.quiz_score)
         st.metric("Mauvaises réponses", st.session_state.quiz_total - st.session_state.quiz_score)
         if accuracy >= 90:
-            st.success("🏆 Expert des types ! Incroyable !")
+            st.success("Expert des types ! Incroyable !")
         elif accuracy >= 75:
-            st.info("🥇 Très bon ! Continue comme ça !")
+            st.info("Très bon ! Continue comme ça !")
         elif accuracy >= 60:
-            st.warning("🥈 Pas mal ! Encore un peu d'entraînement !")
+            st.warning("Pas mal ! Encore un peu d'entraînement !")
         else:
-            st.error("🥉 Continue de t'entraîner, tu vas y arriver !")
+            st.error("Continue de t'entraîner, tu vas y arriver !")

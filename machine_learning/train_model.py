@@ -1,37 +1,5 @@
 #!/usr/bin/env python3
-"""
-Train Battle Winner Prediction Model - Production Script
-=========================================================
-
-ML training pipeline for Pokémon battle winner prediction.
-
-Pipeline Steps:
-    1. Load train/test datasets (parquet format)
-    2. Feature engineering (encoding, derived features, normalization)
-    3. Train XGBoost classifier with optional GridSearchCV
-    4. Export versioned model, scalers, and metadata
-
-Features:
-    - Scenario filtering support (via `scenario_type` column if present)
-    - Optional GridSearchCV for hyperparameter tuning (--use-gridsearch)
-    - Artifact versioning via --version flag (default: v1)
-    - Comprehensive metrics logging (accuracy, precision, recall, F1, AUC)
-
-Usage:
-    # Train with default settings
-    python machine_learning/train_model.py
-
-    # Train with GridSearch and specific scenario
-    python machine_learning/train_model.py --use-gridsearch --version v2 --scenario-type worst_case
-
-    # Train on all scenarios combined
-    python machine_learning/train_model.py --version v2 --scenario-type all
-
-Output Artifacts:
-    - models/battle_winner_model_<version>.pkl - Trained XGBoost model
-    - models/battle_winner_scalers_<version>.pkl - Feature scalers
-    - models/battle_winner_metadata_<version>.pkl - Model metadata
-"""
+"""ML training pipeline for Pokemon battle winner prediction."""
 
 import argparse
 import sys
@@ -47,7 +15,7 @@ try:
     MLFLOW_AVAILABLE = True
 except ImportError:
     MLFLOW_AVAILABLE = False
-    print("⚠️  MLflow not available, Model Registry disabled")
+    print("[ML] Warning: MLflow not available, Model Registry disabled")
 
 # Import new centralized modules (refactored for clean code)
 from machine_learning.config import (
@@ -110,12 +78,12 @@ def load_datasets(dataset_version='v1'):
 
     # Check for scenario_type column
     if 'scenario_type' in df_train.columns:
-        print(f"  ✅ Multi-scenario dataset detected")
+        print(f"  [OK] Multi-scenario dataset detected")
         scenario_counts = df_train['scenario_type'].value_counts()
         for scenario, count in scenario_counts.items():
             print(f"     {scenario}: {count:,} samples")
     else:
-        print(f"  ℹ️  Single scenario dataset (v1 format)")
+        print(f"  [INFO] Single scenario dataset (v1 format)")
 
     return df_train, df_test
 
@@ -133,7 +101,7 @@ def filter_by_scenario(df_train, df_test, scenario_type: str):
         return df_train, df_test
 
     if "scenario_type" not in df_train.columns:
-        print(f"⚠️  scenario_type filtering skipped: column missing (requested '{scenario_type}').")
+        print(f"[WARN] scenario_type filtering skipped: column missing (requested '{scenario_type}').")
         return df_train, df_test
 
     before_train = len(df_train)
@@ -143,12 +111,12 @@ def filter_by_scenario(df_train, df_test, scenario_type: str):
     df_test_filtered = df_test[df_test["scenario_type"] == scenario_type]
 
     if df_train_filtered.empty or df_test_filtered.empty:
-        print(f"⚠️  scenario_type='{scenario_type}' produced empty split; fallback to full dataset.")
+        print(f"[WARN] scenario_type='{scenario_type}' produced empty split; fallback to full dataset.")
         return df_train, df_test
 
     print(
-        f"✅ Filtering scenario_type='{scenario_type}': "
-        f"train {before_train:,}→{len(df_train_filtered):,}, test {before_test:,}→{len(df_test_filtered):,}"
+        f"[OK] Filtering scenario_type='{scenario_type}': "
+        f"train {before_train:,}->{len(df_train_filtered):,}, test {before_test:,}->{len(df_test_filtered):,}"
     )
 
     # Show class balance after filtering
@@ -187,17 +155,17 @@ def train_xgboost(X_train, y_train, use_gridsearch: bool = False, grid_type: str
             num_combinations = (len(param_grid['n_estimators']) * len(param_grid['max_depth']) *
                                 len(param_grid['learning_rate']) * len(param_grid['subsample']) *
                                 len(param_grid['colsample_bytree']))
-            print(f"\n🔍 Training XGBoost with GridSearchCV (EXTENDED grid: {num_combinations} combinations)...")
+            print(f"\n[ML] Training XGBoost with GridSearchCV (EXTENDED grid: {num_combinations} combinations)...")
         else:
             param_grid = XGBOOST_PARAM_GRID_FAST
             num_combinations = (len(param_grid['n_estimators']) * len(param_grid['max_depth']) *
                                 len(param_grid['learning_rate']))
-            print(f"\n🔍 Training XGBoost with GridSearchCV (FAST grid: {num_combinations} combinations)...")
+            print(f"\n[ML] Training XGBoost with GridSearchCV (FAST grid: {num_combinations} combinations)...")
 
         cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=RANDOM_SEED)
         base_model = xgb.XGBClassifier(
             random_state=RANDOM_SEED,
-            n_jobs=SAFE_GRIDSEARCH_N_JOBS,  # Auto-ajusté selon plateforme
+            n_jobs=SAFE_GRIDSEARCH_N_JOBS,  # Auto-adjusted per platform
             eval_metric='logloss',
             tree_method='hist',          # CPU-optimized
             predictor='cpu_predictor'    # Explicit CPU
@@ -207,17 +175,17 @@ def train_xgboost(X_train, y_train, use_gridsearch: bool = False, grid_type: str
             param_grid=param_grid,
             scoring="roc_auc",
             cv=cv,
-            n_jobs=SAFE_GRIDSEARCH_N_JOBS,  # Auto-ajusté selon plateforme (Windows/Linux)
+            n_jobs=SAFE_GRIDSEARCH_N_JOBS,  # Auto-adjusted per platform (Windows/Linux)
             verbose=1,
             return_train_score=False,    # Don't compute train scores (faster)
         )
         grid.fit(X_train, y_train)
-        print(f"  ✅ Best params: {grid.best_params_}")
-        print(f"  ✅ Best CV ROC-AUC: {grid.best_score_:.4f}")
+        print(f"  [OK] Best params: {grid.best_params_}")
+        print(f"  [OK] Best CV ROC-AUC: {grid.best_score_:.4f}")
         best_model = grid.best_estimator_
         best_params = grid.best_params_
     else:
-        print("\n🚀 Training XGBoost model (fixed params)...")
+        print("\n[ML] Training XGBoost model (fixed params)...")
         print(f"  Hyperparameters: {XGBOOST_PARAMS}")
 
         # Split for early stopping
@@ -236,9 +204,9 @@ def train_xgboost(X_train, y_train, use_gridsearch: bool = False, grid_type: str
 
         # Report best iteration
         if hasattr(best_model, 'best_iteration'):
-            print(f"  ✅ Best iteration: {best_model.best_iteration}/{best_model.n_estimators}")
+            print(f"  [OK] Best iteration: {best_model.best_iteration}/{best_model.n_estimators}")
 
-    print("  ✅ Training complete")
+    print("  [OK] Training complete")
     return best_model, best_params
 
 
@@ -373,32 +341,32 @@ def main():
 
                 # Auto-promote to Production if quality threshold met
                 if version_number and metrics.get('test_accuracy', 0) >= 0.85:
-                    print(f"\n🎯 Model meets quality threshold (accuracy >= 0.85)")
+                    print(f"\n[ML] Model meets quality threshold (accuracy >= 0.85)")
                     tracker.promote_to_production(model_name, version_number)
-                    print(f"✅ Model promoted to Production stage in MLflow Registry")
+                    print(f"[OK] Model promoted to Production stage in MLflow Registry")
                 elif version_number:
-                    print(f"\n⚠️  Model registered as version {version_number} but not promoted (accuracy < 0.85)")
+                    print(f"\n[WARN] Model registered as version {version_number} but not promoted (accuracy < 0.85)")
                     print(f"   Manual promotion: MLflow UI or CLI")
 
-                print(f"\n✅ Model registered in MLflow Model Registry")
+                print(f"\n[OK] Model registered in MLflow Model Registry")
             except Exception as e:
-                print(f"\n⚠️  MLflow registration failed: {e}")
+                print(f"\n[WARN] MLflow registration failed: {e}")
 
         # Export features (optional)
         if not args.skip_export_features:
             export_features(X_train, X_test, y_train, y_test, FEATURES_DIR, verbose=True)
 
         print("\n" + "=" * 70)
-        print("✅ TRAINING COMPLETE")
+        print("[OK] TRAINING COMPLETE")
         print("=" * 70)
-        print(f"\n📊 Test Accuracy: {metrics['test_accuracy']*100:.2f}%")
-        print(f"📊 Test ROC-AUC: {metrics['test_roc_auc']:.4f}")
+        print(f"\n[METRICS] Test Accuracy: {metrics['test_accuracy']*100:.2f}%")
+        print(f"[METRICS] Test ROC-AUC: {metrics['test_roc_auc']:.4f}")
 
     except FileNotFoundError as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\n[ERROR] {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
+        print(f"\n[ERROR] Unexpected error: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

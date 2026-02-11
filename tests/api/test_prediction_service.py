@@ -29,7 +29,7 @@ from api_pokemon.services.feature_engineering import (
 
 
 # ============================================================
-# 🔹 TESTS: PredictionModel Singleton
+# TESTS: PredictionModel Singleton
 # ============================================================
 
 class TestPredictionModel:
@@ -118,7 +118,7 @@ class TestPredictionModel:
 
 
 # ============================================================
-# 🔹 TESTS: Database Queries
+# TESTS: Database Queries
 # ============================================================
 
 class TestDatabaseQueries:
@@ -155,7 +155,7 @@ class TestDatabaseQueries:
 
 
 # ============================================================
-# 🔹 TESTS: Type Effectiveness Calculation
+# TESTS: Type Effectiveness Calculation
 # ============================================================
 
 class TestTypeMultiplier:
@@ -169,21 +169,21 @@ class TestTypeMultiplier:
 
     def test_super_effective_single_type(self):
         """Test super effective against single type (2x)."""
-        type_eff = {(3, 4): 2.0}  # Feu vs Plante
+        type_eff = {(3, 4): 2.0} # Feu vs Plante
         multiplier = get_type_multiplier(3, [4], type_eff)
         assert multiplier == 2.0
 
     def test_not_very_effective(self):
         """Test not very effective (0.5x)."""
-        type_eff = {(3, 5): 0.5}  # Feu vs Eau
+        type_eff = {(3, 5): 0.5} # Feu vs Eau
         multiplier = get_type_multiplier(3, [5], type_eff)
         assert multiplier == 0.5
 
     def test_super_effective_dual_type(self):
         """Test super effective against dual type (4x)."""
         type_eff = {
-            (5, 3): 2.0,  # Eau vs Feu
-            (5, 7): 2.0,  # Eau vs Vol
+            (5, 3): 2.0, # Eau vs Feu
+            (5, 7): 2.0, # Eau vs Vol
         }
         # Eau vs Feu/Vol = 2x × 2x = 4x
         multiplier = get_type_multiplier(5, [3, 7], type_eff)
@@ -192,8 +192,8 @@ class TestTypeMultiplier:
     def test_quarter_effective_dual_type(self):
         """Test double resistance (0.25x)."""
         type_eff = {
-            (6, 4): 0.5,  # Électrik vs Plante
-            (6, 3): 0.5,  # Électrik vs Feu (hypothetical)
+            (6, 4): 0.5, # Électrik vs Plante
+            (6, 3): 0.5, # Électrik vs Feu (hypothetical)
         }
         # Électrik vs Plante/Feu = 0.5 × 0.5 = 0.25x
         multiplier = get_type_multiplier(6, [4, 3], type_eff)
@@ -207,7 +207,7 @@ class TestTypeMultiplier:
 
 
 # ============================================================
-# 🔹 TESTS: Move Power Calculation
+# TESTS: Move Power Calculation
 # ============================================================
 
 class TestEffectivePowerCalculation:
@@ -229,7 +229,7 @@ class TestEffectivePowerCalculation:
         move.damage_type = "multi_coups"
 
         power = calculate_effective_power(move)
-        assert power == 75  # 25 × 3
+        assert power == 75 # 25 × 3
 
     def test_double_damage_move(self):
         """Test double damage move (2x power)."""
@@ -238,7 +238,7 @@ class TestEffectivePowerCalculation:
         move.damage_type = "double_degats"
 
         power = calculate_effective_power(move)
-        assert power == 100  # 50 × 2
+        assert power == 100 # 50 × 2
 
     def test_two_turn_move(self):
         """Test two-turn move (0.5x power)."""
@@ -247,7 +247,7 @@ class TestEffectivePowerCalculation:
         move.damage_type = "deux_tours"
 
         power = calculate_effective_power(move)
-        assert power == 60  # 120 / 2
+        assert power == 60 # 120 / 2
 
     def test_move_without_power(self):
         """Test status move (no power)."""
@@ -269,7 +269,7 @@ class TestEffectivePowerCalculation:
 
 
 # ============================================================
-# 🔹 TESTS: Move Selection
+# TESTS: Move Selection
 # ============================================================
 
 class TestMoveSelection:
@@ -300,8 +300,8 @@ class TestMoveSelection:
         assert best_move is not None
         # Tonnerre should be selected (super effective + higher power)
         assert best_move['move_name'] == 'Tonnerre'
-        assert best_move['type_multiplier'] == 2.0  # Électrik vs Eau
-        assert best_move['stab'] == 1.5  # STAB for Pikachu
+        assert best_move['type_multiplier'] == 2.0 # Électrik vs Eau
+        assert best_move['stab'] == 1.5 # STAB for Pikachu
 
     def test_select_best_move_with_stab(
         self,
@@ -325,7 +325,7 @@ class TestMoveSelection:
         )
 
         assert best_move is not None
-        assert best_move['stab'] == 1.5  # Feu move on Feu-type Pokemon
+        assert best_move['stab'] == 1.5 # Feu move on Feu-type Pokemon
 
     def test_select_best_move_no_valid_moves(
         self,
@@ -376,7 +376,7 @@ class TestMoveSelection:
 
 
 # ============================================================
-# 🔹 TESTS: Feature Preparation
+# TESTS: Feature Preparation
 # ============================================================
 
 class TestFeaturePreparation:
@@ -408,7 +408,7 @@ class TestFeaturePreparation:
         )
 
         assert isinstance(features, pd.DataFrame)
-        assert len(features) == 1  # Single row
+        assert len(features) == 1 # Single row
 
         # Check Pokemon A stats
         assert features['a_hp'].iloc[0] == 35
@@ -430,7 +430,7 @@ class TestFeaturePreparation:
         assert features['a_move_stab'].iloc[0] == 1.5
 
         # Check computed features
-        assert features['speed_diff'].iloc[0] == 90 - 100  # -10
+        assert features['speed_diff'].iloc[0] == 90 - 100 # -10
         assert features['a_total_stats'].iloc[0] == 35 + 55 + 40 + 50 + 50 + 90
 
     def test_prepare_features_with_single_type_pokemon(self, db_session, sample_pokemon):
@@ -464,8 +464,8 @@ class TestFeaturePreparation:
 
     def test_prepare_features_a_moves_first(self, db_session, sample_pokemon):
         """Test that a_moves_first is correctly calculated."""
-        pikachu = get_pokemon_with_details(db_session, 1)  # Speed: 90
-        blastoise = get_pokemon_with_details(db_session, 3)  # Speed: 78
+        pikachu = get_pokemon_with_details(db_session, 1) # Speed: 90
+        blastoise = get_pokemon_with_details(db_session, 3) # Speed: 78
 
         move_a_info = {
             'move_type_name': 'Électrik',
@@ -492,13 +492,13 @@ class TestFeaturePreparation:
 
     def test_prepare_features_priority_overrides_speed(self, db_session, sample_pokemon):
         """Test that priority overrides speed for move order."""
-        pikachu = get_pokemon_with_details(db_session, 1)  # Speed: 90
-        charizard = get_pokemon_with_details(db_session, 2)  # Speed: 100
+        pikachu = get_pokemon_with_details(db_session, 1) # Speed: 90
+        charizard = get_pokemon_with_details(db_session, 2) # Speed: 100
 
         move_a_info = {
             'move_type_name': 'Normal',
             'effective_power': 40,
-            'priority': 1,  # Vive-Attaque
+            'priority': 1, # Vive-Attaque
             'stab': 1.0,
             'type_multiplier': 1.0
         }
@@ -520,7 +520,7 @@ class TestFeaturePreparation:
 
 
 # ============================================================
-# 🔹 TESTS: Feature Engineering
+# TESTS: Feature Engineering
 # ============================================================
 
 class TestFeatureEngineering:
@@ -652,7 +652,7 @@ class TestFeatureEngineering:
 
 
 # ============================================================
-# 🔹 TESTS: Full Prediction Pipeline (Integration)
+# TESTS: Full Prediction Pipeline (Integration)
 # ============================================================
 
 class TestPredictionPipeline:
@@ -671,8 +671,8 @@ class TestPredictionPipeline:
         """Test successful prediction of best move."""
         # Mock model
         mock_ml_model = Mock()
-        mock_ml_model.predict = Mock(return_value=[1])  # A wins
-        mock_ml_model.predict_proba = Mock(return_value=[[0.2, 0.8]])  # 80% win prob
+        mock_ml_model.predict = Mock(return_value=[1]) # A wins
+        mock_ml_model.predict_proba = Mock(return_value=[[0.2, 0.8]]) # 80% win prob
         mock_model_pred.model = mock_ml_model
 
         # Mock scalers
@@ -703,8 +703,8 @@ class TestPredictionPipeline:
 
         result = predict_best_move(
             db_session,
-            pokemon_a_id=1,  # Pikachu
-            pokemon_b_id=3,  # Blastoise
+            pokemon_a_id=1, # Pikachu
+            pokemon_b_id=3, # Blastoise
             available_moves_a=['Tonnerre', 'Vive-Attaque']
         )
 
@@ -735,9 +735,9 @@ class TestPredictionPipeline:
         def mock_predict_proba(features, validate_features=False):
             call_count[0] += 1
             if call_count[0] == 1:
-                return [[0.4, 0.6]]  # First move: 60% win prob
+                return [[0.4, 0.6]] # First move: 60% win prob
             else:
-                return [[0.1, 0.9]]  # Second move: 90% win prob
+                return [[0.1, 0.9]] # Second move: 90% win prob
 
         mock_ml_model = Mock()
         mock_ml_model.predict = Mock(return_value=[1])

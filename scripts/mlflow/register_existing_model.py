@@ -14,10 +14,10 @@ from pathlib import Path
 # Add parent directory to PYTHONPATH before importing local modules
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-import mlflow  # pylint: disable=wrong-import-position
-from mlflow.tracking import MlflowClient  # pylint: disable=wrong-import-position
+import mlflow # pylint: disable=wrong-import-position
+from mlflow.tracking import MlflowClient # pylint: disable=wrong-import-position
 
-from machine_learning.mlflow_integration import (  # pylint: disable=wrong-import-position
+from machine_learning.mlflow_integration import ( # pylint: disable=wrong-import-position
     get_mlflow_tracker
 )
 
@@ -38,17 +38,17 @@ def print_section(title):
 
 def print_success(msg):
     """Display a success message."""
-    print(f"{GREEN}✅ {msg}{RESET}")
+    print(f"{GREEN}{msg}{RESET}")
 
 
 def print_error(msg):
     """Display an error message."""
-    print(f"{RED}❌ {msg}{RESET}")
+    print(f"{RED}{msg}{RESET}")
 
 
 def print_info(msg):
     """Display an info message."""
-    print(f"   {msg}")
+    print(f" {msg}")
 
 
 def check_mlflow_connection():
@@ -64,8 +64,8 @@ def check_mlflow_connection():
     except mlflow.exceptions.MlflowException as exc:
         print_error(f"MLflow not accessible: {exc}")
         print_info("Make sure MLflow is started:")
-        print_info("  docker compose ps mlflow")
-        print_info("  curl http://localhost:5001/health")
+        print_info(" docker compose ps mlflow")
+        print_info(" curl http://localhost:5001/health")
         return False
 
 
@@ -113,9 +113,9 @@ def register_model_v2():
 
         # Display metrics
         metrics = metadata.get('metrics', {})
-        print_info(f"  - Accuracy: {metrics.get('test_accuracy', 0)*100:.2f}%")
-        print_info(f"  - ROC-AUC: {metrics.get('test_roc_auc', 0)*100:.2f}%")
-        print_info(f"  - F1-Score: {metrics.get('test_f1', 0)*100:.2f}%")
+        print_info(f" - Accuracy: {metrics.get('test_accuracy', 0)*100:.2f}%")
+        print_info(f" - ROC-AUC: {metrics.get('test_roc_auc', 0)*100:.2f}%")
+        print_info(f" - F1-Score: {metrics.get('test_f1', 0)*100:.2f}%")
 
     except (OSError, json.JSONDecodeError) as exc:
         print_error(f"Error loading metadata: {exc}")
@@ -237,11 +237,11 @@ def register_model_v2():
                     f"\nAccuracy {test_accuracy*100:.2f}% < 95%, no automatic promotion"
                 )
                 print_info("To promote manually:")
-                print_info('  python -c "')
-                print_info("  from machine_learning.mlflow_integration import MLflowTracker")
-                print_info("  tracker = MLflowTracker('pokemon_battle_winner')")
-                print_info(f"  tracker.promote_to_production('{model_name}', {version_number})")
-                print_info('  "')
+                print_info(' python -c "')
+                print_info(" from machine_learning.mlflow_integration import MLflowTracker")
+                print_info(" tracker = MLflowTracker('pokemon_battle_winner')")
+                print_info(f" tracker.promote_to_production('{model_name}', {version_number})")
+                print_info(' "')
         else:
             print_error("Failed to register model")
 
@@ -266,7 +266,7 @@ def verify_registration():
         experiments = mlflow.search_experiments()
         print_info(f"Experiments found: {len(experiments)}")
         for exp in experiments:
-            print_info(f"  - {exp.name} (ID: {exp.experiment_id})")
+            print_info(f" - {exp.name} (ID: {exp.experiment_id})")
 
         # List registered models
         client = MlflowClient()
@@ -276,16 +276,16 @@ def verify_registration():
             print_info(f"\nRegistered models: {len(registered_models)}")
 
             for rm in registered_models:
-                print_success(f"\n📦 Model: {rm.name}")
+                print_success(f"\nModel: {rm.name}")
                 if rm.description:
-                    print_info(f"   Description: {rm.description[:100]}...")
+                    print_info(f" Description: {rm.description[:100]}...")
 
                 # List versions
                 versions = client.search_model_versions(f"name='{rm.name}'")
                 for mv in versions:
                     stage = mv.current_stage
-                    emoji = "🏆" if stage == "Production" else "📝"
-                    print_info(f"   {emoji} Version {mv.version}: Stage={stage}")
+                    emoji = "" if stage == "Production" else ""
+                    print_info(f" {emoji} Version {mv.version}: Stage={stage}")
 
         except mlflow.exceptions.MlflowException as exc:
             print_error(f"Unable to list models: {exc}")
@@ -302,11 +302,11 @@ def main():
     print_section("REGISTERING MODEL V2 IN MLFLOW")
 
     print_info("This script will:")
-    print_info("  1. Load the existing v2 model (96.24% accuracy)")
-    print_info("  2. Create an MLflow experiment")
-    print_info("  3. Log model, metrics, and hyperparameters")
-    print_info("  4. Register in MLflow Model Registry")
-    print_info("  5. Promote to Production if accuracy >= 95%")
+    print_info(" 1. Load the existing v2 model (96.24% accuracy)")
+    print_info(" 2. Create an MLflow experiment")
+    print_info(" 3. Log model, metrics, and hyperparameters")
+    print_info(" 4. Register in MLflow Model Registry")
+    print_info(" 5. Promote to Production if accuracy >= 95%")
 
     # Check MLflow connection
     if not check_mlflow_connection():
@@ -314,22 +314,22 @@ def main():
 
     # Register the model
     if not register_model_v2():
-        print_error("\n❌ REGISTRATION FAILED")
+        print_error("\nREGISTRATION FAILED")
         return 1
 
     # Verify registration
     if not verify_registration():
-        print_error("\n❌ VERIFICATION FAILED")
+        print_error("\nVERIFICATION FAILED")
         return 1
 
     print_section("SUCCESS")
     print_success("Model v2 registered in MLflow!")
     print_info("\nCheck in MLflow UI:")
-    print_info("  http://localhost:5001")
+    print_info(" http://localhost:5001")
     print_info("\nTo use the model from MLflow in the API:")
-    print_info("  Modify docker-compose.yml line 128:")
-    print_info('    USE_MLFLOW_REGISTRY: "true"')
-    print_info("  Then restart: docker compose restart api")
+    print_info(" Modify docker-compose.yml line 128:")
+    print_info(' USE_MLFLOW_REGISTRY: "true"')
+    print_info(" Then restart: docker compose restart api")
 
     return 0
 

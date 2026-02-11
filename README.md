@@ -24,12 +24,12 @@ cp interface/.env.example interface/.env
 docker compose up --build
 
 # 3. Acceder aux interfaces
-# API Swagger  : http://localhost:8080/docs
-# Streamlit    : http://localhost:8502
-# Grafana      : http://localhost:3001 (admin/admin)
-# Prometheus   : http://localhost:9091
-# MLflow       : http://localhost:5001
-# pgAdmin      : http://localhost:5050
+# API Swagger : http://localhost:8080/docs
+# Streamlit : http://localhost:8502
+# Grafana : http://localhost:3001 (admin/admin)
+# Prometheus : http://localhost:9091
+# MLflow : http://localhost:5001
+# pgAdmin : http://localhost:5050
 ```
 
 Premiere execution : ~60-90 min (ETL + ML training). Demarrages suivants : 2-3 min.
@@ -65,32 +65,32 @@ Premiere execution : ~60-90 min (ETL + ML training). Demarrages suivants : 2-3 m
 
 ```
 Sources de donnees
-  CSV (151 Pokemon)  +  PokeAPI (Stats/Moves)  +  Pokepedia Scrapy (Evolutions/Affinites)
-       |                       |                          |
-       v                       v                          v
-  +-----------------------------------------------------------------+
-  |                     ETL Pipeline (5 phases)                     |
-  |  init_db -> load_csv -> enrich_pokeapi -> scrapy -> post_process|
-  +-----------------------------------------------------------------+
-                               |
-                               v
-  +-----------------------------------------------------------------+
-  |                PostgreSQL (11 tables, 3NF)                      |
-  +-----------------------------------------------------------------+
-          |                    |                    |
-          v                    v                    v
-  +----------------+  +----------------+  +------------------+
-  | ML Pipeline    |  | API REST       |  | Interface        |
-  | XGBoost v2     |  | FastAPI        |  | Streamlit        |
-  | 135 features   |  | 15 endpoints   |  | 6 pages          |
-  | GridSearchCV   |  | API Key auth   |  | Predictions      |
-  +----------------+  +----------------+  +------------------+
-          |                    |                    |
-          v                    v                    v
-  +-----------------------------------------------------------------+
-  |                    Monitoring Stack                              |
-  |  Prometheus + Grafana + MLflow + Drift Detection                |
-  +-----------------------------------------------------------------+
+ CSV (151 Pokemon) + PokeAPI (Stats/Moves) + Pokepedia Scrapy (Evolutions/Affinites)
+ | | |
+ v v v
+ +-----------------------------------------------------------------+
+ | ETL Pipeline (5 phases) |
+ | init_db -> load_csv -> enrich_pokeapi -> scrapy -> post_process|
+ +-----------------------------------------------------------------+
+ |
+ v
+ +-----------------------------------------------------------------+
+ | PostgreSQL (11 tables, 3NF) |
+ +-----------------------------------------------------------------+
+ | | |
+ v v v
+ +----------------+ +----------------+ +------------------+
+ | ML Pipeline | | API REST | | Interface |
+ | XGBoost v2 | | FastAPI | | Streamlit |
+ | 135 features | | 15 endpoints | | 6 pages |
+ | GridSearchCV | | API Key auth | | Predictions |
+ +----------------+ +----------------+ +------------------+
+ | | |
+ v v v
+ +-----------------------------------------------------------------+
+ | Monitoring Stack |
+ | Prometheus + Grafana + MLflow + Drift Detection |
+ +-----------------------------------------------------------------+
 ```
 
 ---
@@ -99,19 +99,19 @@ Sources de donnees
 
 ```
 lets-go-predictiondex/
-├── etl_pokemon/           # Pipeline ETL (CSV + PokeAPI + Scrapy)
-├── core/                  # Modeles SQLAlchemy (11 tables)
-├── machine_learning/      # Pipeline ML (dataset, training, evaluation)
-├── api_pokemon/           # API REST FastAPI (15 endpoints)
-├── interface/             # Application Streamlit (6 pages)
-├── tests/                 # Tests unitaires et integration
-├── models/                # Artefacts ML exportes (modele, scalers, metadata)
-├── data/                  # Datasets CSV et ML
-├── docker/                # Dockerfiles et configuration services
-├── scripts/               # Scripts utilitaires et orchestration
-├── docs/                  # Documentation technique
-├── reports/               # Rapports auto-generes
-└── docker-compose.yml     # Orchestration 10 services
+├── etl_pokemon/ # Pipeline ETL (CSV + PokeAPI + Scrapy)
+├── core/ # Modeles SQLAlchemy (11 tables)
+├── machine_learning/ # Pipeline ML (dataset, training, evaluation)
+├── api_pokemon/ # API REST FastAPI (15 endpoints)
+├── interface/ # Application Streamlit (6 pages)
+├── tests/ # Tests unitaires et integration
+├── models/ # Artefacts ML exportes (modele, scalers, metadata)
+├── data/ # Datasets CSV et ML
+├── docker/ # Dockerfiles et configuration services
+├── scripts/ # Scripts utilitaires et orchestration
+├── docs/ # Documentation technique
+├── reports/ # Rapports auto-generes
+└── docker-compose.yml # Orchestration 10 services
 ```
 
 Chaque dossier contient son propre `README.md` avec la documentation detaillee :

@@ -33,7 +33,7 @@ from core.models import (
 
 
 # ============================================================
-# 🔹 FIXTURES
+# FIXTURES
 # ============================================================
 
 @pytest.fixture
@@ -66,7 +66,7 @@ def sample_csv_data():
 
 
 # ============================================================
-# 🔹 TESTS: Database Initialization (C4)
+# TESTS: Database Initialization (C4)
 # ============================================================
 
 class TestDatabaseInitialization:
@@ -120,7 +120,7 @@ class TestDatabaseInitialization:
 
 
 # ============================================================
-# 🔹 TESTS: CSV Loading (C1 - Extract)
+# TESTS: CSV Loading (C1 - Extract)
 # ============================================================
 
 class TestCSVLoading:
@@ -183,8 +183,8 @@ class TestCSVLoading:
     def test_malformed_csv_handling(self):
         """Test handling of malformed CSV data."""
         malformed_csv = pd.DataFrame({
-            'id': [1, None, 3],  # Missing value
-            'name': ['Type1', 'Type2', None],  # Missing value
+            'id': [1, None, 3], # Missing value
+            'name': ['Type1', 'Type2', None], # Missing value
         })
 
         # Should be able to identify missing values
@@ -193,11 +193,11 @@ class TestCSVLoading:
 
         # Cleaning logic should handle this
         cleaned = malformed_csv.dropna()
-        assert len(cleaned) == 1  # Only first row is complete
+        assert len(cleaned) == 1 # Only first row is complete
 
 
 # ============================================================
-# 🔹 TESTS: API Enrichment (C1 - Extract from API)
+# TESTS: API Enrichment (C1 - Extract from API)
 # ============================================================
 
 class TestAPIEnrichment:
@@ -301,7 +301,7 @@ class TestAPIEnrichment:
 
 
 # ============================================================
-# 🔹 TESTS: Web Scraping (C1 - Scraping)
+# TESTS: Web Scraping (C1 - Scraping)
 # ============================================================
 
 class TestWebScraping:
@@ -367,7 +367,7 @@ class TestDataAggregation:
     def test_data_normalization(self):
         """Test data normalization (format homogenization)."""
         data = pd.DataFrame({
-            'name': ['  Pikachu  ', 'CHARIZARD', 'Bulbasaur'],
+            'name': [' Pikachu ', 'CHARIZARD', 'Bulbasaur'],
             'type': ['électrik', 'FEU', 'Plante']
         })
 
@@ -421,14 +421,14 @@ class TestDataAggregation:
 
 
 # ============================================================
-# 🔹 TESTS: Post-Processing (C3 - Transform)
+# TESTS: Post-Processing (C3 - Transform)
 # ============================================================
 
 class TestPostProcessing:
     """Tests for post-processing logic."""
 
     def test_mega_evolution_move_inheritance(self, temp_db_session):
-        """Test that Mega evolutions inherit moves from base form."""
+        """Test that Mega evolutions inherit moves from base form via species_id."""
         # Create base Pokemon
         species = PokemonSpecies(id=1, pokedex_number=6, name_en='Charizard', name_fr='Dracaufeu')
         form_normal = Form(id=1, name='normal')
@@ -437,18 +437,25 @@ class TestPostProcessing:
         temp_db_session.commit()
 
         # Base Charizard
-        charizard = Pokemon(id=1, species_id=1, form_id=1, name_pokeapi='charizard')
+        charizard = Pokemon(
+            id=1, species_id=1, form_id=1,
+            name_pokeapi='charizard', name_pokepedia='Dracaufeu',
+            height_m=1.7, weight_kg=90.5
+        )
         temp_db_session.add(charizard)
 
-        # Mega Charizard X
-        mega_charizard = Pokemon(id=2, species_id=1, form_id=2, name_pokeapi='charizard-mega-x',
-                                  previous_evolution_id=1)
+        # Mega Charizard X (same species_id links to base form)
+        mega_charizard = Pokemon(
+            id=2, species_id=1, form_id=2,
+            name_pokeapi='charizard-mega-x', name_pokepedia='Mega-Dracaufeu X',
+            height_m=1.7, weight_kg=100.5
+        )
         temp_db_session.add(mega_charizard)
         temp_db_session.commit()
 
-        # Post-processing should copy moves from base to mega
-        # Verify relationship exists
-        assert mega_charizard.previous_evolution_id == 1
+        # Verify both forms share the same species
+        assert charizard.species_id == mega_charizard.species_id
+        assert charizard.form_id != mega_charizard.form_id
 
     def test_alola_form_type_assignment(self, temp_db_session):
         """Test that Alola forms get correct types."""
@@ -456,14 +463,18 @@ class TestPostProcessing:
         species = PokemonSpecies(id=1, pokedex_number=26, name_en='Raichu', name_fr='Raichu')
         form_normal = Form(id=1, name='normal')
         form_alola = Form(id=3, name='alola')
-        type_electric = Type(id=1, name='Électrik')
+        type_electric = Type(id=1, name='Electrik')
         type_psy = Type(id=2, name='Psy')
 
         temp_db_session.add_all([species, form_normal, form_alola, type_electric, type_psy])
         temp_db_session.commit()
 
         # Alola Raichu (Electric/Psychic)
-        raichu_alola = Pokemon(id=2, species_id=1, form_id=3, name_pokeapi='raichu-alola')
+        raichu_alola = Pokemon(
+            id=2, species_id=1, form_id=3,
+            name_pokeapi='raichu-alola', name_pokepedia='Raichu dAlola',
+            height_m=0.7, weight_kg=21.0
+        )
         temp_db_session.add(raichu_alola)
         temp_db_session.commit()
 
@@ -472,7 +483,7 @@ class TestPostProcessing:
 
 
 # ============================================================
-# 🔹 TESTS: SQL Queries (C2)
+# TESTS: SQL Queries (C2)
 # ============================================================
 
 class TestSQLQueries:
@@ -483,12 +494,16 @@ class TestSQLQueries:
         # Create test data
         species = PokemonSpecies(id=1, pokedex_number=25, name_en='Pikachu', name_fr='Pikachu')
         form = Form(id=1, name='normal')
-        type_electric = Type(id=1, name='Électrik')
+        type_electric = Type(id=1, name='Electrik')
 
         temp_db_session.add_all([species, form, type_electric])
         temp_db_session.commit()
 
-        pokemon = Pokemon(id=1, species_id=1, form_id=1, name_pokeapi='pikachu')
+        pokemon = Pokemon(
+            id=1, species_id=1, form_id=1,
+            name_pokeapi='pikachu', name_pokepedia='Pikachu',
+            height_m=0.4, weight_kg=6.0
+        )
         temp_db_session.add(pokemon)
         temp_db_session.commit()
 
@@ -504,20 +519,30 @@ class TestSQLQueries:
         ).filter(Pokemon.id == 1).all()
 
         assert len(result) == 1
-        assert result[0][1].name == 'Électrik'
+        assert result[0][1].name == 'Electrik'
 
     def test_aggregate_query(self, temp_db_session):
         """Test aggregate queries (COUNT, AVG, etc)."""
         from sqlalchemy import func
 
-        # Create multiple Pokemon
-        species = PokemonSpecies(id=1, pokedex_number=1, name_en='Test', name_fr='Test')
+        # Create multiple species and Pokemon (UNIQUE constraint on species_id, form_id)
         form = Form(id=1, name='normal')
-        temp_db_session.add_all([species, form])
+        temp_db_session.add(form)
         temp_db_session.commit()
 
         for i in range(10):
-            pokemon = Pokemon(id=i+1, species_id=1, form_id=1, name_pokeapi=f'pokemon{i}')
+            species = PokemonSpecies(
+                id=i+1, pokedex_number=i+1,
+                name_en=f'Test{i}', name_fr=f'Test{i}'
+            )
+            temp_db_session.add(species)
+            temp_db_session.flush()
+
+            pokemon = Pokemon(
+                id=i+1, species_id=i+1, form_id=1,
+                name_pokeapi=f'pokemon{i}', name_pokepedia=f'Pokemon{i}',
+                height_m=1.0, weight_kg=10.0
+            )
             temp_db_session.add(pokemon)
         temp_db_session.commit()
 
@@ -528,25 +553,32 @@ class TestSQLQueries:
 
     def test_complex_filter_query(self, temp_db_session):
         """Test complex WHERE clause with multiple conditions."""
-        species = PokemonSpecies(id=1, pokedex_number=25, name_en='Pikachu', name_fr='Pikachu')
         form = Form(id=1, name='normal')
-        temp_db_session.add_all([species, form])
+        temp_db_session.add(form)
         temp_db_session.commit()
 
         for i in range(5):
+            species = PokemonSpecies(
+                id=i+1, pokedex_number=i+1,
+                name_en=f'Test{i}', name_fr=f'Test{i}'
+            )
+            temp_db_session.add(species)
+            temp_db_session.flush()
+
             pokemon = Pokemon(
                 id=i+1,
-                species_id=1,
+                species_id=i+1,
                 form_id=1,
                 name_pokeapi=f'pokemon{i}',
-                height_m=float(i)
+                name_pokepedia=f'Pokemon{i}',
+                height_m=float(i),
+                weight_kg=10.0
             )
             temp_db_session.add(pokemon)
         temp_db_session.commit()
 
-        # Complex filter
+        # Complex filter on height
         result = temp_db_session.query(Pokemon).filter(
-            Pokemon.species_id == 1,
             Pokemon.height_m > 1.0,
             Pokemon.height_m < 4.0
         ).all()
@@ -555,7 +587,7 @@ class TestSQLQueries:
 
 
 # ============================================================
-# 🔹 TESTS: ETL Error Handling
+# TESTS: ETL Error Handling
 # ============================================================
 
 class TestETLErrorHandling:

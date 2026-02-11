@@ -35,7 +35,7 @@ import csv
 from decimal import Decimal
 
 # Ensure all SQLAlchemy models are registered
-import core.models  # noqa: F401
+import core.models # noqa: F401
 
 from core.db.guards.move import upsert_move
 from core.db.guards.pokemon import upsert_pokemon
@@ -64,7 +64,7 @@ def load_types(session) -> None:
 
     Types are deduplicated using normalized keys.
     """
-    print("➡ Loading types...")
+    print(" Loading types...")
     seen: set[str] = set()
 
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as file:
@@ -84,7 +84,7 @@ def load_types(session) -> None:
                 seen.add(key)
 
     session.commit()
-    print(f"✔ {len(seen)} types inserted")
+    print(f" {len(seen)} types inserted")
 
 
 # ---------------------------------------------------------------------
@@ -97,7 +97,7 @@ def load_move_categories(session) -> None:
 
     Categories are assumed to be created during database initialization.
     """
-    print("➡ Loading move categories...")
+    print(" Loading move categories...")
     seen: set[str] = set()
 
     with open(f"{DATA_PATH}/liste_capacite_lets_go.csv", encoding="utf-8") as file:
@@ -126,7 +126,7 @@ def load_move_categories(session) -> None:
 
             seen.add(key)
 
-    print(f"✔ {len(seen)} move categories verified")
+    print(f" {len(seen)} move categories verified")
 
 
 # ---------------------------------------------------------------------
@@ -137,8 +137,8 @@ def load_moves(session) -> None:
     Load Pokémon moves with type, category, power, accuracy,
     damage behavior and computed priority.
     """
-    print("➡ Loading moves...")
-    from core.models import Type  # pylint: disable=import-outside-toplevel
+    print(" Loading moves...")
+    from core.models import Type # pylint: disable=import-outside-toplevel
 
     type_map = {
         normalize_key(t.name): t.id
@@ -177,7 +177,7 @@ def load_moves(session) -> None:
             )
 
     session.commit()
-    print("✔ Moves inserted")
+    print(" Moves inserted")
 
 
 # ---------------------------------------------------------------------
@@ -189,7 +189,7 @@ def load_pokemon_species(session) -> None:
 
     Species are independent from forms (base, mega, alola, starter).
     """
-    print("➡ Loading Pokémon species...")
+    print(" Loading Pokémon species...")
 
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as file:
         reader = csv.DictReader(file)
@@ -204,7 +204,7 @@ def load_pokemon_species(session) -> None:
             session.merge(species)
 
     session.commit()
-    print("✔ Pokémon species inserted")
+    print(" Pokémon species inserted")
 
 
 # ---------------------------------------------------------------------
@@ -216,7 +216,7 @@ def load_pokemon(session) -> None:
 
     Assumes the Form table is already initialized.
     """
-    print("➡ Loading Pokémon forms...")
+    print(" Loading Pokémon forms...")
     form_map = {form.name: form.id for form in session.query(Form).all()}
 
     with open(f"{DATA_PATH}/liste_pokemon.csv", encoding="utf-8") as file:
@@ -250,7 +250,7 @@ def load_pokemon(session) -> None:
             )
 
     session.commit()
-    print("✔ Pokémon forms inserted")
+    print(" Pokémon forms inserted")
 
 
 # ---------------------------------------------------------------------
@@ -262,8 +262,8 @@ def load_pokemon_types(session) -> None:
 
     Supports up to two type slots per Pokémon.
     """
-    print("➡ Loading Pokémon types...")
-    from core.models import Pokemon, Type  # pylint: disable=import-outside-toplevel
+    print(" Loading Pokémon types...")
+    from core.models import Pokemon, Type # pylint: disable=import-outside-toplevel
 
     type_map = {
         normalize_key(t.name): t.id
@@ -311,7 +311,7 @@ def load_pokemon_types(session) -> None:
                 )
 
     session.commit()
-    print("✔ Pokémon types inserted")
+    print(" Pokémon types inserted")
 
 
 # ---------------------------------------------------------------------
@@ -321,8 +321,8 @@ def load_type_effectiveness(session) -> None:
     """
     Load type effectiveness multipliers from table_type.csv.
     """
-    print("➡ Loading type effectiveness...")
-    from core.models import Type  # pylint: disable=import-outside-toplevel
+    print(" Loading type effectiveness...")
+    from core.models import Type # pylint: disable=import-outside-toplevel
 
     type_map = {
         normalize_key(t.name): t.id
@@ -341,7 +341,7 @@ def load_type_effectiveness(session) -> None:
             session.merge(effectiveness)
 
     session.commit()
-    print("✔ Type effectiveness inserted")
+    print(" Type effectiveness inserted")
 
 
 # ---------------------------------------------------------------------

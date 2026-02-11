@@ -1,41 +1,7 @@
-"""
-FastAPI Application - Pokémon Let's Go PredictionDex API
-=========================================================
-
-Main application module for the PredictionDex REST API.
-
-This module initializes the FastAPI application with:
-- Prometheus metrics middleware for monitoring
-- ML model preloading at startup
-- API key authentication for protected endpoints
-- Health check and metrics endpoints
-- Swagger/ReDoc documentation
-
-The API provides:
-- Pokémon database queries (151 Gen 1 + forms)
-- Move database with type effectiveness
-- ML-powered battle predictions (94.24% accuracy)
-- Real-time monitoring with Prometheus metrics
-
-Endpoints:
-    Public (no auth):
-        - GET /health - Health status
-        - GET /metrics - Prometheus metrics
-        - GET /docs - Swagger documentation
-        - GET /redoc - ReDoc documentation
-
-    Protected (API key required):
-        - /pokemon/* - Pokémon routes
-        - /moves/* - Moves routes
-        - /types/* - Type effectiveness routes
-        - /predict/* - ML prediction routes
-
-Environment Variables:
-    API_KEY_REQUIRED: Enable/disable API key auth (default: true)
-    API_KEY: Required API key for protected endpoints
-"""
+"""FastAPI application entry point for the PredictionDex API."""
 
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
 from fastapi.responses import Response
@@ -49,8 +15,24 @@ from api_pokemon.routes import (
     type_route,
 )
 
-# Vérifier si l'API Key est requise (en production)
+# Check if API Key is required (in production)
 API_KEY_REQUIRED = os.getenv("API_KEY_REQUIRED", "true").lower() == "true"
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifespan - preload ML model at startup."""
+    print("[API] Startup: Preloading ML model...")
+    from api_pokemon.services.prediction_service import prediction_model
+    try:
+        prediction_model.load()
+        print("[API] ML model preloaded successfully")
+    except Exception as e:
+        print(f"[API] Warning: Failed to preload ML model: {e}")
+        print("       Model will be loaded on first prediction request")
+    yield
+    # Cleanup on shutdown (if needed in the future)
+
 
 app = FastAPI(
     title="Pokémon Let's Go PredictionDex API",
@@ -58,11 +40,11 @@ app = FastAPI(
 ## REST API for Pokémon Let's Go Pikachu / Eevee
 
 ### Features
-- 🐾 **Pokémon Database**: Complete Gen 1 data (151 Pokémon + forms)
-- ⚔️ **Move Database**: All moves with stats and type effectiveness
-- 🤖 **ML Predictions**: Battle winner prediction (94.24% accuracy)
-- 📈 **Monitoring**: Prometheus metrics + drift detection
-- 🔒 **Security**: API Key authentication
+- **Pokémon Database**: Complete Gen 1 data (151 Pokémon + forms)
+- **Move Database**: All moves with stats and type effectiveness
+- **ML Predictions**: Battle winner prediction (94.24% accuracy)
+- **Monitoring**: Prometheus metrics + drift detection
+- **Security**: API Key authentication
 
 ### Authentication
 Most endpoints require an API Key in the `X-API-Key` header.
@@ -104,23 +86,11 @@ curl -X POST http://localhost:8080/predict/best-move \\
     license_info={
         "name": "MIT",
     },
+    lifespan=lifespan,
 )
 
 # Add Prometheus metrics middleware
 metrics_middleware(app)
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Preload ML model at startup to avoid timeout on first request."""
-    print("🚀 API Startup: Preloading ML model...")
-    from api_pokemon.services.prediction_service import prediction_model
-    try:
-        prediction_model.load()
-        print("✅ ML model preloaded successfully")
-    except Exception as e:
-        print(f"⚠️  Failed to preload ML model: {e}")
-        print("   Model will be loaded on first prediction request")
 
 
 @app.get("/health", tags=["health"])
@@ -173,7 +143,7 @@ if API_KEY_REQUIRED:
         )
 
 
-# Routes protégées par API Key (si API_KEY_REQUIRED=true)
+# Protected routes requiring API Key (if API_KEY_REQUIRED=true)
 dependencies = [Depends(verify_api_key)] if API_KEY_REQUIRED else []
 
 app.include_router(pokemon_route.router, dependencies=dependencies)

@@ -79,12 +79,12 @@ class PredictionModel:
         if self._model is not None:
             return  # Already loaded
 
-        print("🔍 Loading ML model...")
+        print("[Model] Loading ML model...")
 
         # Try MLflow Model Registry first
         if USE_MLFLOW_REGISTRY and MLFLOW_AVAILABLE:
             try:
-                print(f"   Trying MLflow Model Registry ({MLFLOW_MODEL_NAME} @ {MLFLOW_MODEL_STAGE})...")
+                print(f"[Model] Trying MLflow Registry ({MLFLOW_MODEL_NAME} @ {MLFLOW_MODEL_STAGE})...")
 
                 # Load model bundle from registry
                 model_bundle = load_model_from_registry(MLFLOW_MODEL_NAME, stage=MLFLOW_MODEL_STAGE)
@@ -95,25 +95,25 @@ class PredictionModel:
                     self._metadata = model_bundle.get('metadata')
 
                     if self._model:
-                        print("✅ Model loaded from MLflow Registry")
+                        print("[Model] Loaded from MLflow Registry")
                         version_info = model_bundle.get('version', 'unknown')
-                        print(f"   Version: {version_info}")
+                        print(f"[Model] Version: {version_info}")
                         return
-                    print("⚠️  Model bundle incomplete, falling back to local files")
+                    print("[Model] Warning: Bundle incomplete, falling back to local files")
                 else:
-                    print("⚠️  No model in registry, falling back to local files")
+                    print("[Model] Warning: No model in registry, falling back to local files")
             except Exception as e:
-                print(f"⚠️  MLflow Registry error: {e}")
-                print("   Falling back to local files...")
+                print(f"[Model] Warning: MLflow Registry error: {e}")
+                print("[Model] Falling back to local files...")
         elif USE_MLFLOW_REGISTRY and not MLFLOW_AVAILABLE:
-            print("⚠️  MLflow not available, using local files")
+            print("[Model] Warning: MLflow not available, using local files")
 
         # Fallback: Load from local files
         self._load_from_local_files()
 
     def _load_from_local_files(self):
         """Load model artifacts from local file system."""
-        print("   Loading from local files...")
+        print("[Model] Loading from local files...")
 
         model_path = MODELS_DIR / f"battle_winner_model_{DEFAULT_MODEL_VERSION}.pkl"
         scalers_path = MODELS_DIR / f"battle_winner_scalers_{DEFAULT_MODEL_VERSION}.pkl"
@@ -138,7 +138,7 @@ class PredictionModel:
         with open(metadata_path, 'rb') as f:
             self._metadata = pickle.load(f)
 
-        print("✅ Model loaded from local files")
+        print("[Model] Loaded from local files")
 
     @property
     def model(self) -> Any:

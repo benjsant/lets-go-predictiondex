@@ -23,21 +23,20 @@ def _get(endpoint: str, timeout: int = 30):
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
-        print(f"❌ API GET Error on {endpoint}: {e}")
+        print(f"API GET Error on {endpoint}: {e}")
         return None
 
 
 def _post(endpoint: str, data: dict, timeout: int = 60):
     """Generic POST request (higher timeout for ML predictions)."""
-    response = None
     try:
         url = f"{API_BASE_URL}{endpoint}"
         response = requests.post(url, json=data, headers=_get_headers(), timeout=timeout)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
-        print(f"❌ API POST Error on {endpoint}: {e}")
-        if response is not None and response.text:
+        print(f"API POST Error on {endpoint}: {e}")
+        if response.text:
             print(f"Response: {response.text}")
         return None
 
@@ -100,7 +99,7 @@ def get_type_affinities() -> List[Dict]:
 
 def get_type_affinities_by_name(attacking_type: str, defending_type: str) -> Dict:
     """Get type affinity for specific attacking/defending combination."""
-    return _get(f"/types/affinities/by-name?attacking={attacking_type}&defending={defending_type}")
+    return _get(f"/types/affinities/by-name?attacking_type={attacking_type}&defending_type={defending_type}")
 
 
 def get_pokemon_by_type(type_id: int) -> List[Dict]:

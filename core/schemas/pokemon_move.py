@@ -1,20 +1,5 @@
 # core/schemas/pokemon_move.py
-
-"""
-Pydantic schemas – PokemonMove
-==============================
-
-This module defines the Pydantic schema used to expose the relationship
-between a Pokémon and a move in the FastAPI layer.
-
-The schema represents **how a Pokémon learns a specific move**, including:
-- the move itself,
-- the learning method (level-up, TM, move tutor, etc.),
-- the optional learning level.
-
-This schema is typically nested inside Pokémon-related API responses
-and mirrors the `PokemonMove` SQLAlchemy association model.
-"""
+"""Pydantic schema for Pokemon move learning associations."""
 
 from typing import Optional
 

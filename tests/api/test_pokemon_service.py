@@ -19,7 +19,7 @@ from api_pokemon.services.pokemon_service import (
 
 
 # ============================================================
-# 🔹 TESTS: List Pokemon
+# TESTS: List Pokemon
 # ============================================================
 
 class TestListPokemon:
@@ -29,7 +29,7 @@ class TestListPokemon:
         """Test that list_pokemon returns all Pokemon."""
         result = list_pokemon(db_session)
 
-        assert len(result) == 3  # Pikachu, Charizard, Blastoise
+        assert len(result) == 3 # Pikachu, Charizard, Blastoise
         assert result[0].id == 1
         assert result[1].id == 2
         assert result[2].id == 3
@@ -60,7 +60,7 @@ class TestListPokemon:
 
 
 # ============================================================
-# 🔹 TESTS: Get Pokemon by ID
+# TESTS: Get Pokemon by ID
 # ============================================================
 
 class TestGetPokemonById:
@@ -90,7 +90,7 @@ class TestGetPokemonById:
 
     def test_get_pokemon_by_id_eager_loads_types(self, db_session, sample_pokemon):
         """Test that types are eager-loaded."""
-        pokemon = get_pokemon_by_id(db_session, 2)  # Charizard
+        pokemon = get_pokemon_by_id(db_session, 2) # Charizard
 
         assert len(pokemon.types) == 2
         type_names = [pt.type.name for pt in pokemon.types]
@@ -99,7 +99,7 @@ class TestGetPokemonById:
 
     def test_get_pokemon_by_id_eager_loads_moves(self, db_session, sample_pokemon):
         """Test that moves are eager-loaded."""
-        pokemon = get_pokemon_by_id(db_session, 1)  # Pikachu
+        pokemon = get_pokemon_by_id(db_session, 1) # Pikachu
 
         assert len(pokemon.moves) >= 1
         assert pokemon.moves[0].move is not None
@@ -108,7 +108,7 @@ class TestGetPokemonById:
 
 
 # ============================================================
-# 🔹 TESTS: Search Pokemon by Name
+# TESTS: Search Pokemon by Name
 # ============================================================
 
 class TestSearchPokemonByName:
@@ -158,7 +158,7 @@ class TestSearchPokemonByName:
 
 
 # ============================================================
-# 🔹 TESTS: Compute Pokemon Weaknesses
+# TESTS: Compute Pokemon Weaknesses
 # ============================================================
 
 class TestComputePokemonWeaknesses:

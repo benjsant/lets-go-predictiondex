@@ -2,12 +2,12 @@
 # =================================================
 
 [theme]
-# Thème inspiré des couleurs Pokémon Let's Go
-primaryColor = "#FFCC00"        # Jaune Pikachu (boutons primaires)
-backgroundColor = "#FAFAFA"      # Blanc cassé (fond principal)
-secondaryBackgroundColor = "#E8F0F8"  # Bleu clair (sidebars, containers)
-textColor = "#2C3E50"           # Gris foncé (texte principal)
-font = "sans-serif"             # Police par défaut
+base = "light"
+primaryColor = "#FFCC00"
+backgroundColor = "#FAFAFA"
+secondaryBackgroundColor = "#E8F0F8"
+textColor = "#2C3E50"
+font = "sans-serif"
 
 [server]
 headless = true

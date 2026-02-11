@@ -6,17 +6,13 @@ from pydantic import BaseModel
 
 
 class PokemonSelectItem(BaseModel):
-    """
-    Modèle Pydantic pour la sélection de Pokémon dans Streamlit.
-    Contient toutes les informations nécessaires pour l'affichage
-    et éventuellement le ML.
-    """
+    """Pydantic model for a Pokemon in the Streamlit UI."""
     id: int
     name: str
-    pokedex_number: Optional[int] = None   # Numéro Pokédex
-    sprite_url: Optional[str] = None       # URL du sprite
-    types: List[str] = []                  # Types Pokémon
-    stats: Optional[Dict[str, int]] = None  # hp, attack, defense, sp_attack, sp_defense, speed
-    total_stats: Optional[int] = None      # Somme de toutes les stats
-    height_m: Optional[str] = None         # Taille en m
-    weight_kg: Optional[str] = None        # Poids en kg
+    pokedex_number: Optional[int] = None
+    sprite_url: Optional[str] = None
+    types: List[str] = []
+    stats: Optional[Dict[str, int]] = None
+    total_stats: Optional[int] = None
+    height_m: Optional[str] = None
+    weight_kg: Optional[str] = None

@@ -10,13 +10,7 @@ def upsert_pokemon_type(
     type_id: int,
     slot: int,
 ) -> PokemonType:
-    """
-    Upsert d'un type pour un Pokémon avec slot.
-
-    Règles :
-    - Un Pokémon ne peut avoir qu'un seul type par slot
-    - Slot = 1 (principal) ou 2 (secondaire)
-    """
+    """Insert or update a type for a Pokemon with given slot (1=primary, 2=secondary)."""
 
     if slot not in (1, 2):
         raise ValueError("slot doit être 1 ou 2")

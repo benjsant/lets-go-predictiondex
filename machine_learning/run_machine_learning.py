@@ -1,43 +1,7 @@
 #!/usr/bin/env python3
-"""
-Unified ML Pipeline - Let's Go PredictionDex
-==============================================
+"""Unified ML pipeline for Pokemon battle prediction."""
 
-This script orchestrates the COMPLETE machine learning pipeline:
-1. Dataset Preparation (DB → features → train/test split) [v1 or v2 multi-scenarios]
-2. Model Training (XGBoost + optional hyperparameter tuning)
-3. Model Evaluation (metrics, confusion matrix, ROC curve, feature importance)
-4. Model Comparison (compare multiple models)
-5. Model Selection (select best based on metrics)
-6. Model Export (artifacts + metadata)
-
-Usage:
-    # Run complete pipeline (v1 - original)
-    python machine_learning/run_machine_learning.py --mode=all
-
-    # Run complete pipeline (v2 - multi-scenarios)
-    python machine_learning/run_machine_learning.py --mode=all --dataset-version v2
-
-    # Generate v2 dataset with specific scenario
-    python machine_learning/run_machine_learning.py --mode=dataset --dataset-version v2 --scenario-type best_move
-
-    # Generate v2 dataset with all scenarios
-    python machine_learning/run_machine_learning.py --mode=dataset --dataset-version v2 --scenario-type all
-
-    # Train on v2 dataset with GridSearch extended (for notebooks)
-    python machine_learning/run_machine_learning.py --mode=train --dataset-version v2 --scenario-type all --tune-hyperparams --grid-type extended
-
-    # Run specific steps
-    python machine_learning/run_machine_learning.py --mode=train
-    python machine_learning/run_machine_learning.py --mode=evaluate
-    python machine_learning/run_machine_learning.py --mode=compare
-
-Output (v1):
-    - data/ml/battle_winner/raw/matchups.parquet
-    - data/ml/battle_winner/processed/train.parquet
-    - data/ml/battle_winner/processed/test.parquet
-    - models/battle_winner_model_v1.pkl
-
+import argparse
 Output (v2):
     - data/ml/battle_winner_v2/raw/matchups_*.parquet
     - data/ml/battle_winner_v2/processed/train.parquet (with scenario_type column)
@@ -45,8 +9,8 @@ Output (v2):
     - models/battle_winner_model_v2.pkl
 
 Validation:
-    - Compétence C12: Tests automatisés (dataset validation, preprocessing, training)
-    - Compétence C13: MLOps pipeline (orchestration, versioning, export)
+    - C12: Automated tests (dataset validation, preprocessing, training)
+    - C13: MLOps pipeline (orchestration, versioning, export)
 """
 
 import argparse
@@ -68,7 +32,7 @@ try:
     MLFLOW_AVAILABLE = True
 except ImportError:
     MLFLOW_AVAILABLE = False
-    print("⚠️  MLflow not available - tracking disabled")
+    print("[ML] Warning: MLflow not available - tracking disabled")
 
 # Import new centralized modules (refactored for clean code)
 from machine_learning.config import (
@@ -188,14 +152,14 @@ def run_dataset_preparation(dataset_version: str = 'v1', scenario_type: str = 'a
         df_test = pd.read_parquet(test_path)
 
         if verbose:
-            print("\n✅ Dataset validation:")
+            print("\n[OK] Dataset validation:")
             print(f"   Train samples: {len(df_train):,}")
             print(f"   Test samples: {len(df_test):,}")
             print(f"   Total features: {df_train.shape[1]}")
 
             # Check for scenario_type column (v2)
             if 'scenario_type' in df_train.columns:
-                print(f"\n   ✅ Multi-scenario dataset (v2) detected:")
+                print(f"\n   [OK] Multi-scenario dataset (v2) detected:")
                 scenario_counts = df_train['scenario_type'].value_counts()
                 for scenario, count in scenario_counts.items():
                     print(f"      {scenario}: {count:,} samples")
@@ -209,14 +173,14 @@ def run_dataset_preparation(dataset_version: str = 'v1', scenario_type: str = 'a
             # Check for nulls
             null_count = df_train.isnull().sum().sum()
             if null_count > 0:
-                print(f"\n   ⚠️  Warning: {null_count} null values detected")
+                print(f"\n   [WARN] Warning: {null_count} null values detected")
             else:
-                print(f"\n   ✓ No null values")
+                print(f"\n   [OK] No null values")
 
         return True
 
     except subprocess.CalledProcessError as e:
-        print(f"\n❌ Dataset preparation failed:")
+        print(f"\n[ERROR] Dataset preparation failed:")
         print(e.stderr)
         return False
 
@@ -237,7 +201,7 @@ def filter_by_scenario(df_train: pd.DataFrame, df_test: pd.DataFrame, scenario_t
     try:
         if "scenario_type" not in df_train.columns:
             if verbose:
-                print(f"⚠️  scenario_type filtering skipped: column missing (requested '{scenario_type}').")
+                print(f"[WARN] scenario_type filtering skipped: column missing (requested '{scenario_type}').")
             return df_train, df_test
 
         before_train = len(df_train)
@@ -248,18 +212,18 @@ def filter_by_scenario(df_train: pd.DataFrame, df_test: pd.DataFrame, scenario_t
 
         if df_train_filtered.empty or df_test_filtered.empty:
             if verbose:
-                print(f"⚠️  scenario_type='{scenario_type}' produced empty split; fallback to full dataset.")
+                print(f"[WARN] scenario_type='{scenario_type}' produced empty split; fallback to full dataset.")
             return df_train, df_test
 
         if verbose:
             print(
                 f"Filtering scenario_type='{scenario_type}': "
-                f"train {before_train}→{len(df_train_filtered)}, test {before_test}→{len(df_test_filtered)}"
+                f"train {before_train}->{len(df_train_filtered)}, test {before_test}->{len(df_test_filtered)}"
             )
         return df_train_filtered, df_test_filtered
 
     except Exception as e:
-        print(f"\n❌ Error during scenario filtering: {e}")
+        print(f"\n[ERROR] Error during scenario filtering: {e}")
         return df_train, df_test
 
 
@@ -343,7 +307,7 @@ def train_model(X_train: pd.DataFrame, y_train: pd.Series,
         model.fit(X_train, y_train)
 
     if verbose:
-        print("✅ Training complete")
+        print("[OK] Training complete")
 
     return model
 
@@ -396,7 +360,7 @@ def tune_hyperparameters(X_train: pd.DataFrame, y_train: pd.Series,
         param_grid=param_grid,
         cv=cv,
         scoring='roc_auc',      # Better metric for imbalanced data
-        n_jobs=SAFE_GRIDSEARCH_N_JOBS,  # Auto-ajusté selon plateforme (Windows/Linux)
+        n_jobs=SAFE_GRIDSEARCH_N_JOBS,  # Auto-adjusted per platform (Windows/Linux)
         verbose=2 if verbose else 0,
         refit=True,             # Refit best model on full training set
         return_train_score=False  # Don't compute train scores (faster)
@@ -406,10 +370,10 @@ def tune_hyperparameters(X_train: pd.DataFrame, y_train: pd.Series,
     grid_search.fit(X_train, y_train)
 
     if verbose:
-        print(f"\n✅ Best parameters found:")
+        print(f"\n[OK] Best parameters found:")
         for param, value in grid_search.best_params_.items():
             print(f"   {param}: {value}")
-        print(f"\n✅ Best CV accuracy: {grid_search.best_score_:.4f}")
+        print(f"\n[OK] Best CV accuracy: {grid_search.best_score_:.4f}")
 
     return grid_search.best_estimator_, grid_search.best_params_
 
@@ -547,10 +511,10 @@ Examples:
             experiment_name = f"pokemon_battle_{args.dataset_version}"
             tracker = get_mlflow_tracker(experiment_name)
             if verbose:
-                print(f"\n✅ MLflow tracking enabled: {experiment_name}")
+                print(f"\n[OK] MLflow tracking enabled: {experiment_name}")
         except Exception as e:
             if verbose:
-                print(f"\n⚠️  MLflow tracking disabled: {e}")
+                print(f"\n[WARN] MLflow tracking disabled: {e}")
             tracker = None
 
     if verbose:
@@ -596,7 +560,7 @@ Examples:
                 sys.exit(1)
 
             if args.mode == 'dataset':
-                print("\n✅ Dataset preparation complete!")
+                print("\n[OK] Dataset preparation complete!")
                 return
 
         # Load datasets
@@ -607,7 +571,7 @@ Examples:
         test_path = PROCESSED_DIR / "test.parquet"
 
         if not train_path.exists() or not test_path.exists():
-            print(f"\n❌ Datasets not found. Run with --mode=dataset first.")
+            print(f"\n[ERROR] Datasets not found. Run with --mode=dataset first.")
             sys.exit(1)
 
         df_train = pd.read_parquet(train_path)
@@ -723,7 +687,7 @@ Examples:
 
                     if version_number and best_metric.get('test_accuracy', 0) >= 0.85:
                         if verbose:
-                            print(f"\n🎯 Best model meets quality threshold")
+                            print(f"\n[OK] Best model meets quality threshold")
                         tracker.promote_to_production(model_name, version_number)
 
             if not args.skip_export_features:
@@ -741,7 +705,7 @@ Examples:
             # Optional: Hyperparameter tuning on best model
             if args.tune_hyperparams and best_model_name == 'xgboost':
                 if verbose:
-                    print("\n🔧 Running hyperparameter tuning on best model...")
+                    print("\n[ML] Running hyperparameter tuning on best model...")
                 best_model, best_params = tune_hyperparameters(X_train, y_train,
                                                                model_type='xgboost',
                                                                verbose=verbose)
@@ -792,11 +756,11 @@ Examples:
                     # Auto-promote to Production if metrics are good
                     if version_number and metrics.get('test_accuracy', 0) >= 0.85:
                         if verbose:
-                            print(f"\n🎯 Model meets quality threshold (accuracy >= 0.85)")
+                            print(f"\n[OK] Model meets quality threshold (accuracy >= 0.85)")
                         tracker.promote_to_production(model_name, version_number)
                     elif version_number:
                         if verbose:
-                            print(f"\n⚠️  Model registered but not promoted (accuracy < 0.85)")
+                            print(f"\n[WARN] Model registered but not promoted (accuracy < 0.85)")
                             print(f"   Manual promotion: mlflow models transition-to-staging/production")
 
             if not args.skip_export_features:
@@ -805,21 +769,21 @@ Examples:
         # Final summary
         if verbose:
             print("\n" + "=" * 80)
-            print("🎉 PIPELINE COMPLETE!")
+            print("[OK] PIPELINE COMPLETE!")
             print("=" * 80)
             if args.mode in ['train', 'evaluate', 'compare', 'all']:
-                print(f"\n✅ Model trained and exported successfully")
-                print(f"✅ Test Accuracy: {metrics.get('test_accuracy', 0)*100:.2f}%")
-                print(f"✅ Test ROC-AUC: {metrics.get('test_roc_auc', 0):.4f}")
-                print(f"\n📁 Model artifacts: {MODELS_DIR}")
+                print(f"\n[OK] Model trained and exported successfully")
+                print(f"[OK] Test Accuracy: {metrics.get('test_accuracy', 0)*100:.2f}%")
+                print(f"[OK] Test ROC-AUC: {metrics.get('test_roc_auc', 0):.4f}")
+                print(f"\n[PATH] Model artifacts: {MODELS_DIR}")
                 if not args.skip_export_features:
-                    print(f"📁 Features: {FEATURES_DIR}")
+                    print(f"[PATH] Features: {FEATURES_DIR}")
 
     except FileNotFoundError as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\n[ERROR] {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
+        print(f"\n[ERROR] Unexpected error: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

@@ -1,23 +1,4 @@
-"""
-Database session configuration
-===============================
-
-This module configures the SQLAlchemy engine and session factory
-used throughout the application.
-
-Responsibilities:
-- Read database connection parameters from environment variables
-  (Docker- and development-friendly)
-- Build the SQLAlchemy database URL
-- Initialize a synchronous SQLAlchemy engine
-- Expose a `SessionLocal` factory for creating database sessions
-
-This module is intentionally lightweight and does not contain
-any business logic. It is consumed by:
-- API routes
-- Service layers
-- ETL / data ingestion scripts
-"""
+"""SQLAlchemy engine and session factory configuration."""
 
 import os
 
@@ -58,10 +39,7 @@ SessionLocal = sessionmaker(
 
 
 def get_db():
-    """
-    FastAPI dependency to get a SQLAlchemy session.
-    Usage: db: Session = Depends(get_db)
-    """
+    """FastAPI dependency that yields a database session."""
     db: Session = SessionLocal()
     try:
         yield db

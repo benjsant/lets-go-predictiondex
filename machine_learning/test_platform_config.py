@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Script de test pour vérifier la configuration plateforme.
+Platform configuration test script.
 
-Ce script affiche les paramètres détectés automatiquement
-selon la plateforme (Windows/Linux) et vérifie que les
-optimisations sont correctement appliquées.
+Displays auto-detected parameters based on the platform
+(Windows/Linux) and verifies that optimizations are
+correctly applied.
 
 Usage:
     python machine_learning/test_platform_config.py
@@ -28,55 +28,55 @@ from machine_learning.config import XGBOOST_PARAMS
 
 
 def main():
-    """Affiche la configuration détectée."""
+    """Display detected configuration."""
     print("\n" + "=" * 70)
-    print("TEST CONFIGURATION PLATEFORME")
+    print("PLATFORM CONFIGURATION TEST")
     print("=" * 70)
 
-    # Affiche le résumé de la plateforme
+    # Print platform summary
     print_platform_summary()
 
-    # Teste les fonctions individuelles
-    print("\n[Tests] Fonctions:")
+    # Test individual functions
+    print("\n[Tests] Functions:")
     print(f"  get_safe_n_jobs() = {get_safe_n_jobs()}")
     print(f"  get_safe_gridsearch_n_jobs() = {get_safe_gridsearch_n_jobs()}")
 
-    # Affiche les constantes
-    print("\n[Config] Constantes globales:")
+    # Display constants
+    print("\n[Config] Global constants:")
     print(f"  SAFE_N_JOBS = {SAFE_N_JOBS}")
     print(f"  SAFE_GRIDSEARCH_N_JOBS = {SAFE_GRIDSEARCH_N_JOBS}")
 
-    # Affiche la config XGBoost
+    # Display XGBoost config
     print("\n[XGBoost] Configuration:")
     for key, value in XGBOOST_PARAMS.items():
         if key == 'n_jobs':
-            print(f"  {key}: {value} (*auto-ajuste selon plateforme)")
+            print(f"  {key}: {value} (*auto-adjusted per platform)")
         else:
             print(f"  {key}: {value}")
 
-    # Recommandations
+    # Recommendations
     info = get_platform_info()
-    print("\n[Recommandations]")
+    print("\n[Recommendations]")
     if info['is_windows']:
-        print("  [OK] Windows detecte - Optimisations memoire activees")
-        print("  [OK] Nombre de jobs reduit pour eviter saturation")
-        print("  [OK] Garbage collector configure en mode agressif")
-        print("\n  [Commandes recommandees]")
-        print("     # Sans GridSearch (rapide, moins de RAM)")
+        print("  [OK] Windows detected - Memory optimizations enabled")
+        print("  [OK] Job count reduced to prevent saturation")
+        print("  [OK] Garbage collector set to aggressive mode")
+        print("\n  [Recommended commands]")
+        print("     # Without GridSearch (fast, less RAM)")
         print("     python machine_learning/run_machine_learning.py --mode=all")
-        print("\n     # Avec GridSearch FAST (tuning modere)")
+        print("\n     # With FAST GridSearch (moderate tuning)")
         print("     python machine_learning/run_machine_learning.py --mode=all --tune-hyperparams --grid-type fast")
-        print("\n     [WARN] GridSearch EXTENDED non recommande sur Windows (trop de RAM)")
+        print("\n     [WARN] EXTENDED GridSearch not recommended on Windows (too much RAM)")
     else:
-        print("  [OK] Linux detecte - Configuration haute performance")
-        print("  [OK] Tous les coeurs CPU utilises")
-        print("  [OK] GridSearch EXTENDED possible")
-        print("\n  [Commandes disponibles]")
-        print("     # Pipeline complet avec tuning etendu")
+        print("  [OK] Linux detected - High performance configuration")
+        print("  [OK] All CPU cores utilized")
+        print("  [OK] EXTENDED GridSearch available")
+        print("\n  [Available commands]")
+        print("     # Full pipeline with extended tuning")
         print("     python machine_learning/run_machine_learning.py --mode=all --tune-hyperparams --grid-type extended")
 
     print("\n" + "=" * 70)
-    print("[SUCCESS] Configuration chargee avec succes!")
+    print("[SUCCESS] Configuration loaded successfully!")
     print("=" * 70 + "\n")
 
 

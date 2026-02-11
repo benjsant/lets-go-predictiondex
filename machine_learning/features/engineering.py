@@ -1,11 +1,4 @@
-"""
-Feature engineering class for Pokemon battle prediction.
-
-This module provides a reusable class that encapsulates all feature engineering
-logic, eliminating code duplication between training scripts.
-
-Validation: C12 (preprocessing pipeline tests)
-"""
+"""Feature engineering for Pokemon battle prediction."""
 
 from typing import Tuple, Dict, List
 import pandas as pd
@@ -15,30 +8,10 @@ from machine_learning.config import FeatureEngineeringConfig
 
 
 class PokemonFeatureEngineer:
-    """
-    Feature engineering pipeline for Pokemon battle data.
-
-    This class handles:
-    1. One-hot encoding of categorical features (types)
-    2. Removal of ID and categorical columns
-    3. Normalization of numerical features
-    4. Creation of derived features (ratios, advantages, etc.)
-    5. Normalization of derived features
-
-    Attributes:
-        config: Feature engineering configuration
-        scaler: StandardScaler for numerical features
-        scaler_derived: StandardScaler for derived features
-        feature_columns: List of final feature column names
-    """
+    """Feature engineering pipeline for Pokemon battle data."""
 
     def __init__(self, config: FeatureEngineeringConfig = None):
-        """
-        Initialize the feature engineer.
-
-        Args:
-            config: Feature engineering configuration. If None, uses default.
-        """
+        """Initialize the feature engineer."""
         self.config = config or FeatureEngineeringConfig()
         self.scaler = StandardScaler()
         self.scaler_derived = StandardScaler()
@@ -50,32 +23,7 @@ class PokemonFeatureEngineer:
         df_test: pd.DataFrame,
         verbose: bool = True
     ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, Dict, List[str]]:
-        """
-        Fit the feature engineering pipeline and transform train/test data.
-
-        This is the main method that applies all feature engineering steps
-        in the correct order. It should be called during training.
-
-        Args:
-            df_train: Training dataframe with 'winner' column
-            df_test: Test dataframe with 'winner' column
-            verbose: Whether to print progress information
-
-        Returns:
-            Tuple containing:
-            - X_train_encoded: Transformed training features
-            - X_test_encoded: Transformed test features
-            - y_train: Training labels
-            - y_test: Test labels
-            - scalers: Dictionary with both scalers
-            - feature_columns: List of final feature names
-
-        Example:
-            >>> engineer = PokemonFeatureEngineer()
-            >>> X_train, X_test, y_train, y_test, scalers, features = engineer.fit_transform(
-            ...     df_train, df_test
-            ... )
-        """
+        """Fit scalers and transform train/test data."""
         if verbose:
             print("\n" + "=" * 80)
             print("FEATURE ENGINEERING PIPELINE")
@@ -107,7 +55,7 @@ class PokemonFeatureEngineer:
         self.feature_columns = X_train.columns.tolist()
 
         if verbose:
-            print(f"\n✅ Final feature count: {len(self.feature_columns)}")
+            print(f"\n[OK] Final feature count: {len(self.feature_columns)}")
 
         scalers = {
             'standard_scaler': self.scaler,
@@ -121,22 +69,7 @@ class PokemonFeatureEngineer:
         df: pd.DataFrame,
         verbose: bool = False
     ) -> pd.DataFrame:
-        """
-        Transform new data using fitted scalers (for inference).
-
-        This method should be called on new data during inference/prediction.
-        It assumes fit_transform() was called first during training.
-
-        Args:
-            df: DataFrame to transform (without 'winner' column)
-            verbose: Whether to print progress information
-
-        Returns:
-            Transformed features as DataFrame
-
-        Raises:
-            ValueError: If scalers have not been fitted yet
-        """
+        """Transform new data using fitted scalers (for inference)."""
         if not hasattr(self.scaler, 'mean_'):
             raise ValueError("Scalers not fitted. Call fit_transform() first during training.")
 
@@ -170,7 +103,7 @@ class PokemonFeatureEngineer:
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """One-hot encode categorical features."""
         if verbose:
-            print("\n1️⃣ One-hot encoding categorical features...")
+            print("\n[1] One-hot encoding categorical features...")
 
         for feature in self.config.categorical_features:
             if feature in X_train.columns:
@@ -224,7 +157,7 @@ class PokemonFeatureEngineer:
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """Normalize numerical features using StandardScaler."""
         if verbose:
-            print("\n2️⃣ Normalizing numerical features...")
+            print("\n[2] Normalizing numerical features...")
 
         features_to_scale = [f for f in self.config.numerical_features_to_scale if f in X_train.columns]
 
@@ -247,7 +180,7 @@ class PokemonFeatureEngineer:
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """Create derived features using original (non-normalized) values."""
         if verbose:
-            print("\n3️⃣ Creating derived features...")
+            print("\n[3] Creating derived features...")
 
         # Stat ratio
         X_train['stat_ratio'] = df_train['a_total_stats'] / (df_train['b_total_stats'] + 1)
@@ -299,7 +232,7 @@ class PokemonFeatureEngineer:
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """Normalize derived features using a second StandardScaler."""
         if verbose:
-            print("\n4️⃣ Normalizing derived features...")
+            print("\n[4] Normalizing derived features...")
 
         self.scaler_derived.fit(X_train[self.config.derived_features])
         X_train[self.config.derived_features] = self.scaler_derived.transform(

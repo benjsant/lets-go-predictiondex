@@ -1,27 +1,5 @@
 # core/models/pokemon_move.py
-"""
-SQLAlchemy Model – PokemonMove
-==============================
-
-This module defines the `PokemonMove` model, which represents the
-**learning relationship between a Pokémon and a move**
-in Pokémon Let's Go Pikachu / Eevee.
-
-It is an enriched many-to-many (N–N) association table linking:
-- a Pokémon (`Pokemon`),
-- a move (`Move`),
-- a learning method (`LearnMethod`).
-
-The learning level is optional and depends on the learning method used.
-
-This model is populated exclusively by the Scrapy pipeline
-`PokemonMovePipeline`, based on data scraped from Poképédia.
-
-It is a core building block of the project:
-- complete move history per Pokémon,
-- foundation for battle simulation,
-- feature generation for prediction models.
-"""
+"""SQLAlchemy model for Pokemon-Move learning associations."""
 
 from sqlalchemy import (
     CheckConstraint,
@@ -42,20 +20,20 @@ class PokemonMove(Base):
     Each row indicates that a Pokémon can learn a given move
     through a specific learning method (level-up, TM, move tutor, etc.).
 
-    The uniqueness constraint ensures that a move can be associated
+    The uniqueness constraint a move can be associated
     only once per Pokémon for a given learning method.
 
     Business rules for `learn_level`:
-    - None  → move learned via TM or Move Tutor
-    - -1    → move learned upon evolution
-    - 0     → move known at level 1 (starting move)
-    - > 0   → exact level at which the move is learned
+    - None → move learned via TM or Move Tutor
+    - -1 → move learned upon evolution
+    - 0 → move known at level 1 (starting move)
+    - > 0 → exact level at which the move is learned
 
     Example:
     ┌────┬────────────┬─────────┬───────────────┬─────────────┐
-    │ id │ pokemon_id │ move_id │ learn_method  │ learn_level │
+    │ id │ pokemon_id │ move_id │ learn_method │ learn_level │
     ├────┼────────────┼─────────┼───────────────┼─────────────┤
-    │ 42 │ 25         │ 85      │ level_up      │ 26          │
+    │ 42 │ 25 │ 85 │ level_up │ 26 │
     └────┴────────────┴─────────┴───────────────┴─────────────┘
     """
 
@@ -89,7 +67,7 @@ class PokemonMove(Base):
     learn_level = Column(Integer, nullable=True)
 
     __table_args__ = (
-        # 🔒 Global uniqueness: Pokémon + move + learning method
+        # Global uniqueness: Pokémon + move + learning method
         UniqueConstraint(
             "pokemon_id",
             "move_id",
@@ -97,7 +75,7 @@ class PokemonMove(Base):
             name="uq_pokemon_move_unique",
         ),
 
-        # 🔐 Database-level guard on learning level validity
+        # Database-level guard on learning level validity
         CheckConstraint(
             "learn_level IS NULL OR learn_level >= -2",
             name="ck_pokemon_move_learn_level",

@@ -1,27 +1,5 @@
 # core/models/move.py
-"""
-SQLAlchemy Model – Move
-======================
-
-This module defines the `Move` model, representing a **Pokémon move**
-in Pokémon Let's Go Pikachu / Eevee.
-
-A move is defined independently of:
-- the Pokémon that can learn it,
-- the learning method,
-- the learning level.
-
-Those relationships are managed through the `pokemon_move` association table.
-
-This model is primarily populated from:
-- Poképédia (scraped descriptive data),
-- PokéAPI (optional enrichment: power, accuracy, type, etc.).
-
-It is a central entity of the project, used for:
-- battle analysis,
-- combat simulation,
-- machine learning model training.
-"""
+"""SQLAlchemy model for Pokemon moves."""
 
 from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -74,7 +52,7 @@ class Move(Base):
     #: Move priority (-7 to +2, default 0)
     #: +2: Protection moves (Abri)
     #: +1: Priority moves (Vive-Attaque, Aqua-Jet, Éclats Glace)
-    #:  0: Normal moves
+    #: 0: Normal moves
     #: -1: Charge moves (two-turn attacks)
     #: -5: Counter moves (Riposte, Voile Miroir)
     #: -7: Last moves (always move last)

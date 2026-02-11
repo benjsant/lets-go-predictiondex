@@ -46,7 +46,7 @@ class DriftDetector:
 
         # Production data buffer
         self.production_buffer: List[Dict] = []
-        self.max_buffer_size = 100  # Save every 100 predictions
+        self.max_buffer_size = 100 # Save every 100 predictions
 
         # Reference data (for future drift detection if needed)
         self.reference_data: Optional[pd.DataFrame] = None
@@ -149,7 +149,7 @@ class DriftDetector:
                         if df[col].dropna().isin([True, False]).all():
                             df[col] = df[col].astype(int)
                     except (ValueError, TypeError):
-                        pass  # Keep as object if conversion fails
+                        pass # Keep as object if conversion fails
 
             df.to_parquet(output_file, index=False)
             self.logger.info("Saved %d production samples to %s", len(df), output_file)

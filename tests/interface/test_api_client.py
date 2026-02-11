@@ -42,7 +42,7 @@ from interface.services.api_client import (
 
 
 # ============================================================
-# 🔹 FIXTURES
+# FIXTURES
 # ============================================================
 
 @pytest.fixture
@@ -66,7 +66,7 @@ def mock_error_response():
 
 
 # ============================================================
-# 🔹 TESTS: Headers & Authentication
+# TESTS: Headers & Authentication
 # ============================================================
 
 class TestHeaders:
@@ -92,7 +92,7 @@ class TestHeaders:
 
 
 # ============================================================
-# 🔹 TESTS: GET Requests
+# TESTS: GET Requests
 # ============================================================
 
 class TestGETRequests:
@@ -142,7 +142,7 @@ class TestGETRequests:
 
 
 # ============================================================
-# 🔹 TESTS: POST Requests
+# TESTS: POST Requests
 # ============================================================
 
 class TestPOSTRequests:
@@ -181,7 +181,7 @@ class TestPOSTRequests:
 
 
 # ============================================================
-# 🔹 TESTS: Pokemon Endpoints
+# TESTS: Pokemon Endpoints
 # ============================================================
 
 class TestPokemonEndpoints:
@@ -227,7 +227,7 @@ class TestPokemonEndpoints:
 
 
 # ============================================================
-# 🔹 TESTS: Moves Endpoints
+# TESTS: Moves Endpoints
 # ============================================================
 
 class TestMovesEndpoints:
@@ -262,7 +262,7 @@ class TestMovesEndpoints:
 
 
 # ============================================================
-# 🔹 TESTS: Types Endpoints
+# TESTS: Types Endpoints
 # ============================================================
 
 class TestTypesEndpoints:
@@ -299,7 +299,7 @@ class TestTypesEndpoints:
 
 
 # ============================================================
-# 🔹 TESTS: Prediction Endpoints
+# TESTS: Prediction Endpoints
 # ============================================================
 
 class TestPredictionEndpoints:
@@ -355,7 +355,7 @@ class TestPredictionEndpoints:
 
 
 # ============================================================
-# 🔹 TESTS: Integration Workflow
+# TESTS: Integration Workflow
 # ============================================================
 
 class TestIntegrationWorkflow:

@@ -6,12 +6,12 @@ Ce dossier contient les modèles ML entraînés et leurs métadonnées.
 
 ```
 models/
-├── battle_winner_model_v1.pkl       # Modèle v1 (best_move uniquement)
-├── battle_winner_model_v2.pkl       # Modèle v2 (multi-scénarios)
-├── battle_winner_scalers_v1.pkl     # Scalers pour normalisation v1
-├── battle_winner_scalers_v2.pkl     # Scalers pour normalisation v2
-├── battle_winner_metadata.pkl       # Métadonnées complètes (v1 ou v2)
-└── README.md                         # Ce fichier
+├── battle_winner_model_v1.pkl # Modèle v1 (best_move uniquement)
+├── battle_winner_model_v2.pkl # Modèle v2 (multi-scénarios)
+├── battle_winner_scalers_v1.pkl # Scalers pour normalisation v1
+├── battle_winner_scalers_v2.pkl # Scalers pour normalisation v2
+├── battle_winner_metadata.pkl # Métadonnées complètes (v1 ou v2)
+└── README.md # Ce fichier
 ```
 
 ## Modèles Disponibles
@@ -36,12 +36,12 @@ models/
 **Hyperparamètres:**
 ```python
 {
-    'n_estimators': 100,
-    'max_depth': 8,
-    'learning_rate': 0.1,
-    'subsample': 0.8,
-    'colsample_bytree': 0.8,
-    'random_state': 42
+ 'n_estimators': 100,
+ 'max_depth': 8,
+ 'learning_rate': 0.1,
+ 'subsample': 0.8,
+ 'colsample_bytree': 0.8,
+ 'random_state': 42
 }
 ```
 
@@ -70,12 +70,12 @@ models/
 **Hyperparamètres (optimisés via GridSearchCV):**
 ```python
 {
-    'n_estimators': 100-200,  # Optimisé par GridSearch
-    'max_depth': 6-8,         # Optimisé par GridSearch
-    'learning_rate': 0.05-0.1, # Optimisé par GridSearch
-    'subsample': 0.8,
-    'colsample_bytree': 0.8,
-    'random_state': 42
+ 'n_estimators': 100-200, # Optimisé par GridSearch
+ 'max_depth': 6-8, # Optimisé par GridSearch
+ 'learning_rate': 0.05-0.1, # Optimisé par GridSearch
+ 'subsample': 0.8,
+ 'colsample_bytree': 0.8,
+ 'random_state': 42
 }
 ```
 
@@ -108,12 +108,12 @@ python machine_learning/run_machine_learning.py --mode=all --dataset-version=v1 
 # Générer dataset v2 (multi-scénarios) + entraîner modèle v2 avec GridSearchCV
 source .venv/bin/activate
 python machine_learning/run_machine_learning.py \
-  --mode=all \
-  --dataset-version=v2 \
-  --scenario-type=all \
-  --tune-hyperparams \
-  --grid-type=extended \
-  --version=v2
+ --mode=all \
+ --dataset-version=v2 \
+ --scenario-type=all \
+ --tune-hyperparams \
+ --grid-type=extended \
+ --version=v2
 ```
 
 ## Comparaison des Modèles
@@ -135,16 +135,16 @@ python machine_learning/run_machine_learning.py \
 ### Quand Utiliser Quel Modèle ?
 
 #### Utilisez v1 si :
-- ✅ Vous avez besoin d'un modèle simple et rapide
-- ✅ L'adversaire utilise toujours son meilleur move (scénario compétitif)
-- ✅ Vous voulez des performances maximales sur best_move
-- ✅ Ressources limitées (temps/mémoire)
+- Vous avez besoin d'un modèle simple et rapide
+- L'adversaire utilise toujours son meilleur move (scénario compétitif)
+- Vous voulez des performances maximales sur best_move
+- Ressources limitées (temps/mémoire)
 
 #### Utilisez v2 si :
-- ✅ Vous voulez plus de robustesse sur différents types de combats
-- ✅ Vous utilisez le paramètre `available_moves_b` de l'API
-- ✅ L'adversaire ne joue pas toujours de manière optimale
-- ✅ Vous voulez la meilleure généralisation possible
+- Vous voulez plus de robustesse sur différents types de combats
+- Vous utilisez le paramètre `available_moves_b` de l'API
+- L'adversaire ne joue pas toujours de manière optimale
+- Vous voulez la meilleure généralisation possible
 
 **Recommandation Générale**: **Utilisez v2 en production** pour sa robustesse, sauf si les contraintes de temps/ressources sont critiques.
 
@@ -157,7 +157,7 @@ from api_pokemon.services import prediction_service
 
 # Le service charge automatiquement le modèle configuré (v1 ou v2)
 model = prediction_service.prediction_model
-model.load()  # Charge model, scalers, metadata
+model.load() # Charge model, scalers, metadata
 
 # Pour forcer une version spécifique
 model.load(version='v2')
@@ -188,29 +188,29 @@ probabilities = model_v2.predict_proba(X_test)
 **Contenu** (structure Python dict):
 ```python
 {
-    'model_version': 'v2',
-    'model_type': 'XGBClassifier',
-    'dataset_version': 'v2',
-    'n_features': 133,
-    'feature_names': [...],  # Liste des 133 features
-    'scenarios': ['best_move', 'random_move', 'all_combinations'],
-    'metrics': {
-        'test_accuracy': 0.9324,
-        'test_precision': 0.9327,
-        'test_recall': 0.9321,
-        'test_f1': 0.9324,
-        'test_roc_auc': 0.9850
-    },
-    'hyperparameters': {...},
-    'trained_at': '2026-01-24T10:30:00',
-    'training_samples': 704000,  # 80% de 880k
-    'test_samples': 176000,      # 20% de 880k
-    'feature_engineering': {
-        'scaler_1': 'StandardScaler (stats numériques)',
-        'scaler_2': 'StandardScaler (features dérivées)',
-        'encoding': 'OneHotEncoding (types)',
-        'derived_features': 6
-    }
+ 'model_version': 'v2',
+ 'model_type': 'XGBClassifier',
+ 'dataset_version': 'v2',
+ 'n_features': 133,
+ 'feature_names': [...], # Liste des 133 features
+ 'scenarios': ['best_move', 'random_move', 'all_combinations'],
+ 'metrics': {
+ 'test_accuracy': 0.9324,
+ 'test_precision': 0.9327,
+ 'test_recall': 0.9321,
+ 'test_f1': 0.9324,
+ 'test_roc_auc': 0.9850
+ },
+ 'hyperparameters': {...},
+ 'trained_at': '2026-01-24T10:30:00',
+ 'training_samples': 704000, # 80% de 880k
+ 'test_samples': 176000, # 20% de 880k
+ 'feature_engineering': {
+ 'scaler_1': 'StandardScaler (stats numériques)',
+ 'scaler_2': 'StandardScaler (features dérivées)',
+ 'encoding': 'OneHotEncoding (types)',
+ 'derived_features': 6
+ }
 }
 ```
 
@@ -255,5 +255,5 @@ Pour analyser les modèles en détail, consultez les notebooks Jupyter :
 
 ---
 
-**Dernière mise à jour**: 31 janvier 2026  
+**Dernière mise à jour**: 31 janvier 2026 
 **Modèle recommandé**: **v2** (multi-scénarios, 88.23% accuracy)

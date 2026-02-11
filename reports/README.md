@@ -2,19 +2,19 @@
 
 Ce dossier contient les rapports automatiquement générés par les tests d'intégration et de validation.
 
-## 📂 Structure
+## Structure
 
 ```
 reports/
-├── monitoring/          # Rapports de validation du monitoring
-│   ├── validation_report.json
-│   ├── validation_report.html
-│   └── integration_test_results.json
-└── validation/          # Rapports de validation système complète
-    └── system_validation_report.json
+├── monitoring/ # Rapports de validation du monitoring
+│ ├── validation_report.json
+│ ├── validation_report.html
+│ └── integration_test_results.json
+└── validation/ # Rapports de validation système complète
+ └── system_validation_report.json
 ```
 
-## 🔄 Génération automatique
+## Génération automatique
 
 Les rapports sont générés par :
 
@@ -24,48 +24,48 @@ Les rapports sont générés par :
 | `monitoring/integration_test_results.json` | `test_monitoring_complete.py` | `pytest tests/integration/test_monitoring_complete.py` |
 | `validation/system_validation_report.json` | `test_complete_system.py` | `pytest tests/integration/test_complete_system.py` |
 
-## 📊 Contenu des rapports
+## Contenu des rapports
 
 ### Monitoring Validation Report
 
 Validation complète de la stack de monitoring :
-- ✅ Services status (API, Prometheus, Grafana, MLflow)
-- ✅ Métriques Prometheus collectées
-- ✅ Prédictions ML testées
-- ✅ Détection de drift
-- ✅ Score de validation /100
+- Services status (API, Prometheus, Grafana, MLflow)
+- Métriques Prometheus collectées
+- Prédictions ML testées
+- Détection de drift
+- Score de validation /100
 
 **Utilisation** : CI/CD pré-push GitHub Actions
 
 ### Integration Test Results
 
 Résultats des tests d'intégration monitoring :
-- ✅ Collecte métriques temps réel
-- ✅ Trafic API simulé
-- ✅ Calcul percentiles (p50, p95, p99)
-- ✅ Requêtes Prometheus
-- ✅ Score /100
+- Collecte métriques temps réel
+- Trafic API simulé
+- Calcul percentiles (p50, p95, p99)
+- Requêtes Prometheus
+- Score /100
 
 **Utilisation** : Tests pytest automatiques
 
 ### System Validation Report
 
 Validation end-to-end complète du système :
-- ✅ Base de données PostgreSQL (151 Pokémon, moves, types)
-- ✅ API FastAPI (endpoints, santé, prédictions)
-- ✅ MLflow (modèle enregistré, métriques)
-- ✅ Monitoring (Prometheus, Grafana)
-- ✅ Streamlit (interface utilisateur)
-- ✅ Score global /100
+- Base de données PostgreSQL (151 Pokémon, moves, types)
+- API FastAPI (endpoints, santé, prédictions)
+- MLflow (modèle enregistré, métriques)
+- Monitoring (Prometheus, Grafana)
+- Streamlit (interface utilisateur)
+- Score global /100
 
 **Utilisation** : Validation système avant déploiement
 
-## 🚫 .gitignore
+## .gitignore
 
-Ces fichiers sont **gitignorés** car générés automatiquement lors des tests.  
+Ces fichiers sont **gitignorés** car générés automatiquement lors des tests. 
 La structure des dossiers est préservée via les fichiers `.gitkeep`.
 
-## 📝 Notes
+## Notes
 
 - Les rapports HTML sont consultables dans un navigateur
 - Les rapports JSON peuvent être parsés par des outils d'analyse

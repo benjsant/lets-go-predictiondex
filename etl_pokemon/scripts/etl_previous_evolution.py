@@ -255,16 +255,16 @@ def process_pokemon_moves(
 
         if inherited_count:
             LOGGER.info(
-                "✔ %s inherited %d moves from previous evolutions",
+                " %s inherited %d moves from previous evolutions",
                 name_pokeapi,
                 inherited_count,
             )
 
         return inherited_count
 
-    except Exception as exc:  # pylint: disable=broad-except
+    except Exception as exc: # pylint: disable=broad-except
         session.rollback()
-        LOGGER.error("💥 Error for %s: %s", name_pokeapi, exc)
+        LOGGER.error(" Error for %s: %s", name_pokeapi, exc)
         return 0
 
     finally:
@@ -312,7 +312,7 @@ def inherit_previous_evolution_moves_threaded() -> None:
         session.close()
 
     LOGGER.info(
-        "➡ %d Pokémon to process (Base, Alola, Starter forms)",
+        " %d Pokémon to process (Base, Alola, Starter forms)",
         len(pokemons),
     )
 
@@ -334,7 +334,7 @@ def inherit_previous_evolution_moves_threaded() -> None:
             total_inherited += future.result() or 0
 
     LOGGER.info(
-        "✅ Previous evolution move inheritance completed: %d moves inherited",
+        "Previous evolution move inheritance completed: %d moves inherited",
         total_inherited,
     )
 

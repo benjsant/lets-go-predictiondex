@@ -1,22 +1,5 @@
 # core/models/type.py
-
-"""
-SQLAlchemy Model – Type
-=======================
-
-This module defines the `Type` model, representing an **elemental type**
-in Pokémon Let's Go Pikachu / Eevee.
-
-Each type is used to categorize:
-- Pokémon (via `PokemonType`)
-- Moves (via `Move`)
-- Effectiveness calculations (via `TypeEffectiveness`)
-
-This table is central to:
-- battle mechanics (type advantages / disadvantages),
-- damage calculations,
-- feature engineering for ML simulations and predictions.
-"""
+"""SQLAlchemy model for elemental Pokemon types."""
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
@@ -37,11 +20,11 @@ class Type(Base):
 
     Example:
     ┌────┬─────────┐
-    │ id │ name    │
+    │ id │ name │
     ├────┼─────────┤
-    │ 1  │ Fire    │
-    │ 2  │ Water   │
-    │ 3  │ Grass   │
+    │ 1 │ Fire │
+    │ 2 │ Water │
+    │ 3 │ Grass │
     └────┴─────────┘
     """
 

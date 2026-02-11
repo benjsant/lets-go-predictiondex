@@ -46,10 +46,10 @@ class XGBoostConfig:
     learning_rate: float = 0.1
     subsample: float = 0.8
     colsample_bytree: float = 0.8
-    tree_method: str = 'hist'        # CPU-optimized histogram algorithm
-    predictor: str = 'cpu_predictor'  # Explicit CPU predictor
+    tree_method: str = 'hist' # CPU-optimized histogram algorithm
+    predictor: str = 'cpu_predictor' # Explicit CPU predictor
     random_state: int = RANDOM_SEED
-    n_jobs: int = SAFE_N_JOBS        # Auto-adjusted according to platform (Windows/Linux)
+    n_jobs: int = SAFE_N_JOBS # Auto-adjusted according to platform (Windows/Linux)
     eval_metric: str = 'logloss'
 
     def to_dict(self) -> Dict[str, Any]:
@@ -136,12 +136,12 @@ class GridSearchConfigExtended:
 class DatasetConfig:
     """Configuration for dataset generation."""
 
-    version: str = 'v1'              # 'v1' or 'v2'
-    scenario_type: str = 'all'       # 'best_move', 'random_move', 'all_combinations', 'all'
+    version: str = 'v1' # 'v1' or 'v2'
+    scenario_type: str = 'all' # 'best_move', 'random_move', 'all_combinations', 'all'
     test_size: float = 0.2
     random_seed: int = RANDOM_SEED
-    num_random_samples: int = 5      # For random_move scenario
-    max_combinations: int = 20       # For all_combinations scenario
+    num_random_samples: int = 5 # For random_move scenario
+    max_combinations: int = 20 # For all_combinations scenario
 
 
 # ================================================================
@@ -202,7 +202,7 @@ class MLPipelineConfig:
 
     # Training parameters
     use_gridsearch: bool = False
-    grid_type: str = 'fast'          # 'fast' or 'extended'
+    grid_type: str = 'fast' # 'fast' or 'extended'
     use_early_stopping: bool = True
     early_stopping_rounds: int = 10
 

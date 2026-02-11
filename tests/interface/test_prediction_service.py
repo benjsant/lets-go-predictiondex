@@ -25,7 +25,7 @@ from interface.formatters.ui.move_ui import MoveSelectItem
 
 
 # ============================================================
-# 🔹 FIXTURES
+# FIXTURES
 # ============================================================
 
 @pytest.fixture
@@ -71,7 +71,7 @@ def moves_b():
 
 
 # ============================================================
-# 🔹 TESTS: Prediction Output Format
+# TESTS: Prediction Output Format
 # ============================================================
 
 class TestPredictionOutput:
@@ -113,7 +113,7 @@ class TestPredictionOutput:
 
         probs = result['probabilities']
         total = sum(probs.values())
-        assert abs(total - 1.0) < 0.05  # rounding tolerance
+        assert abs(total - 1.0) < 0.05 # rounding tolerance
 
     def test_contains_debug_info(self, pokemon_a, pokemon_b, moves_a, moves_b):
         """Test that result contains debug information."""
@@ -125,7 +125,7 @@ class TestPredictionOutput:
 
 
 # ============================================================
-# 🔹 TESTS: Score Calculation
+# TESTS: Score Calculation
 # ============================================================
 
 class TestScoreCalculation:
@@ -160,7 +160,7 @@ class TestScoreCalculation:
 
 
 # ============================================================
-# 🔹 TESTS: Edge Cases
+# TESTS: Edge Cases
 # ============================================================
 
 class TestEdgeCases:
@@ -198,7 +198,7 @@ class TestEdgeCases:
 
         result = predict_battle_mock(pokemon_no_stats, moves_a, pokemon_b, moves_b)
 
-        assert 'winner' in result  # Should fallback to 300
+        assert 'winner' in result # Should fallback to 300
 
     def test_message_contains_winner_name(self, pokemon_a, pokemon_b, moves_a, moves_b):
         """Test that message mentions the winner."""

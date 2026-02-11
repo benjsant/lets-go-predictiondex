@@ -2,10 +2,12 @@ services:
   db:
     image: postgres:15
     container_name: letsgo_postgres
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: letsgo_db
-      POSTGRES_USER: letsgo_user
-      POSTGRES_PASSWORD: letsgo_password
+      POSTGRES_DB: ${POSTGRES_DB:-letsgo_db}
+      POSTGRES_USER: ${POSTGRES_USER:-letsgo_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql
@@ -25,9 +27,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@predictiondex.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@predictiondex.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
     volumes:
@@ -158,6 +162,7 @@ services:
         condition: service_healthy
     environment:
       PYTHONPATH: /app
+      API_BASE_URL: http://api:8080
       STREAMLIT_API_KEY: ${STREAMLIT_API_KEY:-}
     volumes:
       - ./interface:/app/interface
@@ -248,8 +253,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
-      MLFLOW_BACKEND_STORE_URI: postgresql://letsgo_user:letsgo_password@db:5432/mlflow_db
+      MLFLOW_BACKEND_STORE_URI: postgresql://${POSTGRES_USER:-letsgo_user}:${POSTGRES_PASSWORD}@db:5432/mlflow_db
       MLFLOW_DEFAULT_ARTIFACT_ROOT: /app/mlruns
       MLFLOW_TRACKING_URI: http://mlflow:5001
     volumes:
@@ -261,7 +268,7 @@ services:
       mlflow server
       --host 0.0.0.0
       --port 5001
-      --backend-store-uri postgresql://letsgo_user:letsgo_password@db:5432/mlflow_db
+      --backend-store-uri postgresql://${POSTGRES_USER:-letsgo_user}:${POSTGRES_PASSWORD}@db:5432/mlflow_db
       --default-artifact-root /app/mlruns
       --allowed-hosts *
     networks:

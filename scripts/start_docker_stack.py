@@ -66,7 +66,7 @@ def check_command(command: str) -> bool:
 def run_command(command: str, description: str = None) -> bool:
     """Execute a shell command."""
     if description:
-        print(f"🔧 {description}...")
+        print(f"{description}...")
 
     try:
         result = subprocess.run(
@@ -80,17 +80,17 @@ def run_command(command: str, description: str = None) -> bool:
 
         if result.returncode == 0:
             if description:
-                print(f"✅ {description} - OK\n")
+                print(f"{description} - OK\n")
             return True
 
-        print(f"❌ Error: {result.stderr[:200]}\n")
+        print(f"Error: {result.stderr[:200]}\n")
         return False
 
     except subprocess.TimeoutExpired:
-        print("❌ Timeout\n")
+        print("Timeout\n")
         return False
     except OSError as exc:
-        print(f"❌ Error: {exc}\n")
+        print(f"Error: {exc}\n")
         return False
 
 
@@ -99,10 +99,10 @@ def create_env_file():
     env_path = Path(".env")
 
     if env_path.exists():
-        print("✅ .env file exists\n")
+        print(".env file exists\n")
         return True
 
-    print("📝 Creating .env file...")
+    print(" Creating .env file...")
 
     env_content = """# Database
 POSTGRES_HOST=db
@@ -126,10 +126,10 @@ GRAFANA_URL=http://grafana:3000
 
     try:
         env_path.write_text(env_content)
-        print("✅ .env file created\n")
+        print(".env file created\n")
         return True
     except OSError as exc:
-        print(f"❌ Error creating .env: {exc}\n")
+        print(f"Error creating .env: {exc}\n")
         return False
 
 
@@ -156,7 +156,7 @@ def check_docker_status(compose_cmd: str):
             services_up = sum(1 for line in lines if 'Up' in line)
 
             if services_up > 0:
-                print(f"   ✅ {services_up} service(s) running")
+                print(f" {services_up} service(s) running")
                 return services_up
 
         return 0
@@ -167,47 +167,47 @@ def check_docker_status(compose_cmd: str):
 
 def main():
     """Main entry point."""
-    print_header("🚀 Starting PredictionDex - Full Stack")
+    print_header("Starting PredictionDex - Full Stack")
 
     # 1. Check Docker
     if not check_command("docker"):
-        print("❌ Docker is not installed")
-        print("💡 Install Docker: https://docs.docker.com/get-docker/")
+        print("Docker is not installed")
+        print("Install Docker: https://docs.docker.com/get-docker/")
         sys.exit(1)
 
     # Detect Docker Compose version (v2 or v1)
     compose_cmd = get_docker_compose_command()
     if not compose_cmd:
-        print("❌ Docker Compose is not installed")
-        print("💡 Install Docker Compose: https://docs.docker.com/compose/install/")
+        print("Docker Compose is not installed")
+        print("Install Docker Compose: https://docs.docker.com/compose/install/")
         sys.exit(1)
 
-    print(f"✅ Docker and Docker Compose detected (using: {compose_cmd})\n")
+    print(f"Docker and Docker Compose detected (using: {compose_cmd})\n")
 
     # 2. Create .env file
     if not create_env_file():
         sys.exit(1)
 
     # 3. Build images
-    print("📦 Building Docker images...")
+    print("Building Docker images...")
     if not run_command(f"{compose_cmd} build --parallel", "Building images"):
-        print("⚠️  Build failed, but continuing...\n")
+        print("Build failed, but continuing...\n")
 
     # 4. Start services
-    print("🚀 Starting services...")
+    print("Starting services...")
     if not run_command(f"{compose_cmd} up -d", "Starting stack"):
-        print("❌ Startup failed")
+        print("Startup failed")
         sys.exit(1)
 
     # 5. Wait for startup
-    print("⏳ Waiting for complete startup (30s)...")
+    print("Waiting for complete startup (30s)...")
     for i in range(6, 0, -1):
-        print(f"   {i*5}s remaining...")
+        print(f" {i*5}s remaining...")
         time.sleep(5)
     print()
 
     # 6. Check services
-    print("🔍 Checking services...")
+    print("Checking services...")
 
     services = [
         ("db", 5432, "PostgreSQL"),
@@ -229,48 +229,48 @@ def main():
         )
 
         if result.returncode == 0:
-            print(f"   ✅ {name} ({port})")
+            print(f" {name} ({port})")
         else:
-            print(f"   ❌ {name} ({port}) - Not started")
+            print(f" {name} ({port}) - Not started")
             all_ok = False
 
     print()
 
     # 7. Final summary
     if all_ok:
-        print_header("✅ All services are operational!")
+        print_header("All services are operational!")
     else:
-        print_header("⚠️  Some services are not started")
+        print_header("Some services are not started")
 
     if all_ok:
-        print("🌐 Available URLs:")
-        print("   API (Swagger):    http://localhost:8080/docs")
-        print("   Streamlit:        http://localhost:8502")
-        print("   Grafana:          http://localhost:3001")
-        print("   Prometheus:       http://localhost:9091")
-        print("   MLflow:           http://localhost:5001")
+        print(" Available URLs:")
+        print(" API (Swagger): http://localhost:8080/docs")
+        print(" Streamlit: http://localhost:8502")
+        print(" Grafana: http://localhost:3001")
+        print(" Prometheus: http://localhost:9091")
+        print(" MLflow: http://localhost:5001")
         print()
-        print("📊 API Metrics:      http://localhost:8080/metrics")
-        print("🔥 API Health:       http://localhost:8080/health")
+        print("API Metrics: http://localhost:8080/metrics")
+        print("API Health: http://localhost:8080/health")
         print()
-        print("💡 Useful commands:")
-        print("   # View logs")
-        print("   docker-compose logs -f api")
+        print("Useful commands:")
+        print(" # View logs")
+        print(" docker-compose logs -f api")
         print()
-        print("   # Generate test metrics")
-        print("   python scripts/generate_monitoring_data.py --duration 10")
+        print(" # Generate test metrics")
+        print(" python scripts/generate_monitoring_data.py --duration 10")
         print()
-        print("   # Validate stack")
-        print("   python scripts/validate_docker_stack.py")
+        print(" # Validate stack")
+        print(" python scripts/validate_docker_stack.py")
         print()
-        print("   # Stop services")
-        print("   docker-compose down")
+        print(" # Stop services")
+        print(" docker-compose down")
         print()
     else:
-        print("💡 Actions to take:")
-        print("   1. Check logs: docker-compose logs <service>")
-        print("   2. Restart: docker-compose restart")
-        print("   3. Validate: python scripts/validate_docker_stack.py")
+        print("Actions to take:")
+        print(" 1. Check logs: docker-compose logs <service>")
+        print(" 2. Restart: docker-compose restart")
+        print(" 3. Validate: python scripts/validate_docker_stack.py")
         print()
 
     print("=" * 50)
@@ -282,5 +282,5 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except KeyboardInterrupt:
-        print("\n\n⚠️  Interrupted by user")
+        print("\n\nInterrupted by user")
         sys.exit(1)

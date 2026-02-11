@@ -13,7 +13,6 @@ from interface.utils.pokemon_theme import (
 
 st.set_page_config(
     page_title="Let's Go PredictionDex",
-    page_icon="⚡",
     layout="wide",
 )
 
@@ -25,8 +24,7 @@ load_custom_css()
 # ======================================================
 page_header(
     "Let's Go PredictionDex",
-    "Ton assistant intelligent pour les combats Pokémon !",
-    "⚡"
+    "Ton assistant pour les combats Pokemon Let's Go !",
 )
 
 # Sprites Pikachu ET Évoli
@@ -38,29 +36,27 @@ pikachu_eevee_mascots()
 info_box(
     "Bienvenue, Dresseur !",
     """
-    Grâce à l'intelligence artificielle et à <strong>96.24% de précision</strong>, découvre quelle capacité
+    Avec <strong>96.24% de precision</strong>, decouvre quelle capacite
     te donnera le plus de chances de gagner tes combats !
     <br><br>
-    PredictionDex analyse <strong>133 features</strong> pour prédire le résultat de chaque combat en moins de <strong>500ms</strong>.
+    PredictionDex analyse <strong>133 features</strong> pour predire le resultat de chaque combat en moins de <strong>500ms</strong>.
     """,
-    "🏆",
-    "success"
+    color="success"
 )
 
 # ======================================================
 # Features Grid
 # ======================================================
-section_header("Que peux-tu faire ?", "🎯")
+section_header("Que peux-tu faire ?")
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
     st.markdown(
         feature_card(
-            "Comparer & Prédire",
-            "Compare deux Pokémon, choisis tes capacités, et découvre laquelle utiliser pour maximiser tes chances de victoire !",
+            "Comparer & Predire",
+            "Compare deux Pokemon, choisis tes capacites, et decouvre laquelle utiliser pour maximiser tes chances de victoire !",
             "Compare",
-            "⚔️"
         ),
         unsafe_allow_html=True
     )
@@ -69,9 +65,8 @@ with col2:
     st.markdown(
         feature_card(
             "Combat Classique",
-            "Configure ton propre combat en choisissant les deux Pokémon et leurs capacités pour une simulation personnalisée !",
+            "Configure ton propre combat en choisissant les deux Pokemon et leurs capacites pour une simulation personnalisee !",
             "Combat Classique",
-            "🥊"
         ),
         unsafe_allow_html=True
     )
@@ -80,9 +75,8 @@ with col3:
     st.markdown(
         feature_card(
             "Quiz des Types",
-            "Teste tes connaissances sur les affinités de types avec un quiz interactif et améliore-toi tour après tour !",
+            "Teste tes connaissances sur les affinites de types avec un quiz interactif et ameliore-toi tour apres tour !",
             "Quiz Types",
-            "🎯"
         ),
         unsafe_allow_html=True
     )
@@ -94,10 +88,9 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown(
         feature_card(
-            "Capacités",
-            "Catalogue complet des 226 capacités avec filtres par type, catégorie et puissance. Explore toutes les attaques du jeu !",
+            "Capacites",
+            "Catalogue complet des 226 capacites avec filtres par type, categorie et puissance. Explore toutes les attaques du jeu !",
             "Moves List",
-            "💥"
         ),
         unsafe_allow_html=True
     )
@@ -106,9 +99,8 @@ with col2:
     st.markdown(
         feature_card(
             "Types",
-            "Matrice complète des 18 types avec toutes les affinités (324 combinaisons). Maîtrise les forces et faiblesses !",
+            "Matrice complete des 18 types avec toutes les affinites (324 combinaisons). Maitrise les forces et faiblesses !",
             "Types",
-            "🌈"
         ),
         unsafe_allow_html=True
     )
@@ -116,10 +108,9 @@ with col2:
 with col3:
     st.markdown(
         feature_card(
-            "Pokémon Detail",
-            "Fiches détaillées des 188 Pokémon de Kanto avec stats, types, capacités et faiblesses !",
             "Pokemon Detail",
-            "🔍"
+            "Fiches detaillees des 188 Pokemon de Kanto avec stats, types, capacites et faiblesses !",
+            "Pokemon Detail",
         ),
         unsafe_allow_html=True
     )
@@ -129,95 +120,93 @@ pokeball_divider()
 # ======================================================
 # Quick Start Guide
 # ======================================================
-with st.expander("📖 Guide de Démarrage Rapide"):
+with st.expander("Guide de Demarrage Rapide"):
     st.markdown("""
-    ### 🚀 Comment utiliser PredictionDex ?
+    ### Comment utiliser PredictionDex ?
 
-    #### 1️⃣ Pour prédire un combat:
+    #### Pour predire un combat :
 
-    1. Va dans **"Compare"** (menu à gauche)
-    2. Choisis **ton Pokémon** et celui de **ton adversaire**
-    3. Sélectionne **jusqu'à 4 capacités** (pré-remplies avec des suggestions)
-    4. Clique sur **"Prédire"** pour voir quelle capacité utiliser !
+    1. Va dans **"Compare"** (menu a gauche)
+    2. Choisis **ton Pokemon** et celui de **ton adversaire**
+    3. Selectionne **jusqu'a 4 capacites** (pre-remplies avec des suggestions)
+    4. Clique sur **"Predire"** pour voir quelle capacite utiliser !
 
-    #### 2️⃣ Pour explorer:
+    #### Pour explorer :
 
-    - **Types**: Consulte la matrice des affinités de types (18×18)
-    - **Moves List**: Parcours toutes les capacités avec filtres avancés
-    - **Pokemon Detail**: Fiches détaillées de chaque Pokémon
-    - **Quiz Types**: Entraîne-toi sur les affinités de types
+    - **Types** : Consulte la matrice des affinites de types (18x18)
+    - **Moves List** : Parcours toutes les capacites avec filtres avances
+    - **Pokemon Detail** : Fiches detaillees de chaque Pokemon
+    - **Quiz Types** : Entraine-toi sur les affinites de types
 
-    #### 3️⃣ Pour s'amuser:
+    #### Pour s'amuser :
 
-    - **Combat Classique**: Configure ton propre combat avec movesets personnalisés
-    - **Quiz Types**: Défie-toi avec des questions aléatoires sur les types
+    - **Combat Classique** : Configure ton propre combat avec movesets personnalises
+    - **Quiz Types** : Defie-toi avec des questions aleatoires sur les types
 
-    💡 **Astuce:** Le modèle suppose que ton adversaire joue au mieux (worst-case scenario).
-    Tes vraies chances peuvent être encore meilleures si l'adversaire ne joue pas optimalement !
+    **Astuce :** Le modele suppose que ton adversaire joue au mieux (worst-case scenario).
+    Tes vraies chances peuvent etre encore meilleures si l'adversaire ne joue pas optimalement !
     """)
 
 # ======================================================
 # How It Works
 # ======================================================
-with st.expander("🤖 Comment ça marche ?"):
+with st.expander("Comment ca marche ?"):
     st.markdown("""
-    ### 🧠 La Magie de l'Intelligence Artificielle
+    ### Le modele de prediction
 
-    PredictionDex utilise un **modèle de Machine Learning XGBoost** entraîné sur
-    **898,612 combats Pokémon** simulés !
+    PredictionDex utilise un **modele XGBoost** entraine sur
+    **898,612 combats Pokemon** simules.
 
-    **Ce que le modèle analyse :**
+    **Ce que le modele analyse :**
 
-    **Pour ton Pokémon :**
-    - 📊 Statistiques de base (HP, Attaque, Défense, Att. Spé, Déf. Spé, Vitesse)
-    - 💥 Puissance et type de chaque capacité testée
-    - ⚡ STAB (Same Type Attack Bonus = ×1.5)
-    - 🎯 Multiplicateur de type contre l'adversaire
-    - ⚠️ Priorité de la capacité
+    **Pour ton Pokemon :**
+    - Statistiques de base (HP, Attaque, Defense, Att. Spe, Def. Spe, Vitesse)
+    - Puissance et type de chaque capacite testee
+    - STAB (Same Type Attack Bonus = x1.5)
+    - Multiplicateur de type contre l'adversaire
+    - Priorite de la capacite
 
-    **Pour le Pokémon adverse :**
-    - 📊 Statistiques de base
-    - 🛡️ Types (pour calculer les faiblesses)
-    - 💥 **Meilleure capacité offensive** sélectionnée automatiquement
-    - ⚡ STAB et multiplicateur de type
+    **Pour le Pokemon adverse :**
+    - Statistiques de base
+    - Types (pour calculer les faiblesses)
+    - **Meilleure capacite offensive** selectionnee automatiquement
+    - STAB et multiplicateur de type
 
-    **Processus de prédiction :**
-    1. Pour chaque capacité de ton Pokémon
-    2. Le modèle sélectionne la meilleure réponse de l'adversaire (worst-case)
-    3. Il simule le combat avec ces deux capacités
-    4. Il prédit le vainqueur et la probabilité de victoire
+    **Processus de prediction :**
+    1. Pour chaque capacite de ton Pokemon
+    2. Le modele selectionne la meilleure reponse de l'adversaire (worst-case)
+    3. Il simule le combat avec ces deux capacites
+    4. Il predit le vainqueur et la probabilite de victoire
 
-    **Résultat:**
-    - ✅ **96.24% de précision** (prédit le bon gagnant 96 fois sur 100 !)
-    - ⚡ **Temps de réponse < 500ms** (ultra-rapide !)
-    - 🎯 **133 features analysées** pour chaque prédiction
-
+    **Resultat :**
+    - **96.24% de precision** (predit le bon gagnant 96 fois sur 100)
+    - **Temps de reponse < 500ms**
+    - **133 features analysees** pour chaque prediction
     """)
 
 # ======================================================
 # Fun Facts
 # ======================================================
-with st.expander("🎮 Le savais-tu ?"):
+with st.expander("Le savais-tu ?"):
     st.markdown("""
-    ### 💎 Fun Facts Pokémon Let's Go:
+    ### Fun Facts Pokemon Let's Go
 
     **Contenu du jeu :**
-    - 📚 **187 Pokémon** disponibles (Génération 1 de Kanto + formes Alola)
-    - 💥 **225 capacités** différentes
-    - 🌈 **18 types** élémentaires
-    - ⚔️ **34,969 matchups** possibles entre Pokémon (187 × 187)
-    - 🎯 **323 règles de types** (18 × 18 affinités - certaines combinaisons neutres)
+    - **187 Pokemon** disponibles (Generation 1 de Kanto + formes Alola)
+    - **225 capacites** differentes
+    - **18 types** elementaires
+    - **34,969 matchups** possibles entre Pokemon (187 x 187)
+    - **323 regles de types** (18 x 18 affinites)
 
-    **Notre modèle ML :**
-    - 🤖 Entraîné sur **898,612 combats** simulés
-    - 📊 Analyse **133 features** différentes
-    - ⚡ Répond en moins de **500ms**
-    - ✅ **96.24% de précision** sur les tests (v2)
-    - 🧠 Algorithme **XGBoost** optimisé pour les combats
+    **Le modele ML :**
+    - Entraine sur **898,612 combats** simules
+    - Analyse **133 features** differentes
+    - Repond en moins de **500ms**
+    - **96.24% de precision** sur les tests (v2)
+    - Algorithme **XGBoost** optimise pour les combats
 
-    💡 **Statistique folle:** Avec toutes les combinaisons Pokémon × Capacités,
-    il existe des **millions** de combats possibles différents !
-
+    **Statistique :** Avec toutes les combinaisons Pokemon x Capacites,
+    il existe des **millions** de combats possibles differents !
     """)
 
 pokeball_divider()
@@ -227,14 +216,14 @@ pokeball_divider()
 # ======================================================
 st.markdown(f"""
 <div style='text-align:center;color:{POKEMON_COLORS['text_secondary']};padding:30px 0;'>
-    <p style='font-size:1.1rem;'><strong>🤖 Propulsé par XGBoost</strong></p>
+    <p style='font-size:1.1rem;'><strong>Propulse par XGBoost</strong></p>
     <p style='font-size:0.95rem;'>
-        ⚡ Précision: <strong style='color:{POKEMON_COLORS['primary']};'>96.24%</strong> |
-        Features: <strong style='color:{POKEMON_COLORS['primary']};'>133</strong> |
-        Latence: <strong style='color:{POKEMON_COLORS['primary']};">&lt;500ms</strong>
+        Precision : <strong style='color:{POKEMON_COLORS['primary']};'>96.24%</strong> |
+        Features : <strong style='color:{POKEMON_COLORS['primary']};'>133</strong> |
+        Latence : <strong style='color:{POKEMON_COLORS['primary']};">&lt;500ms</strong>
     </p>
     <p style='font-size:0.9rem;margin-top:20px;'>
-        Made with ❤️ pour les fans de Pokémon Let's Go Pikachu/Eevee
+        Fait pour les fans de Pokemon Let's Go Pikachu/Eevee
     </p>
 </div>
 """, unsafe_allow_html=True)
@@ -242,4 +231,4 @@ st.markdown(f"""
 # ======================================================
 # Navigation Hint
 # ======================================================
-st.info("👈 **Utilise le menu à gauche pour commencer ton aventure !**")
+st.info("**Utilise le menu a gauche pour commencer ton aventure !**")
