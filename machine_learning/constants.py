@@ -9,10 +9,7 @@ import os
 from pathlib import Path
 
 
-# ================================================================
-# PROJECT PATHS
-# ================================================================
-
+# Project paths
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MODELS_DIR = PROJECT_ROOT / "models"
 REPORTS_DIR = PROJECT_ROOT / "reports" / "ml"
@@ -47,10 +44,7 @@ def get_features_dir(version: str = 'v1') -> Path:
     return get_data_dir(version) / "features"
 
 
-# ================================================================
-# DATABASE CONFIGURATION
-# ================================================================
-
+# Database configuration
 DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
 DB_PORT = int(os.getenv("POSTGRES_PORT", "5432"))
 DB_USER = os.getenv("POSTGRES_USER", "letsgo_user")
@@ -68,10 +62,7 @@ def get_db_connection_string() -> str:
     return f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 
-# ================================================================
-# SCENARIO TYPES (DATASET V2)
-# ================================================================
-
+# Scenario types (Dataset V2)
 SCENARIO_TYPES = {
     'best_move': 'Best move strategy for both Pokemon',
     'random_move': 'Random move selection',
@@ -80,19 +71,13 @@ SCENARIO_TYPES = {
 }
 
 
-# ================================================================
-# ALLOWED DAMAGE TYPES
-# ================================================================
-
+# Allowed damage types
 ALLOWED_DAMAGE_TYPES = {
     'physical', 'special', 'status'
 }
 
 
-# ================================================================
-# EVALUATION METRICS
-# ================================================================
-
+# Evaluation metrics
 DEFAULT_METRICS = [
     'accuracy',
     'precision',
@@ -102,9 +87,7 @@ DEFAULT_METRICS = [
 ]
 
 
-# ================================================================
-# FEATURE COLUMNS
-# ================================================================
+# Feature columns
 
 # Pokemon stats columns
 POKEMON_STAT_COLUMNS = [
@@ -125,27 +108,18 @@ ID_COLUMNS = [
 ]
 
 
-# ================================================================
-# MLFLOW CONFIGURATION
-# ================================================================
-
+# MLflow configuration
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5001")
 MLFLOW_EXPERIMENT_NAME = "pokemon_battle_prediction"
 MLFLOW_MODEL_NAME = "battle_winner_predictor"
 
 
-# ================================================================
-# EARLY STOPPING
-# ================================================================
-
+# Early stopping
 EARLY_STOPPING_ROUNDS = 10
 VALIDATION_SPLIT = 0.2
 
 
-# ================================================================
-# DEFAULT VALUES
-# ================================================================
-
+# Default values
 DEFAULT_TEST_SIZE = 0.2
 DEFAULT_NUM_RANDOM_SAMPLES = 5
 DEFAULT_MAX_COMBINATIONS = 20

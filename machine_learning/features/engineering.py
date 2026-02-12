@@ -36,22 +36,21 @@ class PokemonFeatureEngineer:
         X_train = df_train.drop(columns=['winner']).copy()
         X_test = df_test.drop(columns=['winner']).copy()
 
-        # Step 1: One-hot encode categorical features
+        # One-hot encode categorical features
         X_train, X_test = self._encode_categorical(X_train, X_test, verbose)
 
-        # Step 2: Remove categorical columns and IDs
+        # Remove categorical columns and IDs
         X_train, X_test = self._drop_unnecessary_columns(X_train, X_test, verbose)
 
-        # Step 3: Normalize numerical features
+        # Normalize numerical features
         X_train, X_test = self._normalize_numerical(X_train, X_test, df_train, df_test, verbose)
 
-        # Step 4: Create derived features (using original values from df_train/df_test)
+        # Create derived features (using original values from df_train/df_test)
         X_train, X_test = self._create_derived_features(X_train, X_test, df_train, df_test, verbose)
 
-        # Step 5: Normalize derived features
+        # Normalize derived features
         X_train, X_test = self._normalize_derived_features(X_train, X_test, verbose)
 
-        # Store feature columns
         self.feature_columns = X_train.columns.tolist()
 
         if verbose:

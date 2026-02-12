@@ -49,7 +49,7 @@ def print_info(text):
 
 def check_mlflow_server():
     """Check that MLflow server is accessible."""
-    print_info("Step 1: MLflow Server Verification")
+    print_info("MLflow Server Verification")
 
     try:
         response = requests.get("http://localhost:5001/health", timeout=5)
@@ -92,7 +92,7 @@ def check_mlflow_server():
 
 def configure_environment():
     """Configure environment variables."""
-    print_info("\nStep 2: Environment configuration")
+    print_info("\nEnvironment configuration")
 
     os.environ["DISABLE_MLFLOW_TRACKING"] = "false"
     os.environ["MLFLOW_TRACKING_URI"] = "http://localhost:5001"
@@ -106,7 +106,7 @@ def configure_environment():
 
 def register_model():
     """Register the existing model in MLflow."""
-    print_info("\nStep 3: Registering model v2 in MLflow\n")
+    print_info("\nRegistering model v2 in MLflow\n")
 
     # Path to the registration script
     script_path = Path(__file__).parent / "register_existing_model.py"
@@ -161,14 +161,11 @@ def main():
     """Main function."""
     print_header("MLFLOW ACTIVATION & REGISTRATION")
 
-    # Step 1: Check MLflow
     if not check_mlflow_server():
         sys.exit(1)
 
-    # Step 2: Configure environment
     configure_environment()
 
-    # Step 3: Register the model
     if register_model():
         print_success_message()
         sys.exit(0)

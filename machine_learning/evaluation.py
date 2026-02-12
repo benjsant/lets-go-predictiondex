@@ -21,7 +21,7 @@ def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
     """Evaluate model and return performance metrics."""
     if verbose:
         print("\n" + "=" * 80)
-        print(f"STEP 4: MODEL EVALUATION - {model_name}")
+        print(f"MODEL EVALUATION - {model_name}")
         print("=" * 80)
 
     # Predictions
@@ -81,20 +81,7 @@ def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
 def analyze_feature_importance(model: Any, feature_columns: List[str],
                                top_n: int = 20,
                                verbose: bool = True) -> pd.DataFrame:
-    """
-    Analyze and display feature importance.
-
-    Args:
-        model: Trained model with feature_importances_ attribute
-        feature_columns: List of feature column names
-        top_n: Number of top features to display
-        verbose: Whether to print feature importance details
-
-    Returns:
-        DataFrame with features and their importance scores, sorted by importance
-
-    Validation: C12 (feature analysis tests)
-    """
+    """Analyze and display feature importance from trained model."""
     if verbose:
         print("\n" + "=" * 80)
         print("FEATURE IMPORTANCE ANALYSIS")
@@ -127,28 +114,7 @@ def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
                    y_train: pd.Series, y_test: pd.Series,
                    models_to_compare: List[str] = None,
                    verbose: bool = True) -> Tuple[Any, str, Dict]:
-    """
-    Train and compare multiple models.
-
-    This function trains multiple model types and evaluates their performance
-    to select the best performing model based on test accuracy.
-
-    Args:
-        X_train: Training features
-        X_test: Test features
-        y_train: Training labels
-        y_test: Test labels
-        models_to_compare: List of model types to train ('xgboost', 'random_forest')
-        verbose: Whether to print comparison details
-
-    Returns:
-        Tuple containing:
-        - best_model: The trained model with highest test accuracy
-        - best_model_name: Name of the best model
-        - all_metrics: Dictionary with metrics for all models
-
-    Validation: C12 (model comparison tests)
-    """
+    """Train and compare multiple models, returning the best performing one based on test accuracy."""
     # Import here to avoid circular dependency
     from machine_learning.run_machine_learning import train_model
 
@@ -157,7 +123,7 @@ def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
 
     if verbose:
         print("\n" + "=" * 80)
-        print("STEP 5: MODEL COMPARISON")
+        print("MODEL COMPARISON")
         print("=" * 80)
         print(f"\nComparing models: {', '.join(models_to_compare)}")
 

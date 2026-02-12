@@ -6,9 +6,7 @@ import streamlit as st
 from interface.utils.pokemon_theme import TYPE_COLORS, load_custom_css, page_header
 from interface.services.api_client import get_all_moves
 
-# ======================================================
-# Page Config
-# ======================================================
+# Page config
 st.set_page_config(
     page_title="Liste des Capacités",
     layout="wide",
@@ -17,11 +15,8 @@ st.set_page_config(
 # Load theme
 load_custom_css()
 
-# ======================================================
-# Helper Functions
-# ======================================================
 
-
+# Helper functions
 def clean_text(t: Optional[str]) -> str:
     if not t:
         return ""
@@ -32,10 +27,6 @@ def normalize_type(t: str) -> str:
     """Normalize type name for consistent matching."""
     return clean_text(t).lower().replace("é", "e").replace("è", "e")
 
-# ======================================================
-# Load Data
-# ======================================================
-
 
 @st.cache_data(ttl=3600)
 def load_all_moves():
@@ -45,17 +36,13 @@ def load_all_moves():
 
 all_moves = load_all_moves()
 
-# ======================================================
-# Page Header
-# ======================================================
+# Page header
 page_header("Toutes les Capacités Pokémon", "Catalogue complet des 225 capacités avec filtres")
 st.markdown(f"**Explore les {len(all_moves)} capacités disponibles dans Pokémon Let's Go !**")
 
 st.divider()
 
-# ======================================================
-# Statistics Overview
-# ======================================================
+# Statistics overview
 st.subheader("Statistiques Globales")
 
 col1, col2, col3, col4 = st.columns(4)
@@ -79,9 +66,7 @@ with col4:
 
 st.divider()
 
-# ======================================================
 # Filters
-# ======================================================
 st.subheader("Filtres")
 
 col1, col2, col3, col4 = st.columns(4)
@@ -126,9 +111,7 @@ with col4:
         key="search"
     )
 
-# ======================================================
-# Apply Filters
-# ======================================================
+# Apply filters
 filtered_moves = all_moves
 
 # Filter by type
@@ -170,9 +153,7 @@ st.caption(f"{len(filtered_moves)} capacités affichées")
 
 st.divider()
 
-# ======================================================
-# Display - Table View
-# ======================================================
+# Display table view
 if filtered_moves:
     # Build table rows
     rows = []
@@ -196,9 +177,7 @@ else:
 
 st.divider()
 
-# ======================================================
-# Top Moves Section
-# ======================================================
+# Top moves section
 with st.expander("Top 10 Capacités par Puissance"):
     # Filter only offensive moves
     offensive_moves = [m for m in all_moves if m.get('power') and m['power'] > 0]
@@ -221,9 +200,7 @@ with st.expander("Top 10 Capacités par Puissance"):
 
         st.markdown(pd.DataFrame(top_rows).to_html(index=False, escape=False), unsafe_allow_html=True)
 
-# ======================================================
-# Tips Section
-# ======================================================
+# Tips section
 with st.expander("Astuces - Comment utiliser cette page"):
     st.markdown("""
     ### Utilisation

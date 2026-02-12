@@ -19,9 +19,7 @@ st.set_page_config(
 # Load custom Pokemon theme
 load_custom_css()
 
-# ======================================================
-# Header with Animation
-# ======================================================
+# Page header with mascots
 page_header(
     "Let's Go PredictionDex",
     "Ton assistant pour les combats Pokemon Let's Go !",
@@ -30,9 +28,6 @@ page_header(
 # Sprites Pikachu ET Évoli
 pikachu_eevee_mascots()
 
-# ======================================================
-# Introduction
-# ======================================================
 info_box(
     "Bienvenue, Dresseur !",
     """
@@ -44,9 +39,7 @@ info_box(
     color="success"
 )
 
-# ======================================================
-# Features Grid
-# ======================================================
+# Features grid
 section_header("Que peux-tu faire ?")
 
 col1, col2, col3 = st.columns(3)
@@ -117,9 +110,7 @@ with col3:
 
 pokeball_divider()
 
-# ======================================================
-# Quick Start Guide
-# ======================================================
+# Quick start guide
 with st.expander("Guide de Demarrage Rapide"):
     st.markdown("""
     ### Comment utiliser PredictionDex ?
@@ -147,9 +138,7 @@ with st.expander("Guide de Demarrage Rapide"):
     Tes vraies chances peuvent etre encore meilleures si l'adversaire ne joue pas optimalement !
     """)
 
-# ======================================================
-# How It Works
-# ======================================================
+# How it works
 with st.expander("Comment ca marche ?"):
     st.markdown("""
     ### Le modele de prediction
@@ -184,9 +173,7 @@ with st.expander("Comment ca marche ?"):
     - **133 features analysees** pour chaque prediction
     """)
 
-# ======================================================
-# Fun Facts
-# ======================================================
+# Fun facts
 with st.expander("Le savais-tu ?"):
     st.markdown("""
     ### Fun Facts Pokemon Let's Go
@@ -211,9 +198,7 @@ with st.expander("Le savais-tu ?"):
 
 pokeball_divider()
 
-# ======================================================
 # Footer
-# ======================================================
 st.markdown(f"""
 <div style='text-align:center;color:{POKEMON_COLORS['text_secondary']};padding:30px 0;'>
     <p style='font-size:1.1rem;'><strong>Propulse par XGBoost</strong></p>
@@ -228,7 +213,5 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ======================================================
-# Navigation Hint
-# ======================================================
+# Navigation hint
 st.info("**Utilise le menu a gauche pour commencer ton aventure !**")

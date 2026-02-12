@@ -21,9 +21,9 @@ BLUE = '\033[0;34m'
 RESET = '\033[0m'
 
 
-def print_step(step_num, title):
+def print_step(title):
     """Display a step header."""
-    print(f"\n Step {step_num}: {title}...")
+    print(f"\n{title}...")
 
 
 def check_command(command):
@@ -33,7 +33,7 @@ def check_command(command):
 
 def check_prerequisites():
     """Check prerequisites."""
-    print_step(1, "Checking prerequisites")
+    print_step("Checking prerequisites")
 
     if not check_command("docker"):
         print(f"{RED}Docker is not installed{RESET}")
@@ -53,7 +53,7 @@ def check_prerequisites():
 
 def create_env_file():
     """Create .env file if it doesn't exist."""
-    print_step(2, "Creating .env file")
+    print_step("Creating .env file")
 
     env_file = Path(".env")
 
@@ -81,7 +81,7 @@ ML_SKIP_IF_EXISTS=true
 
 def start_services():
     """Start Docker services."""
-    print_step(3, "Starting Docker services")
+    print_step("Starting Docker services")
 
     # Stop existing services
     subprocess.run(
@@ -108,7 +108,7 @@ def start_services():
 
 def wait_for_postgres():
     """Wait for PostgreSQL to be ready."""
-    print_step(4, "Waiting for PostgreSQL")
+    print_step("Waiting for PostgreSQL")
 
     for _ in range(30): # 60 seconds max
         result = subprocess.run(
@@ -127,9 +127,9 @@ def wait_for_postgres():
     return False
 
 
-def wait_for_service(step, name, url, timeout=120, critical=True):
+def wait_for_service(name, url, timeout=120, critical=True):
     """Wait for a service to be available."""
-    print_step(step, f"Waiting for {name}")
+    print_step(f"Waiting for {name}")
 
     for _ in range(timeout // 3):
         try:
@@ -169,7 +169,7 @@ def check_service_status(name, url, success_codes=None):
 
 def check_all_services():
     """Check all services status."""
-    print_step(9, "Checking all services status")
+    print_step("Checking all services status")
 
     # Display container status
     print("\nService Status:")
@@ -202,7 +202,7 @@ def check_all_services():
 
 def install_dependencies():
     """Install Python dependencies."""
-    print_step(10, "Installing Python dependencies")
+    print_step("Installing Python dependencies")
 
     print(f"{GREEN}Dependencies already installed{RESET}")
     return True
@@ -210,7 +210,7 @@ def install_dependencies():
 
 def run_monitoring_validation():
     """Run monitoring validation."""
-    print_step(11, "Running Monitoring Validation Script")
+    print_step("Running Monitoring Validation Script")
     print("=" * 50)
 
     # Script has been moved
@@ -236,7 +236,7 @@ def run_monitoring_validation():
 
 def check_reports():
     """Check generated reports."""
-    print_step(12, "Checking generated reports")
+    print_step("Checking generated reports")
 
     score = 0
 
@@ -264,7 +264,7 @@ def check_reports():
 
 def print_summary(api_status, score):
     """Display test summary."""
-    print_step(13, "Test Summary")
+    print_step("Test Summary")
     print("=" * 24)
 
     success = api_status and score >= 60
@@ -309,48 +309,35 @@ def main():
     print("Testing CI/CD Pipeline Locally")
     print("=" * 34)
 
-    # Step 1: Check prerequisites
     if not check_prerequisites():
         return 1
 
-    # Step 2: Create .env
     if not create_env_file():
         return 1
 
-    # Step 3: Start services
     if not start_services():
         return 1
 
-    # Step 4: Wait for PostgreSQL
     if not wait_for_postgres():
         return 1
 
-    # Steps 5-8: Wait for services
-    if not wait_for_service(5, "API", "http://localhost:8080/health", timeout=120, critical=True):
+    # Wait for all services
+    if not wait_for_service("API", "http://localhost:8080/health", timeout=120, critical=True):
         return 1
 
-    wait_for_service(6, "Prometheus", "http://localhost:9091/-/healthy", timeout=60, critical=False)
-    wait_for_service(7, "Grafana", "http://localhost:3001/api/health", timeout=60, critical=False)
-    wait_for_service(8, "MLflow", "http://localhost:5001/health", timeout=60, critical=False)
+    wait_for_service("Prometheus", "http://localhost:9091/-/healthy", timeout=60, critical=False)
+    wait_for_service("Grafana", "http://localhost:3001/api/health", timeout=60, critical=False)
+    wait_for_service("MLflow", "http://localhost:5001/health", timeout=60, critical=False)
 
-    # Step 9: Check all services
     service_results = check_all_services()
     api_status = service_results.get("API", (0, False))[1]
 
-    # Step 10: Install dependencies
     if not install_dependencies():
         return 1
 
-    # Step 11: Run monitoring validation
     run_monitoring_validation()
-
-    # Step 12: Check reports
     score = check_reports()
-
-    # Step 13: Summary
     exit_code = print_summary(api_status, score)
-
-    # Step 14: Cleanup (optional)
     cleanup_prompt()
 
     return exit_code

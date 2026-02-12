@@ -81,10 +81,7 @@ DEFAULT_RF_PARAMS = {
 }
 
 
-# ================================================================
-# STEP 1: DATASET PREPARATION
-# ================================================================
-
+# Dataset preparation
 def run_dataset_preparation(dataset_version: str = 'v1', scenario_type: str = 'all',
                             num_random_samples: int = 5, max_combinations: int = 20,
                             verbose: bool = True) -> bool:
@@ -227,20 +224,14 @@ def filter_by_scenario(df_train: pd.DataFrame, df_test: pd.DataFrame, scenario_t
         return df_train, df_test
 
 
-# ================================================================
-# STEP 2: FEATURE ENGINEERING
-# ================================================================
+# Feature engineering (refactored)
 # NOTE: engineer_features() function has been REFACTORED
 # Now uses PokemonFeatureEngineer class from machine_learning.features.engineering
 # This eliminates 140+ lines of duplicated code between run_machine_learning.py
 # and train_model.py. See machine_learning/features/engineering.py for implementation.
-# ================================================================
 
 
-# ================================================================
-# STEP 3: MODEL TRAINING
-# ================================================================
-
+# Model training
 def train_model(X_train: pd.DataFrame, y_train: pd.Series,
                 model_type: str = 'xgboost',
                 hyperparams: Optional[Dict] = None,
@@ -378,30 +369,21 @@ def tune_hyperparameters(X_train: pd.DataFrame, y_train: pd.Series,
     return grid_search.best_estimator_, grid_search.best_params_
 
 
-# ================================================================
-# STEP 4: MODEL EVALUATION
-# ================================================================
+# Model evaluation
 # Note: evaluate_model() and analyze_feature_importance() are now imported
 #       from machine_learning.evaluation
 
 
-# ================================================================
-# STEP 5: MODEL COMPARISON
-# ================================================================
+# Model comparison
 # Note: compare_models() is now imported from machine_learning.evaluation
 
 
-# ================================================================
-# STEP 6: MODEL EXPORT
-# ================================================================
+# Model export
 # Note: export_model() and export_features() are now imported
 #       from machine_learning.export
 
 
-# ================================================================
-# MAIN PIPELINE
-# ================================================================
-
+# Main pipeline orchestration
 def main():
     """Main ML pipeline orchestration."""
     parser = argparse.ArgumentParser(

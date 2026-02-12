@@ -122,7 +122,7 @@ def apply_feature_engineering(df_raw: pd.DataFrame) -> pd.DataFrame:
     # Get feature columns from metadata (v1 uses 'features', v2 uses 'feature_columns')
     feature_columns = model_instance.metadata.get('feature_columns') or model_instance.metadata.get('features')
 
-    # Step 1: One-hot encode categorical features
+    # One-hot encode categorical features
     categorical_features = ['a_type_1', 'a_type_2', 'b_type_1', 'b_type_2', 'a_move_type', 'b_move_type']
 
     X_encoded = df_raw.copy()
@@ -132,10 +132,9 @@ def apply_feature_engineering(df_raw: pd.DataFrame) -> pd.DataFrame:
             dummies = pd.get_dummies(X_encoded[feature], prefix=feature, drop_first=False)
             X_encoded = pd.concat([X_encoded, dummies], axis=1)
 
-    # Drop categorical columns
     X_encoded = X_encoded.drop(columns=categorical_features)
 
-    # Step 2: Normalize numerical features
+    # Normalize numerical features
     features_to_scale = [
         'a_hp', 'a_attack', 'a_defense', 'a_sp_attack', 'a_sp_defense', 'a_speed',
         'b_hp', 'b_attack', 'b_defense', 'b_sp_attack', 'b_sp_defense', 'b_speed',
@@ -148,7 +147,7 @@ def apply_feature_engineering(df_raw: pd.DataFrame) -> pd.DataFrame:
     scaler = scalers['standard_scaler']
     X_encoded[features_to_scale] = scaler.transform(X_encoded[features_to_scale])
 
-    # Step 3: Create derived features (using original values from df_raw)
+    # Create derived features (using original values from df_raw)
     X_encoded['stat_ratio'] = df_raw['a_total_stats'] / (df_raw['b_total_stats'] + 1)
     X_encoded['type_advantage_diff'] = df_raw['a_move_type_mult'] - df_raw['b_move_type_mult']
     X_encoded['effective_power_a'] = df_raw['a_move_power'] * df_raw['a_move_stab'] * df_raw['a_move_type_mult']
@@ -156,7 +155,7 @@ def apply_feature_engineering(df_raw: pd.DataFrame) -> pd.DataFrame:
     X_encoded['effective_power_diff'] = X_encoded['effective_power_a'] - X_encoded['effective_power_b']
     X_encoded['priority_advantage'] = df_raw['a_move_priority'] - df_raw['b_move_priority']
 
-    # Step 4: Normalize derived features
+    # Normalize derived features
     new_features = [
         'stat_ratio', 'type_advantage_diff',
         'effective_power_a', 'effective_power_b',

@@ -5,17 +5,12 @@ import streamlit as st
 from interface.utils.pokemon_theme import load_custom_css, page_header, type_badge
 from interface.services.api_client import get_all_types, get_type_affinities
 
-# ======================================================
-# Page Config
-# ======================================================
+# Page config
 st.set_page_config(page_title="Types Pokémon", layout="wide")
 load_custom_css()
 
-# ======================================================
-# Helper Functions
-# ======================================================
 
-
+# Helper functions
 def clean_text(t: Optional[str]) -> str:
     return t.replace("\n", "").replace("\r", "").strip() if t else ""
 
@@ -75,10 +70,6 @@ def display_affinities_grouped(title: str, affinities: list, type_key: str):
                 unsafe_allow_html=True
             )
 
-# ======================================================
-# Load Data
-# ======================================================
-
 
 @st.cache_data(ttl=3600)
 def load_types_data():
@@ -96,16 +87,12 @@ def load_types_data():
 
 types_list, affinities = load_types_data()
 
-# ======================================================
-# Page Header
-# ======================================================
+# Page header
 page_header("Types Pokémon", "Matrice complète des 18 types avec toutes les affinités")
 st.markdown(f"**Explore les {len(types_list)} types et leurs {len(affinities)} interactions !**")
 st.divider()
 
-# ======================================================
-# Type Dropdown + Details
-# ======================================================
+# Type dropdown and details
 st.subheader("Analyse d'un Type Spécifique")
 col1, col2 = st.columns(2)
 with col1:
@@ -125,9 +112,7 @@ with col_defend:
 
 st.divider()
 
-# ======================================================
-# Full Type Matrix
-# ======================================================
+# Full type matrix
 st.subheader("Matrice Complète des Affinités")
 st.caption("Lignes = type attaquant | Colonnes = type défenseur | Couleurs = efficacité")
 
@@ -153,9 +138,7 @@ def style_matrix(val):
 styled_html = matrix.style.map(style_matrix).to_html()
 st.markdown(styled_html, unsafe_allow_html=True)
 
-# ======================================================
 # Legend
-# ======================================================
 st.markdown("### Légende")
 for mult, desc, color in [(0, "Sans Effet", "#1f77b4"), (0.5, "Peu efficace", "#2ca02c"),
                           (1, "Neutre", "#888888"), (2, "Efficace", "#ff7f0e")]:
@@ -164,9 +147,7 @@ for mult, desc, color in [(0, "Sans Effet", "#1f77b4"), (0.5, "Peu efficace", "#
         f"×{mult} - {desc}</div>", unsafe_allow_html=True
     )
 
-# ======================================================
-# Tips Section
-# ======================================================
+# Tips section
 with st.expander("Astuces - Comment utiliser cette page"):
     st.markdown("""
     ### Utilisation
