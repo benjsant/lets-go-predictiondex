@@ -13,9 +13,7 @@ from interface.utils.ui_helpers import (
     get_pokemon_weaknesses_ui,
 )
 
-# ======================================================
-# Page Config
-# ======================================================
+# Page config
 st.set_page_config(
     page_title="Détails Pokémon",
     layout="wide",
@@ -25,9 +23,7 @@ st.set_page_config(
 load_custom_css()
 
 
-# ======================================================
-# Helper Functions
-# ======================================================
+# Helper functions
 def clean_text(t: Optional[str]) -> str:
     if not t:
         return ""
@@ -58,9 +54,7 @@ def affinity_color(m: float) -> str:
     return "#d62728"       # très faible
 
 
-# ======================================================
-# Load Pokemon Options
-# ======================================================
+# Load Pokemon options
 pokemon_options = get_pokemon_options()
 if not pokemon_options:
     st.error("Aucun Pokémon disponible.")
@@ -69,9 +63,7 @@ if not pokemon_options:
 pokemon_lookup = {p.id: p for p in pokemon_options}
 
 
-# ======================================================
-# Pokemon Selector
-# ======================================================
+# Page header and Pokemon selector
 page_header("Fiche Pokémon Détaillée", "Découvre tous les détails de tes Pokémon favoris !")
 
 query_params = st.query_params
@@ -108,18 +100,14 @@ if selected_pokemon_id != st.session_state.last_selected_pokemon_id:
 st.divider()
 
 
-# ======================================================
-# Load Pokemon Details
-# ======================================================
+# Load Pokemon details
 selected: PokemonSelectItem = get_pokemon_by_id(selected_pokemon_id)
 if not selected:
     st.error("Impossible de récupérer ce Pokémon.")
     st.stop()
 
 
-# ======================================================
-# Display Pokemon Header
-# ======================================================
+# Display Pokemon header
 st.header(f"{selected.name} (N° {selected.pokedex_number or '?'})")
 
 col_img, col_info = st.columns([1, 4])
@@ -146,9 +134,7 @@ with col_info:
 st.divider()
 
 
-# ======================================================
-# Stats with Progress Bars
-# ======================================================
+# Stats with progress bars
 if selected.stats:
     st.subheader("Statistiques")
 
@@ -190,9 +176,7 @@ if selected.stats:
 st.divider()
 
 
-# ======================================================
-# Weaknesses / Affinités
-# ======================================================
+# Weaknesses and affinities
 st.subheader("Faiblesses / Multiplicateurs")
 weaknesses = get_pokemon_weaknesses_ui(selected.id)
 
@@ -218,9 +202,7 @@ else:
 st.divider()
 
 
-# ======================================================
-# Moves Section
-# ======================================================
+# Moves section
 st.subheader("Capacités")
 pokemon_detail = get_pokemon_detail(selected.id)
 
@@ -309,9 +291,7 @@ else:
 st.divider()
 
 
-# ======================================================
-# Navigation Actions
-# ======================================================
+# Navigation actions
 st.markdown("### Actions Rapides")
 col_a, col_b, col_c = st.columns(3)
 

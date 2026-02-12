@@ -9,16 +9,11 @@ Contains paths, environment variables, and constants.
 import os
 from pathlib import Path
 
-# ================================================================
-# PROJECT PATHS
-# ================================================================
-
+# Project paths
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MODELS_DIR = PROJECT_ROOT / "models"
 
-# ================================================================
-# MLFLOW CONFIGURATION
-# ================================================================
+# MLflow configuration
 
 # MLflow Model Registry settings
 USE_MLFLOW_REGISTRY = os.getenv('USE_MLFLOW_REGISTRY', 'true').lower() == 'true'
@@ -26,9 +21,7 @@ MLFLOW_MODEL_NAME = os.getenv('MLFLOW_MODEL_NAME', 'battle_winner_predictor')
 MLFLOW_MODEL_STAGE = os.getenv('MLFLOW_MODEL_STAGE', 'Production')
 MLFLOW_TRACKING_URI = os.getenv('MLFLOW_TRACKING_URI', 'http://localhost:5001')
 
-# ================================================================
-# MODEL CONFIGURATION
-# ================================================================
+# Model configuration
 
 # Default model version to load if MLflow is unavailable
 DEFAULT_MODEL_VERSION = os.getenv('MODEL_VERSION', 'v2')
@@ -39,9 +32,7 @@ EXPECTED_FEATURE_COLUMNS = [
     # Will be populated from metadata when model is loaded
 ]
 
-# ================================================================
-# PREDICTION THRESHOLDS
-# ================================================================
+# Prediction thresholds
 
 # Minimum confidence threshold for predictions
 MIN_PREDICTION_CONFIDENCE = float(os.getenv('MIN_PREDICTION_CONFIDENCE', '0.5'))
@@ -49,9 +40,7 @@ MIN_PREDICTION_CONFIDENCE = float(os.getenv('MIN_PREDICTION_CONFIDENCE', '0.5'))
 # Threshold for "uncertain" predictions
 UNCERTAINTY_THRESHOLD = float(os.getenv('UNCERTAINTY_THRESHOLD', '0.6'))
 
-# ================================================================
-# FEATURE ENGINEERING CONSTANTS
-# ================================================================
+# Feature engineering constants
 
 # Categorical features to encode
 CATEGORICAL_FEATURES = [
@@ -75,9 +64,7 @@ DERIVED_FEATURES = [
     'effective_power_diff', 'priority_advantage'
 ]
 
-# ================================================================
-# API CONFIGURATION
-# ================================================================
+# API configuration
 
 # API key for authentication
 API_KEY = os.getenv('API_KEY', 'default_key')
@@ -86,9 +73,6 @@ API_KEY = os.getenv('API_KEY', 'default_key')
 RATE_LIMIT_REQUESTS = int(os.getenv('RATE_LIMIT_REQUESTS', '100'))
 RATE_LIMIT_PERIOD = int(os.getenv('RATE_LIMIT_PERIOD', '60')) # seconds
 
-# ================================================================
-# LOGGING CONFIGURATION
-# ================================================================
-
+# Logging configuration
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

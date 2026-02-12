@@ -17,9 +17,7 @@ st.set_page_config(
 # Load theme
 load_custom_css()
 
-# ======================================================
-# Header
-# ======================================================
+# Page header
 page_header(
     "Crédits & Informations",
     "Découvre les technologies et données derrière PredictionDex",
@@ -39,9 +37,6 @@ info_box(
     "info"
 )
 
-# ======================================================
-# Objectifs du Projet
-# ======================================================
 section_header("Objectifs du Projet")
 
 col1, col2 = st.columns(2)
@@ -67,9 +62,6 @@ with col2:
 
 pokeball_divider()
 
-# ======================================================
-# Technologies utilisées
-# ======================================================
 section_header("Technologies & Librairies")
 
 col1, col2, col3 = st.columns(3)
@@ -117,9 +109,6 @@ with col3:
 
 pokeball_divider()
 
-# ======================================================
-# Statistiques du Projet
-# ======================================================
 section_header("Statistiques du Projet")
 
 col1, col2, col3, col4 = st.columns(4)
@@ -148,9 +137,6 @@ with col4:
 
 pokeball_divider()
 
-# ======================================================
-# Sources de Données
-# ======================================================
 section_header("Sources de Données")
 
 col_src1, col_src2 = st.columns(2)
@@ -234,9 +220,6 @@ with col2:
 
 pokeball_divider()
 
-# ======================================================
-# Architecture du Projet
-# ======================================================
 section_header("Architecture Technique")
 
 st.markdown(f"""
@@ -271,9 +254,6 @@ st.markdown(f"""
 
 pokeball_divider()
 
-# ======================================================
-# Auteurs & Code Source
-# ======================================================
 section_header("Auteurs & Code Source")
 
 info_box(
@@ -293,9 +273,6 @@ info_box(
 
 pokeball_divider()
 
-# ======================================================
-# Protection des Données (RGPD)
-# ======================================================
 section_header("Protection des Données & RGPD")
 
 info_box(
@@ -365,9 +342,6 @@ st.markdown(f"""
 
 pokeball_divider()
 
-# ======================================================
-# Propriété Intellectuelle & Disclaimer
-# ======================================================
 section_header("Propriété Intellectuelle & Droits d'Auteur")
 
 st.markdown(f"""
@@ -449,9 +423,6 @@ with col2:
 
 pokeball_divider()
 
-# ======================================================
-# Licence et Utilisation
-# ======================================================
 section_header("Licence du Code Source")
 
 col1, col2 = st.columns(2)
@@ -486,9 +457,6 @@ with col2:
 
 pokeball_divider()
 
-# ======================================================
-# Remerciements
-# ======================================================
 section_header("Remerciements")
 
 st.markdown(f"""
@@ -510,9 +478,7 @@ st.markdown(f"""
 
 pokeball_divider()
 
-# ======================================================
 # Footer
-# ======================================================
 st.markdown(f"""
 <div style='text-align:center;color:{POKEMON_COLORS['text_secondary']};padding:30px 0;'>
     <p style='font-size:1.1rem;'><strong>PredictionDex</strong></p>

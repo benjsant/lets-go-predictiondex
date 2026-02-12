@@ -21,16 +21,11 @@ except ImportError:
     SAFE_GRIDSEARCH_N_JOBS = max(1, multiprocessing.cpu_count() // 2)
 
 
-# ================================================================
-# GLOBAL SEED
-# ================================================================
+# Global seed
 RANDOM_SEED = 42
 
 
-# ================================================================
-# XGBOOST HYPERPARAMETERS (CPU-OPTIMIZED)
-# ================================================================
-
+# XGBoost hyperparameters (CPU-optimized)
 @dataclass
 class XGBoostConfig:
     """
@@ -68,10 +63,7 @@ class XGBoostConfig:
         }
 
 
-# ================================================================
-# HYPERPARAMETER SEARCH GRIDS
-# ================================================================
-
+# Hyperparameter search grids
 @dataclass
 class GridSearchConfigFast:
     """
@@ -128,10 +120,7 @@ class GridSearchConfigExtended:
         }
 
 
-# ================================================================
-# DATASET CONFIGURATION
-# ================================================================
-
+# Dataset configuration
 @dataclass
 class DatasetConfig:
     """Configuration for dataset generation."""
@@ -144,10 +133,7 @@ class DatasetConfig:
     max_combinations: int = 20 # For all_combinations scenario
 
 
-# ================================================================
-# FEATURE ENGINEERING CONFIGURATION
-# ================================================================
-
+# Feature engineering configuration
 @dataclass
 class FeatureEngineeringConfig:
     """Configuration for feature engineering."""
@@ -187,10 +173,7 @@ class FeatureEngineeringConfig:
     ])
 
 
-# ================================================================
-# COMPLETE PIPELINE CONFIGURATION
-# ================================================================
-
+# Complete pipeline configuration
 @dataclass
 class MLPipelineConfig:
     """Complete ML pipeline configuration."""
@@ -217,9 +200,7 @@ class MLPipelineConfig:
         return GridSearchConfigFast().to_dict()
 
 
-# ================================================================
-# DEFAULT INSTANCES (for direct import)
-# ================================================================
+# Default instances (for direct import)
 
 # Reusable default configurations
 DEFAULT_XGBOOST_CONFIG = XGBoostConfig()
