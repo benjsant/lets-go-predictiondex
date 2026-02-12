@@ -39,6 +39,8 @@ jobs:
             ${{ runner.os }}-buildx-${{ matrix.service }}-
       
       - name: 🔨 Build ${{ matrix.service }} image
+        env:
+          POSTGRES_PASSWORD: letsgo_password
         run: |
           docker compose build ${{ matrix.service }}
       
