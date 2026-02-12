@@ -18,7 +18,7 @@ def export_model(model: Any, scalers: Dict, feature_columns: List[str],
     """Export trained model, scalers, and metadata to disk."""
     if verbose:
         print("\n" + "=" * 80)
-        print("STEP 6: MODEL EXPORT")
+        print("MODEL EXPORT")
         print("=" * 80)
 
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
@@ -81,23 +81,7 @@ def export_model(model: Any, scalers: Dict, feature_columns: List[str],
 def export_features(X_train: pd.DataFrame, X_test: pd.DataFrame,
                     y_train: pd.Series, y_test: pd.Series,
                     features_dir, verbose: bool = True):
-    """
-    Export feature-engineered datasets for reproducibility.
-
-    This function saves the processed training and test datasets in Parquet format,
-    which allows for efficient storage and fast loading while preserving data types.
-
-    Args:
-        X_train: Training features DataFrame
-        X_test: Test features DataFrame
-        y_train: Training labels Series
-        y_test: Test labels Series
-        features_dir: Directory path where features should be saved
-        verbose: Whether to print export progress
-
-    Note:
-        Uses PyArrow Parquet format for efficient storage and type preservation.
-    """
+    """Export feature-engineered datasets to Parquet format for reproducibility."""
     if verbose:
         print("\nExporting feature-engineered datasets...")
 

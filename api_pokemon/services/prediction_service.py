@@ -37,25 +37,12 @@ from api_pokemon.services.feature_engineering import (
 )
 
 
-# ================================================================
-# HELPER FUNCTIONS
-# ================================================================
-#
+# Helper functions
 # Note: Model loading is now in api_pokemon/services/model_loader.py
 # Note: Feature engineering is now in api_pokemon/services/feature_engineering.py
-#
 
 def get_pokemon_with_details(db: Session, pokemon_id: int) -> Optional[Pokemon]:
-    """
-    Retrieve a Pokemon with all necessary relationships for prediction.
-
-    Args:
-        db: Database session
-        pokemon_id: Pokemon ID
-
-    Returns:
-        Pokemon object with stats, types, and moves loaded, or None if not found
-    """
+    """Retrieve a Pokemon with all details (stats, types, moves) for prediction."""
     return (
         db.query(Pokemon)
         .options(
@@ -74,17 +61,7 @@ def get_type_multiplier(
     defender_type_ids: List[int],
     type_effectiveness: Dict[Tuple[int, int], float]
 ) -> float:
-    """
-    Calculate type effectiveness multiplier.
-
-    Args:
-        move_type_id: Type ID of the attacking move
-        defender_type_ids: List of defender type IDs (1 or 2)
-        type_effectiveness: Dict mapping (attacking_type, defending_type) -> multiplier
-
-    Returns:
-        Total type multiplier (can be 0, 0.25, 0.5, 1, 2, or 4)
-    """
+    """Calculate type effectiveness multiplier (can be 0, 0.25, 0.5, 1, 2, or 4)."""
     multiplier = 1.0
     for defender_type_id in defender_type_ids:
         multiplier *= type_effectiveness.get((move_type_id, defender_type_id), 1.0)
@@ -92,12 +69,7 @@ def get_type_multiplier(
 
 
 def load_type_effectiveness(db: Session) -> Dict[Tuple[int, int], float]:
-    """
-    Load type effectiveness chart from database.
-
-    Returns:
-        Dict mapping (attacking_type_id, defending_type_id) -> multiplier
-    """
+    """Load type effectiveness chart from database."""
     type_eff_records = db.query(TypeEffectiveness).all()
 
     type_eff = defaultdict(lambda: 1.0)
@@ -108,15 +80,7 @@ def load_type_effectiveness(db: Session) -> Dict[Tuple[int, int], float]:
 
 
 def calculate_effective_power(move: Move) -> float:
-    """
-    Calculate effective power based on damage_type.
-
-    Args:
-        move: Move object
-
-    Returns:
-        Effective power value
-    """
+    """Calculate effective power based on damage_type (multi_coups, double_degats, deux_tours)."""
     power = move.power if move.power else 0
     damage_type = move.damage_type if move.damage_type else "offensif"
 
@@ -137,19 +101,7 @@ def select_best_move_for_matchup(
     type_effectiveness: Dict[Tuple[int, int], float],
     _db: Session
 ) -> Optional[Dict]:
-    """
-    Select the best move for the attacker against the defender.
-
-    Args:
-        attacker: Attacking Pokemon
-        defender: Defending Pokemon
-        available_moves: List of move names available to the attacker
-        type_effectiveness: Type effectiveness chart
-        _db: Database session (unused, kept for API compatibility)
-
-    Returns:
-        Dict with move info and score, or None if no valid moves
-    """
+    """Select the best move for the attacker based on power, STAB, type effectiveness, and priority."""
     # Get attacker types for STAB
     attacker_type_ids = [pt.type_id for pt in attacker.types]
 
@@ -208,13 +160,9 @@ def select_best_move_for_matchup(
     return best_move
 
 
-# ================================================================
-# MAIN PREDICTION FUNCTION
-# ================================================================
-#
+# Main prediction function
 # Note: prepare_features_for_prediction() and apply_feature_engineering()
 # are now in api_pokemon/services/feature_engineering.py
-#
 
 def predict_best_move(
     db: Session,
@@ -224,22 +172,10 @@ def predict_best_move(
     available_moves_b: Optional[List[str]] = None
 ) -> Dict:
     """
-    Predict the best move for Pokemon A against Pokemon B.
+    Predict the best move for Pokemon A against Pokemon B using ML model.
 
-    Args:
-        db: Database session
-        pokemon_a_id: ID of the user's Pokemon
-        pokemon_b_id: ID of the opponent's Pokemon
-        available_moves_a: List of move names available to Pokemon A
-        available_moves_b: Optional list of move names available to Pokemon B.
-                          If provided, B will use these specific moves.
-                          If None, B will use its best offensive move (default behavior).
-
-    Returns:
-        Dict with:
-        - recommended_move: name of the best move
-        - win_probability: probability of winning with this move
-        - move_scores: list of all moves with their scores and win probabilities
+    Returns recommended move, win probability, and ranking of all available moves.
+    If available_moves_b is None, Pokemon B uses its best offensive move (worst-case scenario).
     """
     # Load type effectiveness
     type_effectiveness = load_type_effectiveness(db)
