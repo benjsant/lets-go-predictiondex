@@ -95,7 +95,9 @@ jobs:
       
       - name: 📦 Install test dependencies
         run: |
-          pip install pytest requests
+          pip install pytest pytest-asyncio httpx requests
+          pip install sqlalchemy psycopg2-binary
+          pip install -r api_pokemon/requirements.txt
 
       - name: 🧪 Run integration tests
         env:
