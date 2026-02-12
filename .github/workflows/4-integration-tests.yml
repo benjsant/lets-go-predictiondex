@@ -72,13 +72,13 @@ jobs:
       - name: 🚀 Start Docker Compose stack
         run: |
           echo "🐳 Starting essential services only (db, api, mlflow)..."
-          docker compose up -d db api mlflow
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d db api mlflow
           echo "⏳ Waiting for services to be ready..."
       
       - name: ⏳ Wait for PostgreSQL
         run: |
           echo "Waiting for PostgreSQL..."
-          timeout 60 bash -c 'until docker compose exec -T db pg_isready -U letsgo_user; do sleep 2; done'
+          timeout 60 bash -c 'until docker compose -f docker-compose.yml -f docker-compose.ci.yml exec -T db pg_isready -U letsgo_user; do sleep 2; done'
           echo "✅ PostgreSQL ready"
       
       - name: ⏳ Wait for API
@@ -129,7 +129,7 @@ jobs:
         run: |
           echo "🎯 Checking model metadata..."
           # Vérifier que le fichier metadata existe dans le container
-          docker compose exec -T api ls -la /app/models/battle_winner_metadata_v2.json || echo "⚠️ Metadata not found in container (OK for CI)"
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml exec -T api ls -la /app/models/battle_winner_metadata_v2.json || echo "⚠️ Metadata not found in container (OK for CI)"
           echo "✅ Model validation completed"
       
       - name: 🔍 Validate services health
@@ -166,14 +166,14 @@ jobs:
         if: failure()
         run: |
           echo "📋 Docker Services Status:"
-          docker compose ps
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml ps
           echo ""
           echo "📋 Last 100 lines of logs:"
-          docker compose logs --tail=100
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml logs --tail=100
       
       - name: 🧹 Cleanup
         if: always()
         run: |
           echo "🧹 Cleaning up Docker resources..."
-          docker compose down -v || true
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v || true
           docker system prune -f || true

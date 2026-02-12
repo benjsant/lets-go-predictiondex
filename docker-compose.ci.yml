@@ -1,0 +1,18 @@
+# Docker Compose override for CI/CD environments
+# Usage: docker compose -f docker-compose.yml -f docker-compose.ci.yml up
+#
+# This file removes ETL and ML builder dependencies from the API service,
+# allowing integration tests to run faster with pre-built models.
+
+services:
+  api:
+    # Override depends_on to remove etl and ml_builder dependencies
+    # API will use pre-existing models from the container image
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Use local model files (baked into Docker image during build)
+      USE_MLFLOW_REGISTRY: "false"
+      # Skip model validation if model files don't exist (CI environment)
+      ML_SKIP_IF_EXISTS: "true"
