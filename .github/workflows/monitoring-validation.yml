@@ -37,7 +37,7 @@ jobs:
           POSTGRES_PORT=5432
           DEV_MODE=true
           API_KEY_REQUIRED=true
-          API_KEYS="test_key_for_monitoring_validation,BgQJ2_Ur4uYKBsw6Jf4TI_yfA6u0BFwb4a1YbOSmMVQ"
+          API_KEYS=test_key_for_github_actions,BgQJ2_Ur4uYKBsw6Jf4TI_yfA6u0BFwb4a1YbOSmMVQ
           DISABLE_MLFLOW_TRACKING=false
           USE_MLFLOW_REGISTRY=false
           ML_SKIP_IF_EXISTS=true

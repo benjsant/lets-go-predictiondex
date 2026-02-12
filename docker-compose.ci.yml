@@ -5,6 +5,16 @@
 # allowing integration tests to run faster with pre-built models.
 
 services:
+  # Disable ETL service in CI (not needed for integration tests)
+  etl:
+    deploy:
+      replicas: 0
+
+  # Disable ML builder service in CI (use pre-built model)
+  ml_builder:
+    deploy:
+      replicas: 0
+
   api:
     # Override depends_on to remove etl and ml_builder dependencies
     # API will use pre-existing models from the container image
