@@ -8,22 +8,16 @@ from interface.utils.ui_helpers import (
     get_pokemon_weaknesses,
 )
 
-# ======================================================
 # Page config
-# ======================================================
 st.set_page_config(
     page_title="Pokémon – Comparaison",
     layout="wide",
 )
 
-# Load theme
 load_custom_css()
-
 page_header("Comparaison de Pokémon", "Compare deux Pokémon et découvre quelle capacité utiliser !")
 
-# ======================================================
-# Chargement Pokémon
-# ======================================================
+# Load Pokemon data
 pokemon_options = get_pokemon_options()
 if not pokemon_options:
     st.error("Impossible de charger les Pokémon.")
@@ -31,9 +25,7 @@ if not pokemon_options:
 
 pokemon_lookup = {p.id: p for p in pokemon_options}
 
-# ======================================================
-# Sélection Pokémon
-# ======================================================
+# Pokemon selection
 col_left, col_right = st.columns(2)
 
 with col_left:
@@ -55,9 +47,7 @@ with col_right:
 p1 = pokemon_lookup[p1_id]
 p2 = pokemon_lookup[p2_id]
 
-# ======================================================
-# Couleurs types
-# ======================================================
+# Type colors
 TYPE_COLORS = {
     "plante": "#78C850",
     "poison": "#A040A0",
@@ -79,10 +69,6 @@ TYPE_COLORS = {
     "roche": "#B8A038",
 }
 
-# ======================================================
-# Carte Pokémon
-# ======================================================
-
 
 def display_pokemon_card(pokemon):
     st.markdown(f"### {pokemon.name}")
@@ -90,12 +76,10 @@ def display_pokemon_card(pokemon):
     if pokemon.sprite_url:
         st.image(pokemon.sprite_url, width=120)
 
-    # Types
     if pokemon.types:
         types_html = " ".join([type_badge(t, "small") for t in pokemon.types])
         st.markdown(f"<div style='margin:10px 0;'>{types_html}</div>", unsafe_allow_html=True)
 
-    # Stats
     if pokemon.stats:
         cols = st.columns(3)
         stats_keys = ["hp", "attack", "defense", "sp_attack", "sp_defense", "speed"]
@@ -103,18 +87,14 @@ def display_pokemon_card(pokemon):
             cols[i % 3].metric(key.upper(), int(pokemon.stats.get(key, 0)))
 
 
-# ======================================================
-# Affichage Pokémon côte à côte
-# ======================================================
+# Display Pokemon cards side by side
 col1, col2 = st.columns(2)
 with col1:
     display_pokemon_card(p1)
 with col2:
     display_pokemon_card(p2)
 
-# ======================================================
-# Heatmap comparatif faiblesses / affinités
-# ======================================================
+# Type effectiveness comparison
 st.subheader("Comparaison des affinités de types")
 
 weak_p1 = {w["attacking_type"].capitalize(): float(w["multiplier"])
@@ -131,14 +111,14 @@ def format_mult(m):
 
 def color_mult(m):
     if m == 0:
-        return "#1f77b4"   # immunité
+        return "#1f77b4"   # immunity
     if m < 1:
-        return "#2ca02c"   # résistance
+        return "#2ca02c"   # resistance
     if m == 1:
-        return "#888888"   # neutre
+        return "#888888"   # neutral
     if m <= 2:
-        return "#ff7f0e"   # faible
-    return "#d62728"       # très faible
+        return "#ff7f0e"   # weak
+    return "#d62728"       # very weak
 
 
 # Build header row with type colors
@@ -162,13 +142,10 @@ for name, data in [(p1.name, weak_p1), (p2.name, weak_p2)]:
     row = f"<div style='display:flex;gap:4px;margin-bottom:4px;'><div style='width:110px;font-weight:700;text-align:right;color:{POKEMON_COLORS['text_primary']};'>{name}</div>{''.join(cells)}</div>"
     data_rows.append(row)
 
-# Complete HTML
 heatmap_html = f"<div style='overflow-x:auto;background:{POKEMON_COLORS['bg_card']};padding:15px;border-radius:8px;'>{header_row}{''.join(data_rows)}</div>"
 st.markdown(heatmap_html, unsafe_allow_html=True)
 
-# ======================================================
-# Sélection des Moves - Interface Versus
-# ======================================================
+# Move selection interface
 st.divider()
 st.markdown(f"""
 <div style='text-align:center;padding:20px;'>
@@ -177,7 +154,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Choix du mode de sélection
 mode = st.radio(
     "Mode de simulation",
     options=["Auto (Adversaire optimal)", "Manuel (Tu choisis les deux movesets)"],
@@ -186,14 +162,9 @@ mode = st.radio(
 
 manual_mode = "Manuel" in mode
 
-manual_mode = "Manuel" in mode
-
-# Deux colonnes pour les movesets
 col_moves_a, col_moves_b = st.columns(2)
 
-# ======================================================
-# Moves Pokémon A (Ton équipe)
-# ======================================================
+# Your Pokemon moveset
 with col_moves_a:
     st.markdown(f"### Moveset de {p1.name}")
 
@@ -202,7 +173,6 @@ with col_moves_a:
         st.warning("Aucune attaque disponible.")
         st.stop()
 
-    # Filtrer moves offensives uniquement
     offensive_moves_a = [m for m in moves_a if m.power and m.power > 0]
 
     if not offensive_moves_a:
@@ -223,9 +193,7 @@ with col_moves_a:
     if len(selected_move_names_a) < 1:
         st.warning("Sélectionne au moins 1 capacité.")
 
-# ======================================================
-# Moves Pokémon B (Adversaire)
-# ======================================================
+# Opponent Pokemon moveset
 with col_moves_b:
     st.markdown(f"### Moveset de {p2.name}")
 
@@ -235,7 +203,6 @@ with col_moves_b:
             st.warning("Aucune attaque disponible.")
             st.stop()
 
-        # Filtrer moves offensives uniquement
         offensive_moves_b = [m for m in moves_b if m.power and m.power > 0]
 
         if not offensive_moves_b:
@@ -265,16 +232,12 @@ with col_moves_b:
         C'est un "worst-case" : tu affrontes un adversaire qui joue au mieux !
         """)
 
-# Validation
 if len(selected_move_names_a) < 1:
     st.stop()
 
-# ======================================================
-# Prédiction ML
-# ======================================================
+# ML Prediction
 st.divider()
 
-# Affichage récapitulatif avant prédiction
 st.markdown(f"""
 <div style='background:{POKEMON_COLORS['bg_card']};padding:20px;border-radius:10px;margin:20px 0;'>
     <div style='display:flex;justify-content:space-around;align-items:center;'>
@@ -298,10 +261,9 @@ if st.button("Lancer la Simulation de Combat", type="primary", use_container_wid
                 pokemon_a_id=p1.id,
                 pokemon_b_id=p2.id,
                 available_moves=selected_move_names_a,
-                available_moves_b=selected_move_names_b  # None si mode auto
+                available_moves_b=selected_move_names_b
             )
 
-            # Vérification que l'API a retourné un résultat
             if result is None:
                 st.error("L'API n'a pas retourné de résultat. Vérifiez les logs de l'API pour plus de détails.")
                 st.stop()
@@ -310,7 +272,6 @@ if st.button("Lancer la Simulation de Combat", type="primary", use_container_wid
                 st.error("Résultat invalide de l'API. Aucune capacité recommandée trouvée.")
                 st.stop()
 
-            # Affichage du résultat principal
             st.success(f"**Capacité recommandée : {result['recommended_move']}**")
 
             col_metric1, col_metric2 = st.columns(2)
@@ -332,13 +293,11 @@ if st.button("Lancer la Simulation de Combat", type="primary", use_container_wid
                     unsafe_allow_html=True
                 )
 
-            # Classement complet des capacités
             st.subheader("Classement de tes capacités")
 
             for i, move_data in enumerate(result['all_moves'], 1):
                 win_prob = move_data['win_probability'] * 100
 
-                # Icône selon probabilité
                 if win_prob >= 80:
                     icon = "#1"
                     color = "success"
@@ -355,7 +314,6 @@ if st.button("Lancer la Simulation de Combat", type="primary", use_container_wid
                 with st.expander(f"{icon} **#{i} - {move_data['move_name']}** — {win_prob:.1f}%", expanded=(i == 1)):
                     col1, col2, col3, col4 = st.columns(4)
 
-                    # Type avec couleur
                     move_type = move_data['move_type'].lower()
                     type_color = TYPE_COLORS.get(move_type, "#888")
                     col1.markdown(
@@ -373,13 +331,11 @@ if st.button("Lancer la Simulation de Combat", type="primary", use_container_wid
                         st.caption(
                             f"Priorité: {move_data['priority']} (attaque {'en premier' if move_data['priority'] > 0 else 'en dernier'})")
 
-                    # Verdict
                     if move_data['predicted_winner'] == 'A':
                         st.success(f"Tu devrais gagner avec cette capacité ! ({win_prob:.1f}%)")
                     else:
                         st.error(f"Attention, tu risques de perdre... ({100-win_prob:.1f}% pour l'adversaire)")
 
-            # Disclaimer important
             if manual_mode:
                 st.success(f"""
                 **Mode Manuel activé !** Le modèle a simulé tous les combats possibles avec les movesets
@@ -397,7 +353,6 @@ if st.button("Lancer la Simulation de Combat", type="primary", use_container_wid
                 et obtenir une simulation plus réaliste !
                 """)
 
-            # Fun fact
             with st.expander("Comment ça marche ?"):
                 st.markdown("""
                 Le modèle ML (XGBoost) prend en compte :

@@ -4,18 +4,14 @@ import streamlit as st
 from interface.utils.pokemon_theme import load_custom_css, page_header
 from interface.services.api_client import get_type_affinities, get_all_types
 
-# ======================================================
-# Page Config
-# ======================================================
+# Page config
 st.set_page_config(
     page_title="Quiz des Types",
     layout="centered",
 )
 load_custom_css()
 
-# ======================================================
-# Session State Initialization
-# ======================================================
+# Session state initialization
 for key, default in {
     "quiz_score": 0,
     "quiz_total": 0,
@@ -27,11 +23,8 @@ for key, default in {
     if key not in st.session_state:
         st.session_state[key] = default
 
-# ======================================================
-# Load Type Affinities & Types
-# ======================================================
 
-
+# Load type affinities data
 @st.cache_data(ttl=3600)
 def load_types_and_affinities():
     types_list = get_all_types()
@@ -51,9 +44,7 @@ def load_types_and_affinities():
 
 affinities = load_types_and_affinities()
 
-# ======================================================
-# Type Icons & Colors
-# ======================================================
+# Type icons and colors
 TYPE_ICONS = {
     "feu": "", "eau": "", "plante": "", "electrik": "", "glace": "",
     "combat": "", "poison": "", "sol": "", "vol": "", "psy": "",
@@ -69,9 +60,8 @@ TYPE_COLORS = {
     "fee": "#EE99AC", "normal": "#A8A878"
 }
 
-# ======================================================
-# Helper Functions
-# ======================================================
+
+# Helper functions
 
 
 def normalize_type(name: str) -> str:
@@ -140,15 +130,11 @@ def new_question():
     st.session_state.last_answer_correct = None
 
 
-# ======================================================
-# Page Header
-# ======================================================
+# Page header
 page_header("Quiz des Types Pokémon", "Teste tes connaissances sur les affinités de types !")
 st.markdown("**Teste tes connaissances sur les affinités de types !**")
 
-# ======================================================
-# Score Display
-# ======================================================
+# Score display
 col1, col2, col3 = st.columns(3)
 col1.metric("Score Actuel", f"{st.session_state.quiz_score}/{st.session_state.quiz_total}")
 accuracy = (st.session_state.quiz_score / st.session_state.quiz_total * 100) if st.session_state.quiz_total else 0
@@ -156,15 +142,10 @@ col2.metric("Précision", f"{accuracy:.0f}%")
 col3.metric("Meilleur Score", f"{st.session_state.quiz_high_score}")
 st.divider()
 
-# ======================================================
-# Generate Question Button
-# ======================================================
 if st.session_state.current_question is None or st.session_state.answered:
     st.button("Nouvelle Question", type="primary", use_container_width=True, on_click=new_question)
 
-# ======================================================
-# Display Question
-# ======================================================
+# Display question
 if st.session_state.current_question and not st.session_state.answered:
     q = st.session_state.current_question
     st.markdown(f"### Question #{st.session_state.quiz_total + 1}")
@@ -203,9 +184,7 @@ if st.session_state.current_question and not st.session_state.answered:
                 "strong",
             ))
 
-# ======================================================
-# Answer Feedback
-# ======================================================
+# Answer feedback
 if st.session_state.answered and st.session_state.last_answer_correct is not None:
     q = st.session_state.current_question
     if st.session_state.last_answer_correct:
@@ -219,9 +198,7 @@ if st.session_state.answered and st.session_state.last_answer_correct is not Non
         st.session_state.quiz_high_score = st.session_state.quiz_score
         st.success("**Nouveau record !**")
 
-# ======================================================
-# Reset Buttons
-# ======================================================
+# Reset buttons
 st.divider()
 col1, col2 = st.columns(2)
 with col1:
@@ -231,9 +208,7 @@ with col2:
     st.button("Réinitialiser Record", use_container_width=True, on_click=lambda: [
               st.session_state.update({"quiz_high_score": 0}), st.rerun()])
 
-# ======================================================
-# Tips Section
-# ======================================================
+# Tips and statistics
 with st.expander("Astuces pour réussir"):
     st.markdown("""
     ### Rappels importants :
@@ -260,9 +235,6 @@ with st.expander("Astuces pour réussir"):
     - Dragon < Fée
     """)
 
-# ======================================================
-# Statistics
-# ======================================================
 if st.session_state.quiz_total >= 5:
     with st.expander("Tes statistiques"):
         accuracy = (st.session_state.quiz_score / st.session_state.quiz_total) * 100
