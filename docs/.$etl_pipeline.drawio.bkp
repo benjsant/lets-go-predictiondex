@@ -1,0 +1,254 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.6 Chrome/140.0.7339.249 Electron/38.8.0 Safari/537.36" version="29.3.6">
+  <diagram id="oHlb31KV8YQChx-d6kHa" name="Page-1">
+    <mxGraphModel dx="1426" dy="842" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="73" edge="1" parent="1" source="15" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=1;fillColor=#1565c0;dashed=1;fontColor=#0d47a1;fontStyle=2;fontSize=8;" target="26" value="Évolution&#xa;chains">
+          <mxGeometry relative="1" x="0.8661" y="-3" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="295" y="660" />
+              <mxPoint x="295" y="607" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=22;fontStyle=1;fontColor=#1a237e;" value="PredictionDex — Pipeline ETL" vertex="1">
+          <mxGeometry height="45" width="900" x="300" y="15" as="geometry" />
+        </mxCell>
+        <mxCell id="3" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=11;fontStyle=2;fontColor=#546e7a;" value="Extraction · Transformation · Chargement — Pokémon Let's Go Pikachu/Eevee" vertex="1">
+          <mxGeometry height="22" width="900" x="300" y="58" as="geometry" />
+        </mxCell>
+        <mxCell id="10" parent="1" style="swimlane;startSize=30;fillColor=#e8f5e9;strokeColor=#2e7d32;fontColor=#1b5e20;fontStyle=1;fontSize=11;perimeterSpacing=0;" value="SOURCES DE DONNÉES" vertex="1">
+          <mxGeometry height="840" width="270" x="20" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="11" parent="10" style="swimlane;startSize=25;fillColor=#fffde7;strokeColor=#f9a825;fontColor=#e65100;fontStyle=1;fontSize=9;" value="Fichiers CSV (source de vérité)" vertex="1">
+          <mxGeometry height="215" width="250" x="10" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="12" parent="11" style="shape=document;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=8;" value="&lt;b&gt;liste_pokemon.csv&lt;/b&gt;&lt;br&gt;153 espèces + variantes&lt;br&gt;nom_fr · nom_eng · nom_pokeapi&lt;br&gt;nom_pokepedia · types · formes" vertex="1">
+          <mxGeometry height="50" width="230" x="10" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="13" parent="11" style="shape=document;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=8;" value="&lt;b&gt;liste_capacite_lets_go.csv&lt;/b&gt;&lt;br&gt;226 capacités LGPE&lt;br&gt;type · classe · puissance · précision&lt;br&gt;description · pp · type_degats (→ priorité calculée)" vertex="1">
+          <mxGeometry height="50" width="230" x="10" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="14" parent="11" style="shape=document;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=8;" value="&lt;b&gt;table_type.csv&lt;/b&gt;&lt;br&gt;324 combinaisons (18 types)&lt;br&gt;type_attaquant × type_défenseur&lt;br&gt;multiplicateur : 0.5 / 1 / 2" vertex="1">
+          <mxGeometry height="50" width="230" x="10" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="15" parent="10" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;fontColor=#0d47a1;fontSize=8;" value="PokeAPI&#xa;https://pokeapi.co/api/v2/&#xa;&#xa;Stats combat · Sprites · Poids/Taille&#xa;Chaînes d'évolution&#xa;10 threads · retry ×3 · timeout 10s" vertex="1">
+          <mxGeometry height="100" width="250" x="10" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="16" parent="10" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c62828;fontColor=#b71c1c;fontSize=8;" value="Poképédia&#xa;https://pokepedia.fr/{nom}/Génération_7&#xa;&#xa;Learnsets LGPE&#xa;Montée en niveau · CT · Dresseur&#xa;Scrapy · rate-limit 1.2s · cache 1h" vertex="1">
+          <mxGeometry height="100" width="250" x="10" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="17" parent="10" style="swimlane;startSize=22;fillColor=#f3e5f5;strokeColor=#6a1b9a;fontColor=#4a148c;fontStyle=1;fontSize=9;" value="Modules utilitaires" vertex="1">
+          <mxGeometry height="100" width="250" x="10" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="18" parent="17" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#6a1b9a;fontSize=8;" value="utils/constants.py&#xa;Priorités des capacités (−5 → +2)" vertex="1">
+          <mxGeometry height="28" width="240" x="5" y="27" as="geometry" />
+        </mxCell>
+        <mxCell id="19" parent="17" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#6a1b9a;fontSize=8;" value="utils/normalizers.py&#xa;normalize_bool / int / float / string / key" vertex="1">
+          <mxGeometry height="28" width="240" x="5" y="63" as="geometry" />
+        </mxCell>
+        <mxCell id="19b" parent="10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;fontColor=#1b5e20;fontSize=8;align=left;" value="Principes de conception&#xa;&#xa;• Idempotent (UPSERT PostgreSQL)&#xa;• Relançable sans duplication&#xa;• --force pour forcer le rechargement&#xa;• Skip automatique si données présentes&#xa;• Subprocess orchestration avec codes retour" vertex="1">
+          <mxGeometry height="110" width="250" x="10" y="625" as="geometry" />
+        </mxCell>
+        <mxCell id="20" parent="1" style="swimlane;startSize=30;fillColor=#e3f2fd;strokeColor=#1565c0;fontColor=#0d47a1;fontStyle=1;fontSize=11;" value="PIPELINE ETL — pipeline.py" vertex="1">
+          <mxGeometry height="840" width="560" x="330" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="21" parent="20" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0d47a1;strokeColor=#1a237e;fontColor=#ffffff;fontStyle=1;fontSize=10;" value="pipeline.py — Orchestrateur principal&#xa;Vérifie BDD · Gère erreurs · Subprocess · --force" vertex="1">
+          <mxGeometry height="50" width="520" x="20" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="22" parent="20" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontColor=#0d47a1;fontSize=9;" value="&lt;b&gt;ÉTAPE 1 — etl_init_db.py&lt;/b&gt;&#xa;Création du schéma PostgreSQL (11 tables via SQLAlchemy ORM)&#xa;Données de référence : Form (4) · LearnMethod (4) · MoveCategory (3)" vertex="1">
+          <mxGeometry height="62" width="520" x="20" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="23" parent="20" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontColor=#0d47a1;fontSize=9;" value="&lt;b&gt;ÉTAPE 2 — etl_load_csv.py&lt;/b&gt;&#xa;Types (18) · Efficacités (323) · Capacités (225) · Espèces (151)&#xa;Formes Pokémon (188 : base/méga/alola/starter) · Associations types" vertex="1">
+          <mxGeometry height="62" width="520" x="20" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="24" parent="20" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontColor=#0d47a1;fontSize=9;" value="&lt;b&gt;ÉTAPE 3 — etl_enrich_pokeapi.py&lt;/b&gt;&#xa;Enrichissement PokeAPI · 10 threads · retry ×3 · delay 0.05s&#xa;HP/Atk/Def/SpA/SpD/Spe · height_m · weight_kg · sprite_url" vertex="1">
+          <mxGeometry height="62" width="520" x="20" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="25" parent="20" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#c62828;fontColor=#b71c1c;fontSize=9;" value="&lt;b&gt;ÉTAPE 4 — lgpe_moves_sql_spider.py (Scrapy)&lt;/b&gt;&#xa;Scraping Poképédia · 188 pages · robots.txt · AutoThrottle&#xa;Level-up · CT · Move Tutor → pokemon_move (pipeline.py Scrapy)" vertex="1">
+          <mxGeometry height="62" width="520" x="20" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="26" parent="20" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontColor=#0d47a1;fontSize=9;" value="&lt;b&gt;ÉTAPE 5 — etl_previous_evolution.py&lt;/b&gt;&#xa;Héritage capacités via chaînes d'évolution (PokeAPI) · 10 threads&#xa;learn_method = before_evolution · learn_level = −2 · UPSERT" vertex="1">
+          <mxGeometry height="62" width="520" x="20" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="27" parent="20" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontColor=#0d47a1;fontSize=9;" value="&lt;b&gt;ÉTAPE 6 — etl_post_process.py&lt;/b&gt;&#xa;Héritage movesets Base → Méga · Copie des capacités parentales&#xa;Méga-Évolutions reçoivent le moveset complet de leur forme de base" vertex="1">
+          <mxGeometry height="62" width="520" x="20" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="34" parent="20" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;fontColor=#1b5e20;fontSize=9;fontStyle=1;" value="~2500+ associations pokémon-capacité · 188 Pokémon enrichis · Base cohérente LGPE · ~10-15 min total" vertex="1">
+          <mxGeometry height="35" width="520" x="20" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" edge="1" parent="20" source="21" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=2;fillColor=#1565c0;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" edge="1" parent="20" source="22" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=2;fillColor=#1565c0;" target="23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" edge="1" parent="20" source="23" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=2;fillColor=#1565c0;" target="24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" edge="1" parent="20" source="24" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=2;fillColor=#1565c0;" target="25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" edge="1" parent="20" source="25" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=2;fillColor=#1565c0;" target="26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a6" edge="1" parent="20" source="26" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=2;fillColor=#1565c0;" target="27">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a7" edge="1" parent="20" source="27" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2e7d32;strokeWidth=2;fillColor=#2e7d32;" target="34">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="40" parent="1" style="swimlane;startSize=30;fillColor=#fff3e0;strokeColor=#e65100;fontColor=#bf360c;fontStyle=1;fontSize=11;" value="BASE DE DONNÉES — PostgreSQL 15 (11 tables, 3NF)" vertex="1">
+          <mxGeometry height="840" width="700" x="930" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="41" parent="40" style="swimlane;startSize=22;fillColor=#fbe9e7;strokeColor=#bf360c;fontColor=#bf360c;fontStyle=1;fontSize=9;" value="Tables de référence — ÉTAPE 1 (etl_init_db.py)" vertex="1">
+          <mxGeometry height="85" width="680" x="10" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="42" parent="41" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffccbc;strokeColor=#bf360c;fontSize=8;" value="&lt;b&gt;form&lt;/b&gt;&#xa;4 lignes&#xa;base · mega · alola · starter" vertex="1">
+          <mxGeometry height="48" width="208" x="8" y="27" as="geometry" />
+        </mxCell>
+        <mxCell id="43" parent="41" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffccbc;strokeColor=#bf360c;fontSize=8;" value="&lt;b&gt;learn_method&lt;/b&gt;&#xa;4 lignes&#xa;level_up · ct · move_tutor · before_evolution" vertex="1">
+          <mxGeometry height="48" width="216" x="232" y="27" as="geometry" />
+        </mxCell>
+        <mxCell id="44" parent="41" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffccbc;strokeColor=#bf360c;fontSize=8;" value="&lt;b&gt;move_category&lt;/b&gt;&#xa;3 lignes&#xa;physique · spécial · autre" vertex="1">
+          <mxGeometry height="48" width="208" x="464" y="27" as="geometry" />
+        </mxCell>
+        <mxCell id="45" parent="40" style="swimlane;startSize=22;fillColor=#fff8e1;strokeColor=#f9a825;fontColor=#e65100;fontStyle=1;fontSize=9;" value="Tables chargées depuis CSV — ÉTAPE 2 (etl_load_csv.py)" vertex="1">
+          <mxGeometry height="200" width="680" x="10" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="46" parent="45" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=8;" value="&lt;b&gt;type&lt;/b&gt;&#xa;18 lignes&#xa;Feu · Eau · Plante...&#xa;18 types élémentaires" vertex="1">
+          <mxGeometry height="56" width="156" x="8" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="47" parent="45" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=8;" value="&lt;b&gt;type_effectiveness&lt;/b&gt;&#xa;324 lignes&#xa;18×18 matrice&#xa;mult : 0.5 · 1 · 2" vertex="1">
+          <mxGeometry height="56" width="156" x="176" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="48" parent="45" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=8;" value="&lt;b&gt;move&lt;/b&gt;&lt;br&gt;226 lignes&lt;br&gt;nom · type · classe&lt;br&gt;puissance · précision · priorité" vertex="1">
+          <mxGeometry height="56" width="156" x="344" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="49" parent="45" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=8;" value="&lt;b&gt;pokemon_species&lt;/b&gt;&lt;br&gt;153 lignes&lt;br&gt;Espèces Gen 1&lt;br&gt;nom_fr · nom_en · num_pokedex" vertex="1">
+          <mxGeometry height="56" width="160" x="512" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="50" parent="45" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=8;" value="&lt;b&gt;pokemon&lt;/b&gt;&#xa;188 lignes&#xa;Formes : base/mega/alola/starter&#xa;species_id · form_id · noms · sprite_url" vertex="1">
+          <mxGeometry height="56" width="320" x="8" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="51" parent="45" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=8;" value="&lt;b&gt;pokemon_type&lt;/b&gt;&#xa;~376 lignes&#xa;pokemon_id · type_id · slot (1 ou 2)&#xa;Typage simple et double" vertex="1">
+          <mxGeometry height="56" width="328" x="344" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="52" parent="40" style="swimlane;startSize=22;fillColor=#e8eaf6;strokeColor=#3949ab;fontColor=#1a237e;fontStyle=1;fontSize=9;" value="Enrichissement PokeAPI — ÉTAPE 3 (etl_enrich_pokeapi.py)" vertex="1">
+          <mxGeometry height="90" width="680" x="10" y="347" as="geometry" />
+        </mxCell>
+        <mxCell id="53" parent="52" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c5cae9;strokeColor=#3949ab;fontSize=8;" value="&lt;b&gt;pokemon_stat&lt;/b&gt; — 188 lignes&#xa;hp · attack · defense · sp_attack · sp_defense · speed&#xa;height_m · weight_kg     +     mise à jour de pokemon.sprite_url" vertex="1">
+          <mxGeometry height="53" width="664" x="8" y="27" as="geometry" />
+        </mxCell>
+        <mxCell id="54" parent="40" style="swimlane;startSize=22;fillColor=#fce4ec;strokeColor=#c62828;fontColor=#b71c1c;fontStyle=1;fontSize=9;" value="Capacités scrapées Poképédia — ÉTAPE 4 (lgpe_moves_sql_spider.py)" vertex="1">
+          <mxGeometry height="125" width="680" x="10" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="55" parent="54" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8bbd0;strokeColor=#c62828;fontSize=8;" value="&lt;b&gt;pokemon_move&lt;/b&gt; — ~2500+ lignes&#xa;&#xa;pokemon_id · move_id · learn_method_id · learn_level&#xa;Méthodes : level_up · ct · move_tutor" vertex="1">
+          <mxGeometry height="88" width="350" x="8" y="27" as="geometry" />
+        </mxCell>
+        <mxCell id="56" parent="54" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c62828;fontSize=8;align=left;" value="Scrapy PokemonMovePipeline&#xa;&#xa;• Validation PokemonMoveItem&#xa;• Normalisation noms (accents, casse)&#xa;• Cache LearnMethod + Move IDs&#xa;• UPSERT on_conflict_do_update" vertex="1">
+          <mxGeometry height="88" width="302" x="370" y="27" as="geometry" />
+        </mxCell>
+        <mxCell id="57" parent="40" style="swimlane;startSize=22;fillColor=#e8f5e9;strokeColor=#2e7d32;fontColor=#1b5e20;fontStyle=1;fontSize=9;" value="Héritage évolution — ÉTAPE 5 (etl_previous_evolution.py)" vertex="1">
+          <mxGeometry height="88" width="680" x="10" y="588" as="geometry" />
+        </mxCell>
+        <mxCell id="58" parent="57" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;fontSize=8;" value="pokemon_move ← capacités héritées des pré-évolutions&#xa;learn_method = before_evolution · learn_level = −2&#xa;Formes Base · Alola · Starter (Méga exclues) · UPSERT on_conflict_do_nothing" vertex="1">
+          <mxGeometry height="51" width="664" x="8" y="27" as="geometry" />
+        </mxCell>
+        <mxCell id="59" parent="40" style="swimlane;startSize=22;fillColor=#ede7f6;strokeColor=#4527a0;fontColor=#311b92;fontStyle=1;fontSize=9;" value="Héritage Méga — ÉTAPE 6 (etl_post_process.py)" vertex="1">
+          <mxGeometry height="88" width="680" x="10" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="60" parent="59" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1c4e9;strokeColor=#4527a0;fontSize=8;" value="pokemon_move ← capacités copiées de la forme Base vers chaque Méga-Évolution&#xa;Même pokemon_species.pokedex_number · Préserve learn_method_id + learn_level&#xa;UPSERT idempotent — Mégas reçoivent le moveset COMPLET de leur forme de base" vertex="1">
+          <mxGeometry height="51" width="664" x="8" y="27" as="geometry" />
+        </mxCell>
+        <mxCell id="70" edge="1" parent="1" source="11" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#f9a825;strokeWidth=2;fillColor=#f9a825;fontColor=#e65100;fontStyle=1;fontSize=8;" target="23" value="CSV">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="71" edge="1" parent="1" source="15" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=2;fillColor=#1565c0;fontColor=#0d47a1;fontStyle=1;fontSize=8;" target="24" value="REST API&#xa;188 req">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="72" edge="1" parent="1" source="16" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#c62828;strokeWidth=2;fillColor=#c62828;fontColor=#b71c1c;fontStyle=1;fontSize=8;" target="25" value="Scrapy&#xa;HTML">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="74" edge="1" parent="1" source="17" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#6a1b9a;strokeWidth=1;fillColor=#6a1b9a;dashed=1;fontColor=#4a148c;fontStyle=2;fontSize=8;" target="23" value="normalizers">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="295" y="670" />
+              <mxPoint x="295" y="352" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="80" edge="1" parent="1" source="22" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#bf360c;strokeWidth=2;fillColor=#bf360c;fontColor=#bf360c;fontStyle=1;fontSize=8;" target="41" value="init&#xa;schéma">
+          <mxGeometry relative="1" x="-0.8194" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1280" y="246" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="81" edge="1" parent="1" source="23" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#f57f17;strokeWidth=2;fillColor=#f57f17;fontColor=#e65100;fontStyle=1;fontSize=8;" target="45" value="INSERT&#xa;UPSERT">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="82" edge="1" parent="1" source="24" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#3949ab;strokeWidth=2;fillColor=#3949ab;fontColor=#1a237e;fontStyle=1;fontSize=8;" target="52" value="UPDATE&#xa;UPSERT">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="83" edge="1" parent="1" source="25" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#c62828;strokeWidth=2;fillColor=#c62828;fontColor=#b71c1c;fontStyle=1;fontSize=8;" target="54" value="UPSERT&#xa;~2500+ rows">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="84" edge="1" parent="1" source="26" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2e7d32;strokeWidth=2;fillColor=#2e7d32;fontColor=#1b5e20;fontStyle=1;fontSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="57" value="UPSERT&#xa;before_evo">
+          <mxGeometry relative="1" x="-0.0127" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="900" y="626" />
+              <mxPoint x="900" y="670" />
+              <mxPoint x="920" y="670" />
+              <mxPoint x="920" y="690" />
+            </Array>
+            <mxPoint x="930" y="690" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="85" edge="1" parent="1" source="27" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#4527a0;strokeWidth=2;fillColor=#4527a0;fontColor=#311b92;fontStyle=1;fontSize=8;" value="UPSERT&#xa;méga">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="920" y="721" />
+              <mxPoint x="920" y="810" />
+            </Array>
+            <mxPoint x="940" y="810" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="90" parent="1" style="swimlane;startSize=22;fillColor=#f5f5f5;strokeColor=#9e9e9e;fontColor=#424242;fontStyle=1;fontSize=10;" value="LÉGENDE" vertex="1">
+          <mxGeometry height="80" width="1610" x="20" y="950" as="geometry" />
+        </mxCell>
+        <mxCell id="91" parent="90" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontColor=#0d47a1;fontSize=9;" value="Étape ETL principale" vertex="1">
+          <mxGeometry height="32" width="160" x="10" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="92" parent="90" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#c62828;fontColor=#b71c1c;fontSize=9;" value="Scraping Scrapy" vertex="1">
+          <mxGeometry height="32" width="130" x="185" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="93" parent="90" style="shape=document;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=9;" value="Source CSV" vertex="1">
+          <mxGeometry height="40" width="120" x="330" y="24" as="geometry" />
+        </mxCell>
+        <mxCell id="94" parent="90" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;fontSize=9;" value="API externe" vertex="1">
+          <mxGeometry height="44" width="130" x="465" y="22" as="geometry" />
+        </mxCell>
+        <mxCell id="95" parent="90" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=9;" value="Table DB principale" vertex="1">
+          <mxGeometry height="32" width="140" x="615" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="96" parent="90" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffccbc;strokeColor=#bf360c;fontSize=9;" value="Table de référence" vertex="1">
+          <mxGeometry height="32" width="130" x="770" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="97" edge="1" parent="90" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#6a1b9a;strokeWidth=1;dashed=1;fontSize=9;" value="— — Connexion secondaire (dashed)">
+          <mxGeometry height="10" relative="1" width="120" x="920" y="44" as="geometry">
+            <mxPoint x="920" y="44" as="sourcePoint" />
+            <mxPoint x="1040" y="44" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="98" parent="90" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=9;fontStyle=2;fontColor=#424242;" value="Durée totale : ~10–15 min · Idempotent (UPSERT) · Relançable avec --force · 6 étapes séquentielles · 11 tables · 3NF" vertex="1">
+          <mxGeometry height="32" width="530" x="1060" y="28" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

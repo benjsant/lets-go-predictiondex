@@ -92,7 +92,7 @@ class DriftDetector:
         Add a new prediction to the production buffer.
 
         Args:
-            features: Dictionary of ML input features (133 features)
+            features: Dictionary of ML input features (135 features)
             prediction: Predicted class (0 or 1)
             probability: Prediction probability
         """

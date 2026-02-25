@@ -2,7 +2,7 @@
 """
 Script to register the existing model in MLflow Model Registry.
 
-Registers model v2 (96.24% accuracy) that already exists on disk.
+Registers model v2 (96.26% accuracy) that already exists on disk.
 """
 import json
 import os
@@ -157,7 +157,7 @@ def register_model_v2():
         params = metadata.get('hyperparameters', {})
         params['model_version'] = metadata.get('version', 'v2')
         params['dataset_version'] = metadata.get('dataset_version', 'v2')
-        params['n_features'] = metadata.get('n_features', 133)
+        params['n_features'] = metadata.get('n_features', 135)
 
         tracker.log_params(params)
         print_success(f"{len(params)} parameters logged")
@@ -208,7 +208,7 @@ def register_model_v2():
             f"Accuracy: {metrics.get('test_accuracy', 0)*100:.2f}%\n"
             f"ROC-AUC: {metrics.get('test_roc_auc', 0)*100:.2f}%\n"
             f"Training Date: {metadata.get('training_date', 'N/A')}\n"
-            f"Features: {metadata.get('n_features', 133)}\n"
+            f"Features: {metadata.get('n_features', 135)}\n"
             f"Training Samples: {metrics.get('train_samples', 0):,}\n"
             f"Test Samples: {metrics.get('test_samples', 0):,}"
         )
@@ -302,7 +302,7 @@ def main():
     print_section("REGISTERING MODEL V2 IN MLFLOW")
 
     print_info("This script will:")
-    print_info(" 1. Load the existing v2 model (96.24% accuracy)")
+    print_info(" 1. Load the existing v2 model (96.26% accuracy)")
     print_info(" 2. Create an MLflow experiment")
     print_info(" 3. Log model, metrics, and hyperparameters")
     print_info(" 4. Register in MLflow Model Registry")

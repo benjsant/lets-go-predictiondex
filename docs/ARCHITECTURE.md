@@ -1,6 +1,6 @@
 # Architecture Technique
 
-> Schémas d'architecture du projet PredictionDex
+> Schémas d'architecture détaillés et versions des composants. Pour une vue d'ensemble du projet, voir le [README principal](../README.md).
 
 ## Vue d'Ensemble
 
@@ -44,7 +44,7 @@
 ├──────────────┤ ├──────────────┤ ├──────────────────┤
 │ • Dataset │ │ • /pokemon │ │ • 7 pages │
 │ 898k combats│ │ • /moves │ │ • Prédictions │
-│ • 133 features│ │ • /types │ │ • Visualisations │
+│ • 135 features│ │ • /types │ │ • Visualisations │
 │ • Accuracy │ │ • /predict │ │ • Quiz types │
 │ 96.26% │ │ • /health │ │ │
 └──────┬───────┘ └──────┬───────┘ └────────┬─────────┘

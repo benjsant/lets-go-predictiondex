@@ -1,40 +1,33 @@
-# ETL Pipeline - Pokémon Let's Go
+# ETL Pipeline
 
-> Pipeline de collecte, transformation et chargement des données Pokémon
+Pipeline de collecte, transformation et chargement des données Pokémon Let's Go.
 
-## Vue d'ensemble
+## Ce que ça fait
 
-Ce module implémente un pipeline ETL complet qui :
-1. **Extract** : Collecte depuis 3 sources (CSV, PokéAPI, Pokepedia)
-2. **Transform** : Nettoie, normalise et agrège les données
-3. **Load** : Charge dans PostgreSQL (11 tables normalisées)
+1. **Extract** : collecte depuis 3 sources (CSV locaux, PokeAPI, scraping Pokepedia)
+2. **Transform** : nettoyage, normalisation, agrégation
+3. **Load** : insertion dans PostgreSQL (11 tables normalisées 3NF)
 
 ## Structure
 
 ```
 etl_pokemon/
-├── pipeline.py # Orchestrateur principal
+├── pipeline.py                    # Orchestrateur principal
 ├── scripts/
-│ ├── etl_init_db.py # Initialisation schéma BDD
-│ ├── etl_load_csv.py # Chargement CSV (151 Pokémon)
-│ ├── etl_enrich_pokeapi.py # Enrichissement via PokéAPI
-│ ├── etl_post_process.py # Transformations Méga
-│ └── etl_previous_evolution.py # Héritage moves évolutions
-├── pokepedia_scraper/ # Spider Scrapy
-│ └── pokepedia_scraper/
-│ └── spiders/
-│ └── letsgo_moves_sql.py
-├── data/
-│ └── csv/ # Fichiers CSV source
-└── utils/ # Utilitaires
+│   ├── etl_init_db.py             # Init schéma BDD
+│   ├── etl_load_csv.py            # Chargement CSV (151 Pokémon)
+│   ├── etl_enrich_pokeapi.py      # Enrichissement via PokeAPI
+│   ├── etl_post_process.py        # Transformations Méga
+│   └── etl_previous_evolution.py  # Héritage moves évolutions
+├── pokepedia_scraper/             # Spider Scrapy pour les moves Let's Go
+├── data/csv/                      # Fichiers CSV source
+└── utils/
 ```
 
-## Utilisation
-
-### Exécution complète (recommandé)
+## Lancer
 
 ```bash
-# Via Docker (automatique au démarrage)
+# Via Docker (s'exécute automatiquement au démarrage)
 docker compose up etl
 
 # En local
@@ -45,77 +38,43 @@ POSTGRES_HOST=localhost python etl_pokemon/pipeline.py
 python etl_pokemon/pipeline.py --force
 ```
 
-### Exécution étape par étape
+On peut aussi lancer chaque étape séparément :
 
 ```bash
-# 1. Initialisation BDD
 python etl_pokemon/scripts/etl_init_db.py
-
-# 2. Chargement CSV
 python etl_pokemon/scripts/etl_load_csv.py
-
-# 3. Enrichissement PokéAPI
 python etl_pokemon/scripts/etl_enrich_pokeapi.py
-
-# 4. Scraping Pokepedia
-cd etl_pokemon/pokepedia_scraper
-scrapy crawl letsgo_moves_sql
-
-# 5. Post-processing
+cd etl_pokemon/pokepedia_scraper && scrapy crawl letsgo_moves_sql
 python etl_pokemon/scripts/etl_post_process.py
 python etl_pokemon/scripts/etl_previous_evolution.py
 ```
 
-## Sources de Données
+## Sources de données
 
-| Source | Type | Données | Compétence |
-|--------|------|---------|------------|
-| `data/csv/` | Fichier CSV | 151 Pokémon Gen 1 (base) | C1 |
-| PokéAPI | API REST | Stats, types, moves (détails) | C1 |
-| Pokepedia | Web Scraping | Moves Let's Go spécifiques | C1 |
-| PostgreSQL | Base de données | Requêtes SQL complexes | C2 |
+- **CSV** (`data/csv/`) : 151 Pokémon Gen 1 de base
+- **PokeAPI** : stats, types, détails des moves
+- **Pokepedia** (Scrapy) : moves spécifiques à Let's Go
 
-## Schéma Base de Données
+## Résultat
+
+188 Pokémon, 226 moves, 18 types, 324 affinités de types. Le pipeline complet prend environ 5-10 min.
+
+## Troubleshooting
+
+**"Connection refused" sur PostgreSQL** : vérifier que le service `db` est lancé et que `POSTGRES_HOST` est correct (`localhost` en local, `db` dans Docker).
+
+**Le scraping Pokepedia échoue** : le site peut être temporairement indisponible ou avoir changé de structure HTML. Les données déjà insérées en BDD ne sont pas re-scrapées.
+
+**"Table already exists"** : le pipeline est idempotent. Relancer avec `--force` pour tout recréer depuis zéro.
+
+**L'ETL est très lent** : l'enrichissement PokeAPI fait ~188 requêtes HTTP et le scraping Pokepedia ~153 pages. Avec les délais de politesse, 5-10 min est normal au premier lancement.
+
+## Variables d'environnement
 
 ```
-pokemon (188)
-├── pokemon_type (dual types)
-├── pokemon_stats (HP, Atk, Def, SpA, SpD, Spe)
-├── pokemon_move (capacités apprises)
-└── pokemon_species (évolutions)
-
-type (18)
-└── type_effectiveness (324 = 18×18)
-
-move (226)
-├── move_category (physical, special, status)
-└── learn_method (level-up, TM, tutor)
-
-form (Alola, Mega)
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=letsgo_db
+POSTGRES_USER=letsgo_user
+POSTGRES_PASSWORD=letsgo_password
 ```
-
-## Variables d'Environnement
-
-| Variable | Défaut | Description |
-|----------|--------|-------------|
-| `POSTGRES_HOST` | localhost | Hôte PostgreSQL |
-| `POSTGRES_PORT` | 5432 | Port PostgreSQL |
-| `POSTGRES_DB` | letsgo_db | Nom de la base |
-| `POSTGRES_USER` | letsgo_user | Utilisateur |
-| `POSTGRES_PASSWORD` | letsgo_password | Mot de passe |
-
-## Tests
-
-```bash
-pytest tests/etl/ -v
-```
-
-## Métriques
-
-| Métrique | Valeur |
-|----------|--------|
-| Pokémon chargés | 188 |
-| Moves chargés | 226 |
-| Types | 18 |
-| Affinités de types | 324 |
-| Durée ETL complète | ~5-10 min |

@@ -111,8 +111,8 @@ def test_metadata_content(metadata):
 def test_metadata_values(metadata):
     """Test that metadata values are reasonable."""
     # Updated to 135 features (current model version)
-    assert metadata['n_features'] >= 133, \
-        f"Expected at least 133 features, got {metadata['n_features']}"
+    assert metadata['n_features'] >= 135, \
+        f"Expected at least 135 features, got {metadata['n_features']}"
 
     assert metadata['version'] == 'v2', \
         f"Expected version v2, got {metadata['version']}"

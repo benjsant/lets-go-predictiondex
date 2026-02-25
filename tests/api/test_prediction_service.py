@@ -63,7 +63,7 @@ class TestPredictionModel:
         mock_metadata = {
             'model_type': 'XGBClassifier',
             'version': 'v1',
-            'n_features': 133,
+            'n_features': 135,
             'feature_columns': ['feature1', 'feature2']
         }
 

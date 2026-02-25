@@ -274,7 +274,7 @@ class TestModelInfo:
         mock_model_instance.metadata = {
             'model_type': 'XGBClassifier',
             'version': 'v1',
-            'n_features': 133,
+            'n_features': 135,
             'metrics': {
                 'test_accuracy': 0.9424,
                 'test_precision': 0.9456,
@@ -299,7 +299,7 @@ class TestModelInfo:
 
         assert data['model_type'] == 'XGBClassifier'
         assert data['version'] == 'v1'
-        assert data['n_features'] == 133
+        assert data['n_features'] == 135
         assert 'metrics' in data
         assert data['metrics']['test_accuracy'] == 0.9424
         assert 'trained_at' in data
@@ -312,7 +312,7 @@ class TestModelInfo:
         mock_model_instance.metadata = {
             'model_type': 'XGBClassifier',
             'version': 'v1',
-            'n_features': 133,
+            'n_features': 135,
             'metrics': {},
             'trained_at': '2024-01-20T10:30:00',
             'hyperparameters': {}

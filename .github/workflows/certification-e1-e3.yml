@@ -98,7 +98,7 @@ jobs:
         run: |
           echo "🎯 Validation Compétence E1.4: Exploiter les données"
           pytest tests/ml/test_preprocessing.py -v --tb=short
-          echo "✓ Feature engineering: 133+ features calculées"
+          echo "✓ Feature engineering: 135 features calculées"
           echo "✓ Agrégation statistiques (mean, std, min, max)"
           echo "✓ Calculs derived features (ratios, différences)"
       
@@ -123,7 +123,7 @@ jobs:
           echo "✅ E1.1 - Collecte données: OK (3 sources)"
           echo "✅ E1.2 - Nettoyage: OK (normalisation)"
           echo "✅ E1.3 - Structure BDD: OK (PostgreSQL 11 tables)"
-          echo "✅ E1.4 - Exploitation: OK (133 features)"
+          echo "✅ E1.4 - Exploitation: OK (135 features)"
           echo "✅ E1.5 - Documentation: OK (README + docs/)"
           echo "================================================"
       
@@ -585,7 +585,7 @@ jobs:
           echo "| E1.1 - Collecter données | ✅ VALIDÉ | 3 sources: PokéAPI, Pokepedia, CSV |" >> certification_report.md
           echo "| E1.2 - Nettoyer données | ✅ VALIDÉ | Normalisation 3NF, validation |" >> certification_report.md
           echo "| E1.3 - Structurer BDD | ✅ VALIDÉ | PostgreSQL 11 tables, FK, index |" >> certification_report.md
-          echo "| E1.4 - Exploiter données | ✅ VALIDÉ | Feature engineering 133 features |" >> certification_report.md
+          echo "| E1.4 - Exploiter données | ✅ VALIDÉ | Feature engineering 135 features |" >> certification_report.md
           echo "| E1.5 - Documenter processus | ✅ VALIDÉ | README complet, diagrammes MCD/MLD |" >> certification_report.md
           echo "" >> certification_report.md
           

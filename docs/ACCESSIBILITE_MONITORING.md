@@ -210,7 +210,7 @@ with open(f"reports/monitoring_week_{datetime.now().isocalendar()[1]}.md", "w") 
 ## 9. Formation des utilisateurs
 
 ### Documentation fournie
-- Guide complet dans `/docs/MONITORING.md`
+- Guide complet dans `/docs/ARCHITECTURE.md` et `/api_pokemon/monitoring/`
 - Exemples de requêtes PromQL
 - Procédures de troubleshooting
 - Format markdown accessible (lisible par lecteurs d'écran)

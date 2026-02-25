@@ -1,73 +1,47 @@
-# Reports Directory
+# Reports
 
-Ce dossier contient les rapports automatiquement générés par les tests d'intégration et de validation.
+Rapports générés automatiquement par les tests d'intégration et de validation.
 
 ## Structure
 
 ```
 reports/
-├── monitoring/ # Rapports de validation du monitoring
-│ ├── validation_report.json
-│ ├── validation_report.html
-│ └── integration_test_results.json
-└── validation/ # Rapports de validation système complète
- └── system_validation_report.json
+├── monitoring/
+│   ├── validation_report.json        # Résultats détaillés (JSON)
+│   ├── validation_report.html        # Rapport visuel (HTML)
+│   └── integration_test_results.json # Tests d'intégration
+└── validation/
+    └── system_validation_report.json # Validation système complète
 ```
 
-## Génération automatique
+## Rapport de monitoring
 
-Les rapports sont générés par :
+Généré par `scripts/test_ci_cd_locally.py` ou le workflow GitHub Actions. Vérifie :
 
-| Fichier | Générateur | Commande |
-|---------|-----------|----------|
-| `monitoring/validation_report.*` | `test_monitoring_validation.py` | `python scripts/test_ci_cd_locally.py` |
-| `monitoring/integration_test_results.json` | `test_monitoring_complete.py` | `pytest tests/integration/test_monitoring_complete.py` |
-| `validation/system_validation_report.json` | `test_complete_system.py` | `pytest tests/integration/test_complete_system.py` |
+- **Services** : santé de l'API, PostgreSQL, Prometheus, Grafana, MLflow, Streamlit
+- **Métriques Prometheus** : collecte active, endpoints exposés
+- **Prédictions ML** : le modèle répond correctement, probabilités cohérentes
+- **Drift detection** : le système de détection de dérive est opérationnel
 
-## Contenu des rapports
+Chaque vérification donne un score, le total est sur 100.
 
-### Monitoring Validation Report
+## Rapport de validation système
 
-Validation complète de la stack de monitoring :
-- Services status (API, Prometheus, Grafana, MLflow)
-- Métriques Prometheus collectées
-- Prédictions ML testées
-- Détection de drift
-- Score de validation /100
+Généré par les tests d'intégration (`tests/integration/`). Couvre l'ensemble de la chaîne : BDD accessible, API fonctionnelle, modèle ML chargé, monitoring actif, interface Streamlit en ligne.
 
-**Utilisation** : CI/CD pré-push GitHub Actions
+## Seuils recommandés
 
-### Integration Test Results
+- **CI/CD** : score >= 60/100 pour passer le pipeline
+- **Production** : score >= 80/100
 
-Résultats des tests d'intégration monitoring :
-- Collecte métriques temps réel
-- Trafic API simulé
-- Calcul percentiles (p50, p95, p99)
-- Requêtes Prometheus
-- Score /100
+## Génération
 
-**Utilisation** : Tests pytest automatiques
+```bash
+# En local (services Docker lancés)
+python scripts/test_ci_cd_locally.py
 
-### System Validation Report
+# Via GitHub Actions (automatique sur push)
+# Les rapports sont téléchargeables en artefacts du workflow
+```
 
-Validation end-to-end complète du système :
-- Base de données PostgreSQL (151 Pokémon, moves, types)
-- API FastAPI (endpoints, santé, prédictions)
-- MLflow (modèle enregistré, métriques)
-- Monitoring (Prometheus, Grafana)
-- Streamlit (interface utilisateur)
-- Score global /100
-
-**Utilisation** : Validation système avant déploiement
-
-## .gitignore
-
-Ces fichiers sont **gitignorés** car générés automatiquement lors des tests. 
-La structure des dossiers est préservée via les fichiers `.gitkeep`.
-
-## Notes
-
-- Les rapports HTML sont consultables dans un navigateur
-- Les rapports JSON peuvent être parsés par des outils d'analyse
-- Score minimum recommandé : **≥ 60/100** pour CI/CD
-- Score minimum recommandé : **≥ 80/100** pour production
+Ces fichiers sont gitignorés (générés à chaque exécution). La structure des dossiers est conservée via les `.gitkeep`.

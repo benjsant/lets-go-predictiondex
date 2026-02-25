@@ -81,7 +81,7 @@ curl -X POST http://localhost:8080/predict/best-move \\
     version="2.0.0",
     contact={
         "name": "PredictionDex Team",
-        "url": "https://github.com/yourusername/lets-go-predictiondex",
+        "url": "https://github.com/benjsant/lets-go-predictiondex",
     },
     license_info={
         "name": "MIT",

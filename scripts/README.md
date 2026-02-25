@@ -1,189 +1,71 @@
-# Scripts Utilitaires
+# Scripts
 
-> Scripts pour faciliter le développement, les tests et les démonstrations
+Scripts utilitaires pour le développement, les tests et les démos.
 
-## Structure
-
-```
-scripts/
-├── demo_certification.py # Démonstration E1/E3
-├── quick_start_docker.py # Guide interactif Docker
-├── start_docker_stack.py # Démarrage Docker simplifié
-├── validate_docker_stack.py # Validation des services
-├── run_all_tests.py # Orchestration des tests
-├── test_certification_workflow.py # Simulation CI/CD local
-├── test_ci_cd_locally.py # Tests CI/CD avant push
-├── generate_monitoring_data.py # Génération métriques Grafana
-├── populate_monitoring_v2.py # Prédictions réalistes
-└── mlflow/ # MLOps
- ├── enable_mlflow.py # Activation MLflow
- └── register_existing_model.py # Enregistrement Model Registry
-```
-
-## Scripts de Démarrage
-
-### `quick_start_docker.py`
-Guide interactif pour démarrer la stack Docker complète.
+## Démarrage et validation Docker
 
 ```bash
-# Démarrage guidé
-python scripts/quick_start_docker.py
-
-# Mode automatique (sans prompts)
-python scripts/quick_start_docker.py --auto
+python scripts/quick_start_docker.py          # Guide interactif de démarrage
+python scripts/quick_start_docker.py --auto   # Mode automatique
+python scripts/start_docker_stack.py          # Démarrage rapide
+python scripts/validate_docker_stack.py       # Vérifie que tous les services tournent
 ```
 
-### `start_docker_stack.py`
-Démarrage rapide Docker en Python pur.
+## Certification / Démo
 
 ```bash
-python scripts/start_docker_stack.py
+# Script shell complet (recommandé pour la soutenance)
+./scripts/demo_full.sh              # Lance tout de A à Z (Docker, ETL, MLflow, tests, navigateur)
+./scripts/demo_full.sh --skip-tests # Sans les tests (plus rapide)
+./scripts/demo_full.sh --skip-etl   # Sans relancer l'ETL
+./scripts/demo_full.sh --stop       # Arrêter tous les services
+
+# Script Python (ouvre les interfaces uniquement)
+python scripts/demo_certification.py              # Ouvre toutes les interfaces (Streamlit, Swagger, Grafana, etc.)
+python scripts/demo_certification.py --web-only    # Interfaces web uniquement
+python scripts/demo_certification.py --generate-metrics  # Avec génération de métriques
+
+python scripts/test_certification_workflow.py --all           # Simule le workflow GitHub Actions en local
+python scripts/test_certification_workflow.py --job e1-data-validation  # Job spécifique
 ```
 
-### `validate_docker_stack.py`
-Vérifie que tous les services Docker sont opérationnels.
+## Tests
 
 ```bash
-# Validation standard
-python scripts/validate_docker_stack.py
+python scripts/run_all_tests.py           # Tous les tests
+python scripts/run_all_tests.py --local   # Sans Docker
+python scripts/run_all_tests.py --build   # Avec rebuild des images
 
-# Mode verbeux
-python scripts/validate_docker_stack.py --verbose
+python scripts/test_ci_cd_locally.py      # Teste le CI/CD avant de push
 ```
 
-**Services vérifiés** : PostgreSQL, API, Streamlit, Prometheus, Grafana, MLflow
-
-## Scripts de Certification
-
-### `demo_certification.py`
-Ouvre automatiquement toutes les interfaces pour la démonstration E1/E3.
+## Monitoring
 
 ```bash
-# Démonstration complète
-python scripts/demo_certification.py
+# Génère du trafic pour remplir Grafana/Prometheus
+python scripts/generate_monitoring_data.py                        # Mode réaliste, 5 min
+python scripts/generate_monitoring_data.py --mode burst --duration 10  # Beaucoup de requêtes
 
-# Interfaces web uniquement
-python scripts/demo_certification.py --web-only
-
-# Avec génération de métriques
-python scripts/demo_certification.py --generate-metrics
+# Prédictions réalistes avec les vrais moves
+python scripts/populate_monitoring_v2.py --count 50
 ```
 
-**URLs ouvertes** :
-- Streamlit (8502)
-- Swagger API (8080/docs)
-- Grafana (3001)
-- Prometheus (9091)
-- MLflow (5001)
-
-### `test_certification_workflow.py`
-Simule le workflow GitHub Actions E1/E3 en local.
+## MLflow
 
 ```bash
-# Tous les jobs
-python scripts/test_certification_workflow.py --all
-
-# Job spécifique
-python scripts/test_certification_workflow.py --job e1-data-validation
-python scripts/test_certification_workflow.py --job e3-c13-mlops
+python scripts/mlflow/enable_mlflow.py               # Active MLflow
+python scripts/mlflow/register_existing_model.py      # Enregistre le modèle dans le Registry
 ```
 
-## Scripts de Test
-
-### `run_all_tests.py`
-Orchestration complète des tests via Docker.
+## Workflow typique
 
 ```bash
-# Tous les tests
-python scripts/run_all_tests.py
+# Option A : tout-en-un (recommandé)
+./scripts/demo_full.sh
 
-# Tests locaux (sans Docker)
-python scripts/run_all_tests.py --local
-
-# Avec rebuild des images
-python scripts/run_all_tests.py --build
+# Option B : étape par étape
+python scripts/quick_start_docker.py       # 1. Démarrer
+python scripts/validate_docker_stack.py    # 2. Vérifier
+python scripts/generate_monitoring_data.py # 3. Générer des métriques
+python scripts/demo_certification.py       # 4. Démo
 ```
-
-### `test_ci_cd_locally.py`
-Teste le CI/CD localement avant de pousser sur GitHub.
-
-```bash
-python scripts/test_ci_cd_locally.py
-```
-
-## Scripts de Monitoring
-
-### `generate_monitoring_data.py`
-Génère des métriques pour remplir Grafana/Prometheus.
-
-```bash
-# Mode réaliste (défaut) - 5 minutes
-python scripts/generate_monitoring_data.py
-
-# Mode burst (beaucoup de requêtes) - 10 minutes
-python scripts/generate_monitoring_data.py --mode burst --duration 10
-
-# Mode spike (pics de trafic)
-python scripts/generate_monitoring_data.py --mode spike --duration 15
-```
-
-**Modes disponibles** :
-- `realistic` : Simule des utilisateurs réels (pauses 0.5-3s)
-- `burst` : Maximum de requêtes (100+ req/min)
-- `spike` : Pics de trafic aléatoires
-
-### `populate_monitoring_v2.py`
-Génère des prédictions réalistes avec les vrais moves des Pokémon.
-
-```bash
-# 50 prédictions (défaut)
-python scripts/populate_monitoring_v2.py
-
-# 100 prédictions
-python scripts/populate_monitoring_v2.py --count 100
-
-# Sans MLflow
-python scripts/populate_monitoring_v2.py --count 50 --skip-mlflow
-```
-
-## Scripts MLflow
-
-### `mlflow/enable_mlflow.py`
-Active MLflow et configure le tracking.
-
-```bash
-python scripts/mlflow/enable_mlflow.py
-```
-
-### `mlflow/register_existing_model.py`
-Enregistre le modèle existant (v2, 88.23% accuracy) dans MLflow Registry.
-
-```bash
-python scripts/mlflow/register_existing_model.py
-```
-
-## Prérequis
-
-- Python 3.11+
-- Docker et Docker Compose
-- Stack Docker démarrée (`docker compose up`)
-
-## Workflow Typique
-
-```bash
-# 1. Démarrer la stack
-python scripts/quick_start_docker.py
-
-# 2. Valider les services
-python scripts/validate_docker_stack.py
-
-# 3. Générer des métriques (optionnel)
-python scripts/generate_monitoring_data.py --duration 5
-
-# 4. Lancer la démonstration
-python scripts/demo_certification.py
-```
-
----
-
-**Dernière mise à jour** : 31 janvier 2026

@@ -274,7 +274,7 @@ def print_summary(api_status, score):
         print("Next steps:")
         print(" 1. Commit your changes: git add . && git commit -m 'Add monitoring validation workflow'")
         print(" 2. Push to GitHub: git push origin main")
-        print(" 3. Check GitHub Actions: https://github.com/your-repo/lets-go-predictiondex/actions")
+        print(" 3. Check GitHub Actions: https://github.com/benjsant/lets-go-predictiondex/actions")
         print(" 4. Download the HTML report from artifacts")
         return 0
 

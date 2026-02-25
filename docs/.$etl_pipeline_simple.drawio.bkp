@@ -1,0 +1,112 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.6 Chrome/140.0.7339.249 Electron/38.8.0 Safari/537.36" version="29.3.6">
+  <diagram id="oHlb31KV8YQChx-d6kHa" name="ETL Pipeline">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=18;fontStyle=1;fontColor=#1a237e;" value="PredictionDex — Pipeline ETL" vertex="1">
+          <mxGeometry height="40" width="500" x="350" y="15" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=10;fontStyle=2;fontColor=#546e7a;" value="Extraction · Transformation · Chargement — Pokémon Let's Go" vertex="1">
+          <mxGeometry height="20" width="500" x="350" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="src_csv" parent="1" style="shape=document;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=9;fontStyle=1;" value="CSV&#xa;3 fichiers&#xa;Pokémon, Capacités, Types" vertex="1">
+          <mxGeometry height="60" width="140" x="30" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="src_pokeapi" parent="1" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;fontColor=#0d47a1;fontSize=9;fontStyle=1;" value="PokeAPI&#xa;Stats, Sprites&#xa;Évolutions" vertex="1">
+          <mxGeometry height="60" width="140" x="30" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="src_pokepedia" parent="1" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c62828;fontColor=#b71c1c;fontSize=9;fontStyle=1;" value="Poképédia&#xa;Learnsets LGPE&#xa;(Scrapy)" vertex="1">
+          <mxGeometry height="60" width="140" x="30" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="step1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontColor=#0d47a1;fontSize=9;" value="&lt;b&gt;1. init_db&lt;/b&gt;&#xa;Schéma SQL (11 tables)&#xa;Données de référence" vertex="1">
+          <mxGeometry height="55" width="150" x="250" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="step2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontColor=#0d47a1;fontSize=9;" value="&lt;b&gt;2. load_csv&lt;/b&gt;&#xa;Types (18), Capacités (226)&#xa;Espèces (153), Pokémon (188)" vertex="1">
+          <mxGeometry height="55" width="150" x="250" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="step3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontColor=#0d47a1;fontSize=9;" value="&lt;b&gt;3. enrich_pokeapi&lt;/b&gt;&#xa;Stats de combat&#xa;Sprites, Poids, Taille" vertex="1">
+          <mxGeometry height="55" width="150" x="250" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="step4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#c62828;fontColor=#b71c1c;fontSize=9;" value="&lt;b&gt;4. scrapy_pokepedia&lt;/b&gt;&#xa;Learnsets LGPE&#xa;Level-up, CT, Move Tutor" vertex="1">
+          <mxGeometry height="55" width="150" x="250" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="step5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;fontColor=#1b5e20;fontSize=9;" value="&lt;b&gt;5. previous_evolution&lt;/b&gt;&#xa;Héritage des capacités&#xa;via chaînes d'évolution" vertex="1">
+          <mxGeometry height="55" width="150" x="250" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="step6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1c4e9;strokeColor=#4527a0;fontColor=#311b92;fontSize=9;" value="&lt;b&gt;6. post_process&lt;/b&gt;&#xa;Héritage movesets&#xa;Base → Méga" vertex="1">
+          <mxGeometry height="55" width="150" x="250" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="db_ref" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffccbc;strokeColor=#bf360c;fontSize=8;" value="&lt;b&gt;Tables de référence&lt;/b&gt;&#xa;form (4) · learn_method (4) · move_category (3)" vertex="1">
+          <mxGeometry height="40" width="250" x="490" y="107" as="geometry" />
+        </mxCell>
+        <mxCell id="db_csv" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=8;" value="&lt;b&gt;Tables principales&lt;/b&gt;&#xa;type (18) · type_effectiveness (324) · move (226)&#xa;pokemon_species (153) · pokemon (188) · pokemon_type" vertex="1">
+          <mxGeometry height="50" width="250" x="490" y="182" as="geometry" />
+        </mxCell>
+        <mxCell id="db_api" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c5cae9;strokeColor=#3949ab;fontSize=8;" value="&lt;b&gt;pokemon_stat&lt;/b&gt; (188)&#xa;HP · Atk · Def · SpA · SpD · Spe + sprites" vertex="1">
+          <mxGeometry height="40" width="250" x="490" y="267" as="geometry" />
+        </mxCell>
+        <mxCell id="db_scrapy" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8bbd0;strokeColor=#c62828;fontSize=8;" value="&lt;b&gt;pokemon_move&lt;/b&gt; (~2500+ associations)&#xa;Learnsets par méthode d'apprentissage" vertex="1">
+          <mxGeometry height="40" width="250" x="490" y="347" as="geometry" />
+        </mxCell>
+        <mxCell id="db_evo" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;fontSize=8;" value="pokemon_move ← capacités héritées&#xa;learn_method = before_evolution" vertex="1">
+          <mxGeometry height="40" width="250" x="490" y="427" as="geometry" />
+        </mxCell>
+        <mxCell id="db_mega" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1c4e9;strokeColor=#4527a0;fontSize=8;" value="pokemon_move ← movesets Base → Méga&#xa;Copie complète du moveset parental" vertex="1">
+          <mxGeometry height="40" width="250" x="490" y="507" as="geometry" />
+        </mxCell>
+        <mxCell id="db_icon" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#e65100;strokeColor=#bf360c;fontColor=#ffffff;fontSize=11;fontStyle=1;size=10;" value="PostgreSQL&#xa;11 tables · 3NF" vertex="1">
+          <mxGeometry height="70" width="130" x="820" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="result" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;fontColor=#1b5e20;fontSize=9;fontStyle=1;" value="188 Pokémon · 226 capacités · 2500+ associations · ~10-15 min" vertex="1">
+          <mxGeometry height="30" width="450" x="250" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="e_csv_s2" edge="1" parent="1" source="src_csv" target="step2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#f9a825;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_api_s3" edge="1" parent="1" source="src_pokeapi" target="step3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_scr_s4" edge="1" parent="1" source="src_pokepedia" target="step4" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#c62828;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s1_s2" edge="1" parent="1" source="step1" target="step2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s2_s3" edge="1" parent="1" source="step2" target="step3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s3_s4" edge="1" parent="1" source="step3" target="step4" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s4_s5" edge="1" parent="1" source="step4" target="step5" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s5_s6" edge="1" parent="1" source="step5" target="step6" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1565c0;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s1_db" edge="1" parent="1" source="step1" target="db_ref" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#bf360c;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s2_db" edge="1" parent="1" source="step2" target="db_csv" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#f9a825;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s3_db" edge="1" parent="1" source="step3" target="db_api" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#3949ab;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s4_db" edge="1" parent="1" source="step4" target="db_scrapy" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#c62828;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s5_db" edge="1" parent="1" source="step5" target="db_evo" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2e7d32;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s6_db" edge="1" parent="1" source="step6" target="db_mega" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#4527a0;strokeWidth=1.5;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_db_pg" edge="1" parent="1" source="db_csv" target="db_icon" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#e65100;strokeWidth=2;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

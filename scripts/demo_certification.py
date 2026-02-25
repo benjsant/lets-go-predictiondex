@@ -33,7 +33,7 @@ URLS = {
     "grafana": "http://localhost:3001",
     "prometheus": "http://localhost:9091",
     "mlflow": "http://localhost:5001",
-    "github_actions": "https://github.com/YOUR_USERNAME/lets-go-predictiondex/actions",
+    "github_actions": "https://github.com/benjsant/lets-go-predictiondex/actions",
 }
 
 
@@ -207,7 +207,7 @@ Phase 3: ADVANCED TECHNICAL (8 min)
 ║ E1.1 - Data Collection │ ETL Pipeline (3 sources) ║
 ║ E1.2 - Data Cleaning │ Validation, normalization ║
 ║ E1.3 - Database Design │ PostgreSQL 11 tables 3NF ║
-║ E1.4 - Data Analysis │ Feature engineering 133 features ║
+║ E1.4 - Data Analysis │ Feature engineering 135 features ║
 ║ E1.5 - Documentation │ README + docs/ + diagrams ║
 ╠═════════════════════════════════════════════════════════════════════╣
 ║ BLOCK E3 - AI PRODUCTION ║

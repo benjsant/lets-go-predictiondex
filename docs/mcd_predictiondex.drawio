@@ -1,0 +1,154 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.6 Chrome/140.0.7339.249 Electron/38.8.0 Safari/537.36" version="29.3.6">
+  <diagram id="mcd" name="PredictionDex MCD">
+    <mxGraphModel dx="1426" dy="842" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pokemon" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontStyle=1;fontSize=11;align=center;labelBackgroundColor=none;fontColor=#EEEEEE;" value="POKEMON&#xa;─────────&#xa;id&#xa;nom_pokeapi&#xa;nom_pokepedia&#xa;taille&#xa;poids&#xa;sprite_url" vertex="1">
+          <mxGeometry height="170" width="200" x="690" y="385" as="geometry" />
+        </mxCell>
+        <mxCell id="species" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontStyle=1;fontSize=11;align=center;labelBackgroundColor=none;fontColor=#EEEEEE;" value="ESPECE&#xa;─────────&#xa;id&#xa;numero_pokedex&#xa;nom_fr&#xa;nom_en" vertex="1">
+          <mxGeometry height="140" width="200" x="180" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="form" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontStyle=1;fontSize=11;align=center;labelBackgroundColor=none;fontColor=#EEEEEE;" value="FORME&#xa;─────────&#xa;id&#xa;nom" vertex="1">
+          <mxGeometry height="100" width="160" x="250" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="stat" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontStyle=1;fontSize=11;align=center;labelBackgroundColor=none;fontColor=#EEEEEE;" value="STATISTIQUES&#xa;─────────&#xa;PV&#xa;attaque&#xa;defense&#xa;attaque_sp&#xa;defense_sp&#xa;vitesse" vertex="1">
+          <mxGeometry height="170" width="200" x="827" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="type" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontStyle=1;fontSize=11;align=center;labelBackgroundColor=none;fontColor=#EEEEEE;" value="TYPE&#xa;─────────&#xa;id&#xa;nom" vertex="1">
+          <mxGeometry height="100" width="160" x="250" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="move" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontStyle=1;fontSize=11;align=center;labelBackgroundColor=none;fontColor=#EEEEEE;" value="CAPACITE&#xa;─────────&#xa;id&#xa;nom&#xa;puissance&#xa;precision&#xa;priorite&#xa;description" vertex="1">
+          <mxGeometry height="170" width="200" x="860" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="category" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontStyle=1;fontSize=11;align=center;labelBackgroundColor=none;fontColor=#EEEEEE;" value="CATEGORIE&#xa;─────────&#xa;id&#xa;nom" vertex="1">
+          <mxGeometry height="100" width="160" x="1150" y="385" as="geometry" />
+        </mxCell>
+        <mxCell id="method" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontStyle=1;fontSize=11;align=center;labelBackgroundColor=none;fontColor=#EEEEEE;" value="METHODE&#xa;APPRENTISSAGE&#xa;─────────&#xa;id&#xa;nom" vertex="1">
+          <mxGeometry height="110" width="180" x="1180" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="possede" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontSize=10;labelBackgroundColor=none;fontColor=#EEEEEE;" value="POSSEDE" vertex="1">
+          <mxGeometry height="70" width="100" x="480" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="categorise" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontSize=10;labelBackgroundColor=none;fontColor=#EEEEEE;" value="CATEGORISE" vertex="1">
+          <mxGeometry height="70" width="120" x="480" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="possede_stats" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontSize=10;labelBackgroundColor=none;fontColor=#EEEEEE;" value="POSSEDE&#xa;STATS" vertex="1">
+          <mxGeometry height="70" width="120" x="610" y="695" as="geometry" />
+        </mxCell>
+        <mxCell id="typage" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontSize=10;labelBackgroundColor=none;fontColor=#EEEEEE;" value="TYPAGE&#xa;(slot)" vertex="1">
+          <mxGeometry height="80" width="110" x="580" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="apprentissage" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontSize=10;labelBackgroundColor=none;fontColor=#EEEEEE;" value="APPRENTISSAGE&#xa;(niveau)" vertex="1">
+          <mxGeometry height="80" width="130" x="940" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="classifie" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontSize=10;labelBackgroundColor=none;fontColor=#EEEEEE;" value="CLASSIFIE" vertex="1">
+          <mxGeometry height="70" width="110" x="1140" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="est_type" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontSize=10;labelBackgroundColor=none;fontColor=#EEEEEE;" value="EST DE&#xa;TYPE" vertex="1">
+          <mxGeometry height="70" width="110" x="630" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="utilise_methode" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontSize=10;labelBackgroundColor=none;fontColor=#EEEEEE;" value="UTILISE&#xa;METHODE" vertex="1">
+          <mxGeometry height="70" width="120" x="1110" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="efficacite" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#09555B;strokeColor=#BAC8D3;fontSize=10;labelBackgroundColor=none;fontColor=#EEEEEE;" value="EFFICACITE&#xa;(multiplicateur)" vertex="1">
+          <mxGeometry height="80" width="140" x="250" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="species" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="possede" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;1,N&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="possede" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="pokemon" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;1,1&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="-10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="form" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="categorise" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;1,N&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="categorise" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="pokemon" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;1,1&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="-10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="pokemon" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="possede_stats" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;1,1&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="possede_stats" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="stat" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;1,1&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="-10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="pokemon" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="typage" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;1,2&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="typage" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="type" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;0,N&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="-10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="pokemon" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="apprentissage" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;0,N&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="apprentissage" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="move" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;0,N&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="-10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="category" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="classifie" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;1,N&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="classifie" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="move" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;1,1&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="-10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="type" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="est_type" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;1,N&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="est_type" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="move" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;1,1&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="-10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="method" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="utilise_methode" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;1,N&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="utilise_methode" style="endArrow=none;html=1;fontSize=11;fontStyle=1;labelBackgroundColor=none;strokeColor=#0B4D6A;fontColor=default;" target="apprentissage" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;1,1&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="-10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e17" edge="1" parent="1" source="type" style="endArrow=none;html=1;fontSize=10;fontStyle=1;labelBackgroundColor=none;exitX=0;exitY=0;strokeColor=#0B4D6A;fontColor=default;" target="efficacite" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;0,N&lt;br&gt;(attaquant)&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e18" edge="1" parent="1" source="efficacite" style="endArrow=none;html=1;fontSize=10;fontStyle=1;labelBackgroundColor=none;entryX=0.5;entryY=1;strokeColor=#0B4D6A;fontColor=default;" target="type" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(0, 0, 0));&quot;&gt;0,N&lt;br&gt;(défenseur)&lt;/span&gt;">
+          <mxGeometry relative="1" x="-0.3" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="440" y="150" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
