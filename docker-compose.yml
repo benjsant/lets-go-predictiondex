@@ -11,8 +11,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql
-    ports:
-      - "5432:5432"  # Exposé sur localhost pour notebooks locaux
+    # Port 5432 non exposé à l'hôte : accessible uniquement via le réseau Docker interne
     networks:
       - backend
     healthcheck:
@@ -38,7 +37,7 @@ services:
       - pgadmin_data:/var/lib/pgadmin
       - ./docker/pgadmin4/servers.json:/pgadmin4/servers.json
     ports:
-      - "5050:80"  # Interface web accessible sur http://localhost:5050
+      - "127.0.0.1:5050:80"  # Interface web accessible uniquement en local
     networks:
       - backend
     restart: unless-stopped
