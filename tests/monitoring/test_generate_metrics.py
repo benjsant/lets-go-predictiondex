@@ -289,8 +289,11 @@ class TestContinuousMetricsGeneration:
         }
         
         # Récupérer des Pokémon pour le test
-        response = requests.get(f"{API_BASE_URL}/pokemon?limit=50")
-        if response.status_code != 200:
+        try:
+            response = requests.get(f"{API_BASE_URL}/pokemon?limit=50")
+            if response.status_code != 200:
+                pytest.skip("API non accessible pour stress test")
+        except requests.exceptions.ConnectionError:
             pytest.skip("API non accessible pour stress test")
         
         pokemon_list = response.json()
