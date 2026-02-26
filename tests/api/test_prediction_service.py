@@ -293,8 +293,7 @@ class TestMoveSelection:
             pikachu,
             blastoise,
             ['Tonnerre', 'Vive-Attaque'],
-            type_eff,
-            db_session
+            type_eff
         )
 
         assert best_move is not None
@@ -320,8 +319,7 @@ class TestMoveSelection:
             charizard,
             blastoise,
             ['Lance-Flammes'],
-            type_eff,
-            db_session
+            type_eff
         )
 
         assert best_move is not None
@@ -344,8 +342,7 @@ class TestMoveSelection:
             pikachu,
             blastoise,
             ['NonExistentMove'],
-            type_eff,
-            db_session
+            type_eff
         )
 
         assert best_move is None
@@ -367,8 +364,7 @@ class TestMoveSelection:
             pikachu,
             blastoise,
             ['Abri'],
-            type_eff,
-            db_session
+            type_eff
         )
 
         # Status moves should be filtered
