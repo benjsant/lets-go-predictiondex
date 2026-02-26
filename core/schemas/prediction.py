@@ -35,14 +35,14 @@ class PredictBestMoveRequest(BaseModel):
     )
     available_moves: List[str] = Field(
         ...,
-        min_items=1,
-        max_items=20,
+        min_length=1,
+        max_length=20,
         description="List of move names available to Pokemon A for prediction"
     )
     available_moves_b: Optional[List[str]] = Field(
         None,
-        min_items=1,
-        max_items=20,
+        min_length=1,
+        max_length=20,
         description="Optional list of move names available to Pokemon B. If provided, B will use these moves. If None, B will use its best offensive move."
     )
 

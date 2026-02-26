@@ -1,11 +1,4 @@
-# api_pokemon/routes/prediction_route.py
-
-"""
-Prediction routes
-=================
-
-REST endpoints for ML-based battle prediction.
-"""
+"""REST endpoints for ML-based battle prediction."""
 
 import time
 
@@ -20,10 +13,6 @@ from core.schemas.prediction import PredictBestMoveRequest, PredictBestMoveRespo
 
 router = APIRouter(prefix="/predict", tags=["prediction"])
 
-
-# -------------------------
-# Routes
-# -------------------------
 
 @router.post("/best-move", response_model=PredictBestMoveResponse)
 def predict_best_move(
@@ -76,16 +65,7 @@ def predict_best_move(
 
 @router.get("/model-info")
 def get_model_info():
-    """
-    Get information about the loaded ML model.
-
-    Returns:
-    - model_type: Type of ML model (XGBClassifier)
-    - version: Model version
-    - n_features: Number of features
-    - metrics: Test set performance metrics
-    - trained_at: Training timestamp
-    """
+    """Get information about the loaded ML model."""
     model_instance = prediction_service.prediction_model
     metadata = model_instance.metadata
 

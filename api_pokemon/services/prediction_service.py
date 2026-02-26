@@ -1,22 +1,9 @@
-# api_pokemon/services/prediction_service.py
-
-"""
-Prediction service layer
-========================
-
-Provides ML model inference for battle winner prediction.
-
-This service is responsible for:
-- making predictions for battle outcomes
-- recommending the best move against an opponent
-- coordinating between model loader and feature engineering
-
-Note: Model loading and feature engineering have been refactored into
-separate modules for better code organization.
-"""
+"""ML inference for battle winner prediction."""
 
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
+
+import pandas as pd
 
 from sqlalchemy.orm import Session, joinedload
 
@@ -36,10 +23,6 @@ from api_pokemon.services.feature_engineering import (
     apply_feature_engineering,
 )
 
-
-# Helper functions
-# Note: Model loading is now in api_pokemon/services/model_loader.py
-# Note: Feature engineering is now in api_pokemon/services/feature_engineering.py
 
 def get_pokemon_with_details(db: Session, pokemon_id: int) -> Optional[Pokemon]:
     """Retrieve a Pokemon with all details (stats, types, moves) for prediction."""
@@ -99,7 +82,6 @@ def select_best_move_for_matchup(
     defender: Pokemon,
     available_moves: List[str],
     type_effectiveness: Dict[Tuple[int, int], float],
-    _db: Session
 ) -> Optional[Dict]:
     """Select the best move for the attacker based on power, STAB, type effectiveness, and priority."""
     # Get attacker types for STAB
@@ -160,10 +142,6 @@ def select_best_move_for_matchup(
     return best_move
 
 
-# Main prediction function
-# Note: prepare_features_for_prediction() and apply_feature_engineering()
-# are now in api_pokemon/services/feature_engineering.py
-
 def predict_best_move(
     db: Session,
     pokemon_a_id: int,
@@ -200,13 +178,16 @@ def predict_best_move(
     if not all_moves_b:
         raise ValueError("Pokemon B has no offensive moves available")
 
+    # Pre-load all type names once (avoid N DB queries inside the loop)
+    type_names: Dict[int, str] = {t.id: t.name for t in db.query(Type).all()}
+
     # Try each move for A and predict win probability
     move_results = []
 
     for move_name in available_moves_a:
         # Select best move for A (this specific move)
         move_a_info = select_best_move_for_matchup(
-            pokemon_a, pokemon_b, [move_name], type_effectiveness, db
+            pokemon_a, pokemon_b, [move_name], type_effectiveness
         )
 
         if move_a_info is None:
@@ -214,18 +195,15 @@ def predict_best_move(
 
         # Select best move for B against A
         move_b_info = select_best_move_for_matchup(
-            pokemon_b, pokemon_a, all_moves_b, type_effectiveness, db
+            pokemon_b, pokemon_a, all_moves_b, type_effectiveness
         )
 
         if move_b_info is None:
             continue
 
-        # Add type names to move info
-        move_a_type = db.query(Type).filter(Type.id == move_a_info['move_type_id']).first()
-        move_b_type = db.query(Type).filter(Type.id == move_b_info['move_type_id']).first()
-
-        move_a_info['move_type_name'] = move_a_type.name if move_a_type else 'normal'
-        move_b_info['move_type_name'] = move_b_type.name if move_b_type else 'normal'
+        # Add type names to move info (dict lookup instead of per-iteration DB query)
+        move_a_info['move_type_name'] = type_names.get(move_a_info['move_type_id'], 'normal')
+        move_b_info['move_type_name'] = type_names.get(move_b_info['move_type_id'], 'normal')
 
         # Prepare features
         features_raw = prepare_features_for_prediction(
@@ -273,7 +251,6 @@ def predict_best_move(
 
     # Convert numpy array to dict for drift detection
     # features_final is a DataFrame with 1 row, extract as dict
-    import pandas as pd
     if isinstance(best_move_features, pd.DataFrame):
         features_dict = best_move_features.iloc[0].to_dict()
     else:

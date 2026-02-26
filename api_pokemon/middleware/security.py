@@ -8,34 +8,19 @@ from typing import Optional
 from fastapi import HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 
-# API Key header configuration
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
 def get_api_keys() -> set:
-    """
-    Retrieve valid API keys from environment variables.
-
-    Supports multiple keys separated by commas. Keys are hashed with SHA-256
-    for secure in-memory storage.
-
-    Returns:
-        set: Set of valid hashed API keys
-
-    Raises:
-        RuntimeError: If API_KEYS not configured in production mode
-
-    Environment:
-        API_KEYS: Comma-separated API keys (e.g., "key1,key2,key3")
-        DEV_MODE: Set to "true" to skip validation in development
-    """
     keys_str = os.getenv("API_KEYS", "")
     if not keys_str:
-        # DEV mode without configured API_KEYS accepts all requests
         dev_mode = os.getenv("DEV_MODE", "false").lower() == "true"
         if dev_mode:
-            return set()  # Skip validation in DEV mode
-        raise RuntimeError("API_KEYS not configured in production")
+            return set()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service not configured: API_KEYS missing in environment",
+        )
 
     # Hash keys for security (never store plaintext in memory)
     return {hashlib.sha256(key.strip().encode()).hexdigest()
@@ -43,31 +28,13 @@ def get_api_keys() -> set:
 
 
 def verify_api_key(api_key: Optional[str] = Security(api_key_header)) -> str:
-    """
-    Verify that provided API key is valid.
-
-    Args:
-        api_key: API key provided in X-API-Key header
-
-    Returns:
-        str: Valid API key if authentication succeeds
-
-    Raises:
-        HTTPException: 403 if key is missing or invalid
-
-    Notes:
-        - In DEV mode without configured keys, bypasses validation
-        - Uses constant-time comparison to prevent timing attacks
-        - Returns clear error messages for better DX
-    """
-    # DEV mode: bypass if DEV_MODE=true and no API_KEYS configured
+    """Verify the X-API-Key header. Bypassed in DEV_MODE when no keys are configured."""
     dev_mode = os.getenv("DEV_MODE", "false").lower() == "true"
     keys_str = os.getenv("API_KEYS", "")
 
     if dev_mode and not keys_str:
         return "dev-mode-bypass"
 
-    # Check if API key is present
     if not api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -75,7 +42,6 @@ def verify_api_key(api_key: Optional[str] = Security(api_key_header)) -> str:
             headers={"WWW-Authenticate": "ApiKey"},
         )
 
-    # Validate key (constant-time comparison to prevent timing attacks)
     valid_keys = get_api_keys()
     api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()
 
@@ -89,32 +55,13 @@ def verify_api_key(api_key: Optional[str] = Security(api_key_header)) -> str:
 
 
 def generate_api_key(length: int = 32) -> str:
-    """
-    Generate a cryptographically secure API key.
-
-    Args:
-        length: Key length (default: 32 characters)
-
-    Returns:
-        str: Generated API key
-    """
     return secrets.token_urlsafe(length)
 
 
 def hash_api_key(api_key: str) -> str:
-    """
-    Hash an API key for secure storage.
-
-    Args:
-        api_key: Plain text API key
-
-    Returns:
-        str: SHA-256 hash of the key
-    """
     return hashlib.sha256(api_key.encode()).hexdigest()
 
 
-# CLI script for generating keys for .env
 if __name__ == "__main__":
     print("=== API Key Generator ===")
     nb_keys = int(input("Number of keys to generate (default: 3): ") or "3")

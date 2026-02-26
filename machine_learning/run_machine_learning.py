@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""Unified ML pipeline for Pokemon battle prediction."""
+"""Unified ML pipeline for Pokemon battle prediction.
 
-import argparse
 Output (v2):
     - data/ml/battle_winner_v2/raw/matchups_*.parquet
     - data/ml/battle_winner_v2/processed/train.parquet (with scenario_type column)
@@ -84,7 +83,7 @@ DEFAULT_RF_PARAMS = {
 # Dataset preparation
 def run_dataset_preparation(dataset_version: str = 'v1', scenario_type: str = 'all',
                             num_random_samples: int = 5, max_combinations: int = 20,
-                            verbose: bool = True) -> bool:
+                            verbose: bool = True, skip_if_exists: bool = True) -> bool:
     """
     Run dataset preparation script to generate train/test datasets from DB.
 
@@ -104,6 +103,14 @@ def run_dataset_preparation(dataset_version: str = 'v1', scenario_type: str = 'a
         print(f"\nGenerating Pokemon battle datasets (version: {dataset_version})...")
         if dataset_version == 'v2':
             print(f"Scenario type: {scenario_type}")
+
+    # Skip if datasets already exist
+    if skip_if_exists and PROCESSED_DIR is not None:
+        if (PROCESSED_DIR / "train.parquet").exists() and (PROCESSED_DIR / "test.parquet").exists():
+            if verbose:
+                print(f"\n[SKIP] Datasets already exist in {PROCESSED_DIR}, skipping generation.")
+                print(f"       Use --force-dataset to regenerate.")
+            return True
 
     try:
         # Select script based on version
@@ -475,6 +482,16 @@ Examples:
         action='store_true',
         help='Suppress output (quiet mode)'
     )
+    parser.add_argument(
+        '--skip-if-model-exists',
+        action='store_true',
+        help='Skip entire pipeline if model already exists on disk'
+    )
+    parser.add_argument(
+        '--force-dataset',
+        action='store_true',
+        help='Force dataset regeneration even if files already exist'
+    )
 
     args = parser.parse_args()
     verbose = not args.quiet
@@ -485,6 +502,14 @@ Examples:
     RAW_DIR = get_raw_dir(args.dataset_version)
     PROCESSED_DIR = get_processed_dir(args.dataset_version)
     FEATURES_DIR = get_features_dir(args.dataset_version)
+
+    # Skip entire pipeline if model already exists
+    if args.skip_if_model_exists:
+        model_path = MODELS_DIR / f"battle_winner_model_{args.version}.pkl"
+        if model_path.exists():
+            print(f"\n[SKIP] Model already exists: {model_path}")
+            print(f"       Run without --skip-if-model-exists to retrain.")
+            return
 
     # Initialize MLflow tracker (C13 - MLOps)
     tracker = None
@@ -536,7 +561,8 @@ Examples:
                 scenario_type=args.scenario_type,
                 num_random_samples=args.num_random_samples,
                 max_combinations=args.max_combinations,
-                verbose=verbose
+                verbose=verbose,
+                skip_if_exists=not args.force_dataset,
             )
             if not success:
                 sys.exit(1)
@@ -576,8 +602,8 @@ Examples:
                 "num_features": len(feature_columns)
             })
 
-        # STEP 3 & 4: Train and evaluate (single model)
-        if args.mode == 'train' or args.mode == 'evaluate':
+        # STEP 3: Train (single model)
+        if args.mode == 'train':
             # Optional: Hyperparameter tuning
             if args.tune_hyperparams:
                 model, best_params = tune_hyperparameters(X_train, y_train,
@@ -626,6 +652,39 @@ Examples:
 
             if not args.skip_export_features:
                 export_features(X_train, X_test, y_train, y_test, FEATURES_DIR, verbose=verbose)
+
+        # STEP 4: Evaluate existing model (no retrain, no export)
+        elif args.mode == 'evaluate':
+            import pickle
+            import joblib
+            model_path = MODELS_DIR / f"battle_winner_model_{args.version}.pkl"
+            if not model_path.exists():
+                print(f"\n[ERROR] No model found: {model_path}")
+                print(f"        Train one first with --mode=train.")
+                sys.exit(1)
+            try:
+                model = joblib.load(model_path)
+            except Exception:
+                with open(model_path, 'rb') as f:
+                    model = pickle.load(f)
+            if verbose:
+                print(f"\n[OK] Loaded existing model: {model_path}")
+
+            metrics = evaluate_model(model, X_train, X_test, y_train, y_test,
+                                     model_name=args.model, verbose=verbose)
+
+            if tracker:
+                tracker.log_metrics({
+                    'train_accuracy': metrics['train_accuracy'],
+                    'test_accuracy': metrics['test_accuracy'],
+                    'test_precision': metrics['test_precision'],
+                    'test_recall': metrics['test_recall'],
+                    'test_f1': metrics['test_f1'],
+                    'test_roc_auc': metrics['test_roc_auc'],
+                    'overfitting': metrics['overfitting'],
+                })
+
+            analyze_feature_importance(model, feature_columns, verbose=verbose)
 
         # STEP 5: Compare multiple models
         elif args.mode == 'compare':

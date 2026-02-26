@@ -1,4 +1,3 @@
-# api_pokemon/routes/type_route.py
 """API routes for Pokemon types and effectiveness."""
 
 from typing import List, Optional
@@ -23,18 +22,12 @@ from core.schemas.type_effectiveness import TypeEffectivenessOut
 router = APIRouter(prefix="/types", tags=["Types"])
 
 
-# -------------------------------------------------------------------
-# Types
-# -------------------------------------------------------------------
 @router.get("/", response_model=List[TypeOut])
 def get_types(db: Session = Depends(get_db)):
     """List all 18 Pokemon types."""
     return list_types(db)
 
 
-# -------------------------------------------------------------------
-# Type effectiveness (IDs)
-# -------------------------------------------------------------------
 @router.get("/affinities", response_model=List[TypeEffectivenessOut])
 def get_affinities(
     attacking_type_id: Optional[int] = Query(None, ge=1),
@@ -57,9 +50,6 @@ def get_affinities(
     return affinities
 
 
-# -------------------------------------------------------------------
-# Type effectiveness (names)
-# -------------------------------------------------------------------
 @router.get("/affinities/by-name", response_model=List[TypeEffectivenessOut])
 def get_affinities_by_name(
     attacking: Optional[str] = Query(None, min_length=1),
@@ -82,10 +72,6 @@ def get_affinities_by_name(
     return affinities
 
 
-# -------------------------------------------------------------------
-# Pokémon by type (name)
-# Must be defined before /{type_id} route
-# -------------------------------------------------------------------
 @router.get("/by-name/{type_name}/pokemon", response_model=List[PokemonListItem])
 def get_pokemon_by_type_name(
     type_name: str,
@@ -115,9 +101,6 @@ def get_pokemon_by_type_name(
     ]
 
 
-# -------------------------------------------------------------------
-# Pokémon by type (ID)
-# -------------------------------------------------------------------
 @router.get("/{type_id}/pokemon", response_model=List[PokemonListItem])
 def get_pokemon_by_type(
     type_id: int,

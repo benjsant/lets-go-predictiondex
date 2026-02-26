@@ -1,12 +1,4 @@
-"""
-Centralized configuration for the Machine Learning pipeline.
-
-This module centralizes all hyperparameters, grid search configurations,
-and pipeline parameters to avoid duplication between run_machine_learning.py
-and train_model.py.
-
-Validation: C10 (hyperparameter optimization)
-"""
+"""Centralized hyperparameter and pipeline configuration for the ML pipeline."""
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Any

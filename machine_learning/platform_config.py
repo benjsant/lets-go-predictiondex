@@ -16,7 +16,7 @@ import multiprocessing
 import os
 import platform
 import warnings
-from typing import Dict
+from typing import Any, Dict
 
 
 def is_running_in_docker() -> bool:
@@ -68,7 +68,7 @@ def get_available_memory_gb() -> float:
     return 8.0
 
 
-def get_platform_info() -> Dict[str, any]:
+def get_platform_info() -> Dict[str, Any]:
     """
     Return information about the current platform.
 

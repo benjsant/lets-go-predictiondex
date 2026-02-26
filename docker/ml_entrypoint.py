@@ -74,25 +74,6 @@ def run_ml_builder():
     - Reads configuration from environment variables.
     - Writes logs to stdout for container-level observability.
     """
-    # Check if model already exists (skip re-training)
-    model_path = "/app/models/battle_winner_model_v2.pkl"
-    if os.path.exists(model_path):
-        skip_training = os.getenv("ML_SKIP_IF_EXISTS", "true").lower() == "true"
-        if skip_training:
-            print(
-                "[INFO] Model already exists, skipping training "
-                "(set ML_SKIP_IF_EXISTS=false to force retrain)",
-                flush=True
-            )
-            return True
-        else:
-            print(
-                "[INFO] Model exists but ML_SKIP_IF_EXISTS=false, retraining...",
-                flush=True
-            )
-
-    print("[START] Starting ML pipeline v2 (multi-scenarios)...", flush=True)
-
     # Retrieve ML configuration from environment variables
     mode = os.getenv("ML_MODE", "all")
     scenario_type = os.getenv("ML_SCENARIO_TYPE", "all")
@@ -100,6 +81,7 @@ def run_ml_builder():
     grid_type = os.getenv("ML_GRID_TYPE", "fast")
     num_random_samples = int(os.getenv("ML_NUM_RANDOM_SAMPLES", "5"))
     max_combinations = int(os.getenv("ML_MAX_COMBINATIONS", "20"))
+    skip_if_exists = os.getenv("ML_SKIP_IF_EXISTS", "true").lower() == "true"
 
     cmd = [
         "python", "machine_learning/run_machine_learning.py",
@@ -114,6 +96,11 @@ def run_ml_builder():
 
     if tune_hyperparams:
         cmd.append("--tune-hyperparams")
+
+    if skip_if_exists:
+        cmd.append("--skip-if-model-exists")
+
+    print("[START] Starting ML pipeline v2 (multi-scenarios)...", flush=True)
 
     print("[CONFIG] Configuration:", flush=True)
     print(f"   Mode: {mode}", flush=True)

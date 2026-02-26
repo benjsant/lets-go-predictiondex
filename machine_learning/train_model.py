@@ -17,7 +17,6 @@ except ImportError:
     MLFLOW_AVAILABLE = False
     print("[ML] Warning: MLflow not available, Model Registry disabled")
 
-# Import new centralized modules (refactored for clean code)
 from machine_learning.config import (
     XGBOOST_PARAMS,
     XGBOOST_PARAM_GRID_FAST,
@@ -35,7 +34,6 @@ from machine_learning.features import PokemonFeatureEngineer
 from machine_learning.evaluation import evaluate_model
 from machine_learning.export import export_model, export_features
 
-# Add project root to path
 sys.path.insert(0, str(PROJECT_ROOT))
 
 # Global paths (set by main based on args) - kept for backward compatibility
@@ -43,8 +41,6 @@ DATA_DIR = None
 PROCESSED_DIR = None
 FEATURES_DIR = None
 
-# Note: RANDOM_SEED, XGBOOST_PARAMS, XGBOOST_PARAM_GRID_FAST/EXTENDED, MODELS_DIR
-# and PROJECT_ROOT are now imported from config.py and constants.py
 
 
 def load_datasets(dataset_version='v1'):
@@ -128,26 +124,9 @@ def filter_by_scenario(df_train, df_test, scenario_type: str):
     return df_train_filtered, df_test_filtered
 
 
-# ================================================================
-# NOTE: engineer_features() function has been REFACTORED
-# Now uses PokemonFeatureEngineer class from machine_learning.features.engineering
-# This eliminates 145+ lines of duplicated code. See machine_learning/features/engineering.py
-# ================================================================
-
 
 def train_xgboost(X_train, y_train, use_gridsearch: bool = False, grid_type: str = 'fast'):
-    """
-    Train XGBoost classifier with optional GridSearchCV.
-
-    Args:
-        X_train: Training features
-        y_train: Training labels
-        use_gridsearch: Whether to use GridSearchCV for hyperparameter tuning
-        grid_type: 'fast' or 'extended' - which parameter grid to use
-
-    Returns:
-        (model, best_params): Trained model and best parameters found
-    """
+    """Train XGBoost classifier with optional GridSearchCV."""
     if use_gridsearch:
         # Select parameter grid
         if grid_type == 'extended':
@@ -209,9 +188,6 @@ def train_xgboost(X_train, y_train, use_gridsearch: bool = False, grid_type: str
     print("  [OK] Training complete")
     return best_model, best_params
 
-
-# Note: evaluate_model, export_model, and export_features are now imported
-#       from machine_learning.evaluation and machine_learning.export
 
 
 def main():

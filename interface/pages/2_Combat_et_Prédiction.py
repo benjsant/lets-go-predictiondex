@@ -338,8 +338,8 @@ if st.button("Lancer la Simulation de Combat", type="primary", use_container_wid
 
             if manual_mode:
                 st.success(f"""
-                **Mode Manuel activé !** Le modèle a simulé tous les combats possibles avec les movesets
-                que tu as choisis. Précision : **96.26%** sur 898,612 combats analysés.
+                **Mode Manuel activé !** Le modèle a prédit le résultat pour les capacités
+                que tu as sélectionnées. Précision : **96.26%** sur 898,612 combats analysés.
                 """)
             else:
                 st.info(f"""

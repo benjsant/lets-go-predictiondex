@@ -1,13 +1,4 @@
-"""
-Feature Engineering for Predictions
-====================================
-
-This module handles feature preparation and engineering for ML predictions.
-
-Functions:
-- prepare_features_for_prediction: Create raw features from Pokemon data
-- apply_feature_engineering: Apply the same transformations as training
-"""
+"""Feature preparation and engineering for ML predictions."""
 
 from typing import Dict
 
@@ -23,26 +14,7 @@ def prepare_features_for_prediction(
     move_a_info: Dict,
     move_b_info: Dict
 ) -> pd.DataFrame:
-    """
-    Prepare raw features for ML prediction.
-
-    This function creates a single-row DataFrame with all 38 raw features
-    that will be processed through the feature engineering pipeline.
-
-    Args:
-        pokemon_a: First Pokemon with stats and types
-        pokemon_b: Second Pokemon with stats and types
-        move_a_info: Dictionary with move A information:
-            - effective_power: float
-            - move_type_name: str
-            - priority: int
-            - stab: float (1.5 if STAB, 1.0 otherwise)
-            - type_multiplier: float
-        move_b_info: Dictionary with move B information (same structure)
-
-    Returns:
-        DataFrame with 1 row and 38 columns containing raw features
-    """
+    """Prepare a single-row DataFrame of raw features for ML prediction."""
     # Get types as strings
     types_a = [pt.type.name for pt in pokemon_a.types]
     a_type_1 = types_a[0] if len(types_a) > 0 else 'none'

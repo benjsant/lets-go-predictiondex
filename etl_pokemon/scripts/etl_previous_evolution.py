@@ -28,7 +28,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from core.db.session import SessionLocal
-from core.models import LearnMethod, Move, Pokemon, PokemonMove
+from core.models import Form, LearnMethod, Move, Pokemon, PokemonMove
 
 # ---------------------------------------------------------------------
 # Logging
@@ -48,16 +48,8 @@ REQUEST_TIMEOUT = 10
 MAX_RETRIES = 3
 MAX_WORKERS = 10
 
-# Form IDs (exclude Mega only)
-BASE_FORM_ID = 1
-ALOLA_FORM_ID = 3
-STARTER_FORM_ID = 4
-
-INCLUDED_FORM_IDS = [
-    BASE_FORM_ID,
-    ALOLA_FORM_ID,
-    STARTER_FORM_ID,
-]
+# Form names to include (exclude Mega only)
+INCLUDED_FORM_NAMES = ["base", "alola", "starter"]
 
 # ---------------------------------------------------------------------
 # Helpers – PokeAPI
@@ -139,6 +131,8 @@ def process_pokemon_moves(
     form_id: int,
     move_cache: Dict[str, int],
     before_evo_lm_id: int,
+    alola_form_id: int,
+    starter_form_id: int,
 ) -> int:
     """
     Thread worker to inherit moves from previous evolutions.
@@ -155,6 +149,8 @@ def process_pokemon_moves(
         form_id: Pokémon form ID.
         move_cache: Cached mapping of move name → move ID.
         before_evo_lm_id: LearnMethod ID for 'before_evolution'.
+        alola_form_id: DB ID for the 'alola' form.
+        starter_form_id: DB ID for the 'starter' form.
 
     Returns:
         Number of inherited moves.
@@ -207,9 +203,9 @@ def process_pokemon_moves(
         for prev_name in previous_names:
             candidates = [prev_name]
 
-            if form_id == ALOLA_FORM_ID:
+            if form_id == alola_form_id:
                 candidates.append(f"{prev_name}-alola")
-            elif form_id == STARTER_FORM_ID:
+            elif form_id == starter_form_id:
                 candidates.append(f"{prev_name}-starter")
 
             for candidate_name in candidates:
@@ -293,6 +289,17 @@ def inherit_previous_evolution_moves_threaded() -> None:
         if before_evo_lm_id is None:
             raise RuntimeError("LearnMethod 'before_evolution' not found")
 
+        # Resolve form IDs dynamically from the DB (avoids hardcoded ID assumptions)
+        form_id_map = {
+            form.name: form.id
+            for form in session.execute(select(Form)).scalars()
+        }
+        included_form_ids = [
+            form_id_map[name] for name in INCLUDED_FORM_NAMES if name in form_id_map
+        ]
+        alola_form_id = form_id_map.get("alola")
+        starter_form_id = form_id_map.get("starter")
+
         move_cache = {
             move.name.lower(): move.id
             for move in session.execute(select(Move)).scalars()
@@ -304,7 +311,7 @@ def inherit_previous_evolution_moves_threaded() -> None:
                 Pokemon.name_pokeapi,
                 Pokemon.form_id,
             )
-            .filter(Pokemon.form_id.in_(INCLUDED_FORM_IDS))
+            .filter(Pokemon.form_id.in_(included_form_ids))
             .all()
         )
 
@@ -326,6 +333,8 @@ def inherit_previous_evolution_moves_threaded() -> None:
                 form_id,
                 move_cache,
                 before_evo_lm_id,
+                alola_form_id,
+                starter_form_id,
             )
             for pokemon_id, name, form_id in pokemons
         )
