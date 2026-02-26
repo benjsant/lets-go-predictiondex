@@ -43,17 +43,17 @@ class MLflowTracker:
                 import socket
                 import time
 
-                # Retry MLflow connection up to 30 seconds
-                for attempt in range(10):
+                # Retry MLflow connection up to 3 seconds
+                for attempt in range(3):
                     try:
-                        socket.create_connection(("mlflow", 5001), timeout=3)
+                        socket.create_connection(("mlflow", 5001), timeout=1)
                         tracking_uri = "http://mlflow:5001"
-                        print(f"MLflow detected at mlflow:5001 (attempt {attempt + 1})")
+                        print("MLflow detected at mlflow:5001")
                         break
                     except (socket.error, socket.timeout):
-                        if attempt < 9:
-                            print(f"Waiting for MLflow... (attempt {attempt + 1}/10)")
-                            time.sleep(3)
+                        if attempt < 2:
+                            print(f"Waiting for MLflow... (attempt {attempt + 1}/3)")
+                            time.sleep(1)
                         else:
                             # Fallback to localhost for local dev (Docker host)
                             tracking_uri = "http://localhost:5001"
@@ -184,7 +184,6 @@ class MLflowTracker:
                     scalers_path = f.name
                 mlflow.log_artifact(scalers_path, ".")
                 print(f"Logged scalers artifact")
-                import os
                 os.remove(scalers_path)
 
             # Log metadata as artifact
@@ -196,7 +195,6 @@ class MLflowTracker:
                     metadata_path = f.name
                 mlflow.log_artifact(metadata_path, ".")
                 print(f"Logged metadata artifact")
-                import os
                 os.remove(metadata_path)
 
         except Exception as e:

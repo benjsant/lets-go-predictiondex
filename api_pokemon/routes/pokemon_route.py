@@ -24,9 +24,6 @@ from core.schemas.pokemon_weakness import PokemonWeaknessOut
 router = APIRouter(prefix="/pokemon", tags=["Pokemon"])
 
 
-# ============================================================
-# Pokémon list
-# ============================================================
 @router.get("/", response_model=List[PokemonListItem])
 def get_pokemon_list(db: Session = Depends(get_db)):
     """List all Pokemon."""
@@ -53,10 +50,6 @@ def get_pokemon_list(db: Session = Depends(get_db)):
     ]
 
 
-# ============================================================
-# Search Pokémon by species name
-# Must be defined before /{pokemon_id} route
-# ============================================================
 @router.get("/search", response_model=List[PokemonListItem])
 def search_pokemon(
     name: str = Query(..., min_length=1),
@@ -88,9 +81,6 @@ def search_pokemon(
     ]
 
 
-# ============================================================
-# Pokémon detail
-# ============================================================
 @router.get("/{pokemon_id}", response_model=PokemonDetail)
 def get_pokemon_detail(
     pokemon_id: int,

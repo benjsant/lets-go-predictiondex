@@ -207,9 +207,10 @@ def sample_moves(db_session: Session, sample_types, sample_move_categories):
 def sample_forms(db_session: Session):
     """Create sample Pokemon forms."""
     forms = [
-        Form(id=1, name="normal"),
+        Form(id=1, name="base"),
         Form(id=2, name="mega"),
         Form(id=3, name="alola"),
+        Form(id=4, name="starter"),
     ]
 
     for form in forms:

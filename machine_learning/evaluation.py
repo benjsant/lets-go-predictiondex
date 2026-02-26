@@ -1,6 +1,6 @@
 """Model evaluation functions for Pokemon battle prediction."""
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 from sklearn.metrics import (
@@ -24,15 +24,10 @@ def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
         print(f"MODEL EVALUATION - {model_name}")
         print("=" * 80)
 
-    # Predictions
     y_train_pred = model.predict(X_train)
     y_test_pred = model.predict(X_test)
-
-    # Probabilities for ROC-AUC
-    _ = model.predict_proba(X_train)[:, 1] # Train proba not used
     y_test_proba = model.predict_proba(X_test)[:, 1]
 
-    # Calculate metrics
     metrics = {
         'model_name': model_name,
         'train_accuracy': accuracy_score(y_train, y_train_pred),
@@ -45,7 +40,6 @@ def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
         'test_samples': len(y_test),
     }
 
-    # Overfitting check
     overfitting = metrics['train_accuracy'] - metrics['test_accuracy']
     metrics['overfitting'] = overfitting
 
@@ -60,13 +54,11 @@ def evaluate_model(model: Any, X_train: pd.DataFrame, X_test: pd.DataFrame,
         print(f"Test ROC-AUC: {metrics['test_roc_auc']:.4f}")
         print(f"\nOverfitting: {overfitting:.4f} ({overfitting*100:.2f}%)")
 
-        # Classification report
         print("\n" + "-" * 80)
         print("CLASSIFICATION REPORT (Test Set)")
         print("-" * 80)
         print(classification_report(y_test, y_test_pred, target_names=['B wins', 'A wins']))
 
-        # Confusion matrix
         print("Confusion Matrix:")
         cm = confusion_matrix(y_test, y_test_pred)
         print(cm)
@@ -87,7 +79,6 @@ def analyze_feature_importance(model: Any, feature_columns: List[str],
         print("FEATURE IMPORTANCE ANALYSIS")
         print("=" * 80)
 
-    # Get feature importances
     if hasattr(model, 'feature_importances_'):
         importances = model.feature_importances_
     else:
@@ -95,7 +86,6 @@ def analyze_feature_importance(model: Any, feature_columns: List[str],
             print("\nModel does not support feature_importances_")
         return pd.DataFrame()
 
-    # Create DataFrame
     importance_df = pd.DataFrame({
         'feature': feature_columns,
         'importance': importances
@@ -112,7 +102,7 @@ def analyze_feature_importance(model: Any, feature_columns: List[str],
 
 def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
                    y_train: pd.Series, y_test: pd.Series,
-                   models_to_compare: List[str] = None,
+                   models_to_compare: Optional[List[str]] = None,
                    verbose: bool = True) -> Tuple[Any, str, Dict]:
     """Train and compare multiple models, returning the best performing one based on test accuracy."""
     # Import here to avoid circular dependency
@@ -135,11 +125,9 @@ def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
             print(f"\n{'─' * 80}")
             print(f"Training {model_type}...")
 
-        # Train model
         model = train_model(X_train, y_train, model_type=model_type, verbose=False)
         trained_models[model_type] = model
 
-        # Evaluate model
         metrics = evaluate_model(model, X_train, X_test, y_train, y_test,
                                  model_name=model_type, verbose=False)
         results.append(metrics)
@@ -147,7 +135,6 @@ def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
         if verbose:
             print(f"{model_type}: Test Accuracy = {metrics['test_accuracy']:.4f}")
 
-    # Create comparison DataFrame
     results_df = pd.DataFrame(results)
 
     if verbose:
@@ -157,7 +144,6 @@ def compare_models(X_train: pd.DataFrame, X_test: pd.DataFrame,
         print("\n", results_df[['model_name', 'test_accuracy', 'test_f1',
               'test_roc_auc', 'overfitting']].to_string(index=False))
 
-    # Select best model
     best_idx = results_df['test_accuracy'].idxmax()
     best_model_name = results_df.loc[best_idx, 'model_name']
     best_model = trained_models[best_model_name]

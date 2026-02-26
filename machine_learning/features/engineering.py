@@ -1,6 +1,6 @@
 """Feature engineering for Pokemon battle prediction."""
 
-from typing import Tuple, Dict, List
+from typing import Dict, List, Optional, Tuple
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
@@ -10,7 +10,7 @@ from machine_learning.config import FeatureEngineeringConfig
 class PokemonFeatureEngineer:
     """Feature engineering pipeline for Pokemon battle data."""
 
-    def __init__(self, config: FeatureEngineeringConfig = None):
+    def __init__(self, config: Optional[FeatureEngineeringConfig] = None):
         """Initialize the feature engineer."""
         self.config = config or FeatureEngineeringConfig()
         self.scaler = StandardScaler()

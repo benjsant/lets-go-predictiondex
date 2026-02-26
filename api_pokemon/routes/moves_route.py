@@ -1,4 +1,3 @@
-# api_pokemon/routes/moves_route.py
 """API routes for Pokemon moves."""
 
 from typing import List, Optional
@@ -23,9 +22,6 @@ from core.schemas.type import TypeOut
 router = APIRouter(prefix="/moves", tags=["Moves"])
 
 
-# ============================================================
-# LIST ALL MOVES
-# ============================================================
 @router.get("/", response_model=List[MoveListItem])
 def get_moves(db: Session = Depends(get_db)):
     """List all Pokemon moves."""
@@ -48,9 +44,6 @@ def get_moves(db: Session = Depends(get_db)):
     ]
 
 
-# ============================================================
-# SEARCH MOVES BY NAME (FR)
-# ============================================================
 @router.get("/search", response_model=List[MoveListItem])
 def search_moves(
     name: str = Query(
@@ -80,9 +73,6 @@ def search_moves(
     ]
 
 
-# ============================================================
-# LIST MOVES BY TYPE (+ optional Pokémon filter)
-# ============================================================
 @router.get(
     "/by-type/{type_name}",
     response_model=List[MoveSelectableOut],
@@ -121,9 +111,6 @@ def get_moves_by_type(
     ]
 
 
-# ============================================================
-# MOVE DETAIL (ID – NON AMBIGUOUS)
-# ============================================================
 @router.get("/id/{move_id}", response_model=MoveDetail)
 def get_move(
     move_id: int,

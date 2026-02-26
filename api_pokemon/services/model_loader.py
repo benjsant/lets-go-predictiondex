@@ -1,18 +1,6 @@
-"""
-ML Model Loader
-===============
-
-Singleton class for loading and caching the trained ML model.
-
-This module handles:
-- Loading model from MLflow Model Registry (if available)
-- Fallback to local file system
-- Caching model, scalers, and metadata
-"""
-
 import pickle
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import joblib
 
@@ -24,10 +12,7 @@ from api_pokemon.config import (
     DEFAULT_MODEL_VERSION,
 )
 
-# MLflow Model Registry (optional)
 try:
-    import sys
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
     from machine_learning.mlflow_integration import load_model_from_registry
     MLFLOW_AVAILABLE = True
 except ImportError:
@@ -36,18 +21,7 @@ except ImportError:
 
 
 class PredictionModel:
-    """
-    Singleton to hold the loaded ML model.
-
-    This class ensures that the model is loaded only once and reused
-    across all prediction requests.
-
-    Attributes:
-        _instance: Singleton instance
-        _model: The trained ML model
-        _scalers: Dictionary containing fitted scalers
-        _metadata: Model metadata (features, hyperparameters, etc.)
-    """
+    """Singleton holding the loaded ML model (lazy-loaded on first access)."""
 
     _instance = None
     _model = None
@@ -60,33 +34,15 @@ class PredictionModel:
         return cls._instance
 
     def load(self):
-        """
-        Load model artifacts.
-
-        Priority:
-        1. Try MLflow Model Registry (Production stage)
-        2. Fallback to local files (joblib compressed or pickle)
-
-        Environment variables (see config.py):
-        - USE_MLFLOW_REGISTRY: Enable/disable registry loading
-        - MLFLOW_MODEL_NAME: Model name in registry
-        - MLFLOW_MODEL_STAGE: Model stage (Production, Staging, etc.)
-        - MODEL_VERSION: Default version for local files
-
-        Raises:
-            FileNotFoundError: If model files are not found locally
-        """
         if self._model is not None:
-            return  # Already loaded
+            return
 
         print("[Model] Loading ML model...")
 
-        # Try MLflow Model Registry first
         if USE_MLFLOW_REGISTRY and MLFLOW_AVAILABLE:
             try:
                 print(f"[Model] Trying MLflow Registry ({MLFLOW_MODEL_NAME} @ {MLFLOW_MODEL_STAGE})...")
 
-                # Load model bundle from registry
                 model_bundle = load_model_from_registry(MLFLOW_MODEL_NAME, stage=MLFLOW_MODEL_STAGE)
 
                 if model_bundle:
@@ -95,9 +51,8 @@ class PredictionModel:
                     self._metadata = model_bundle.get('metadata')
 
                     if self._model:
-                        print("[Model] Loaded from MLflow Registry")
                         version_info = model_bundle.get('version', 'unknown')
-                        print(f"[Model] Version: {version_info}")
+                        print(f"[Model] Loaded from MLflow Registry (version: {version_info})")
                         return
                     print("[Model] Warning: Bundle incomplete, falling back to local files")
                 else:
@@ -108,11 +63,9 @@ class PredictionModel:
         elif USE_MLFLOW_REGISTRY and not MLFLOW_AVAILABLE:
             print("[Model] Warning: MLflow not available, using local files")
 
-        # Fallback: Load from local files
         self._load_from_local_files()
 
     def _load_from_local_files(self):
-        """Load model artifacts from local file system."""
         print("[Model] Loading from local files...")
 
         model_path = MODELS_DIR / f"battle_winner_model_{DEFAULT_MODEL_VERSION}.pkl"
@@ -125,7 +78,6 @@ class PredictionModel:
                 f"Please train a model first using: python machine_learning/train_model.py"
             )
 
-        # Try joblib first (compressed models), fallback to pickle
         try:
             self._model = joblib.load(model_path)
         except Exception:
@@ -142,25 +94,21 @@ class PredictionModel:
 
     @property
     def model(self) -> Any:
-        """Get the loaded model, loading it if necessary."""
         if self._model is None:
             self.load()
         return self._model
 
     @property
-    def scalers(self) -> Dict:
-        """Get the loaded scalers, loading them if necessary."""
+    def scalers(self) -> Optional[Dict]:
         if self._scalers is None:
             self.load()
         return self._scalers
 
     @property
-    def metadata(self) -> Dict:
-        """Get the loaded metadata, loading it if necessary."""
+    def metadata(self) -> Optional[Dict]:
         if self._metadata is None:
             self.load()
         return self._metadata
 
 
-# Global model instance (singleton)
 prediction_model = PredictionModel()
