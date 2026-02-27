@@ -68,8 +68,9 @@ instance/
 # Scrapy stuff:
 .scrapy
 
-# Machine Learning Models (too large for GitHub)
+# Machine Learning Models
 models/*.pkl
+!models/battle_winner_model_v2.pkl
 !models/battle_winner_metadata_v2.pkl
 !models/battle_winner_scalers_v2.pkl
 
