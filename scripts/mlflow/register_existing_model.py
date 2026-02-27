@@ -2,7 +2,7 @@
 """
 Script to register the existing model in MLflow Model Registry.
 
-Registers model v2 (96.26% accuracy) that already exists on disk.
+Registers model v2 (95.70% accuracy) that already exists on disk.
 """
 import json
 import os
@@ -302,7 +302,7 @@ def main():
     print_section("REGISTERING MODEL V2 IN MLFLOW")
 
     print_info("This script will:")
-    print_info(" 1. Load the existing v2 model (96.26% accuracy)")
+    print_info(" 1. Load the existing v2 model (95.70% accuracy)")
     print_info(" 2. Create an MLflow experiment")
     print_info(" 3. Log model, metrics, and hyperparameters")
     print_info(" 4. Register in MLflow Model Registry")

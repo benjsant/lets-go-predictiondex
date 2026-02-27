@@ -32,7 +32,7 @@ Interfaces disponibles :
 
 PredictionDex prédit l'issue de combats Pokémon en se basant sur les stats, types et capacités. Le modèle XGBoost est entraîné sur ~900k combats simulés à partir des 188 Pokémon du jeu (Gen 1 + Alola + Mega), 226 capacités et la matrice des 18 types.
 
-Le modèle v2 atteint **96.26% d'accuracy** sur le jeu de test (ROC-AUC : 99.5%).
+Le modèle v2 atteint **95.70% d'accuracy** sur le jeu de test (ROC-AUC : 99.4%).
 
 ## Architecture
 

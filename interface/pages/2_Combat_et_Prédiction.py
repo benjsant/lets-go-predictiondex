@@ -339,11 +339,11 @@ if st.button("Lancer la Simulation de Combat", type="primary", use_container_wid
             if manual_mode:
                 st.success(f"""
                 **Mode Manuel activé !** Le modèle a prédit le résultat pour les capacités
-                que tu as sélectionnées. Précision : **96.26%** sur 898,612 combats analysés.
+                que tu as sélectionnées. Précision : **95.70%** sur 898,612 combats analysés.
                 """)
             else:
                 st.info(f"""
-                **Précision du modèle : 96.26%** sur 898,612 combats analysés (modèle v2).
+                **Précision du modèle : 95.70%** sur 898,612 combats analysés (modèle v2).
 
                 **Scénario "worst-case" :** Le modèle suppose que {p2.name} utilise **sa meilleure
                 capacité possible** contre toi. Tes vraies chances peuvent être meilleures si ton
