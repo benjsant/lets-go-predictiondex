@@ -158,7 +158,7 @@ class FeatureEngineeringConfig:
     # ID and name columns not to include in the model
     id_features: List[str] = field(default_factory=lambda: [
         'a_pokedex_number', 'b_pokedex_number',
-        'a_pokemon_id', 'b_pokemon_id',
+        'pokemon_a_id', 'pokemon_b_id',
         'pokemon_a_name', 'pokemon_b_name',
         'a_move_id', 'b_move_id',
         'a_move_name', 'b_move_name'

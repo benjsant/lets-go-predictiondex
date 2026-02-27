@@ -635,7 +635,7 @@ def generate_all_combinations_scenario(pokemon_df, pokemon_moves_df, type_eff, m
 
 
 def split_and_save(df, scenario_type, test_size=0.2):
-    """Split into train/test and save to Parquet."""
+    """Split into train/test and save to Parquet. Split at matchup level to avoid leakage."""
     print(f"\n Saving datasets for scenario: {scenario_type}...")
 
     # Create directories
@@ -648,13 +648,23 @@ def split_and_save(df, scenario_type, test_size=0.2):
     print(f" Raw dataset: {raw_path}")
     print(f" Size: {raw_path.stat().st_size / (1024*1024):.2f} MB")
 
-    # Split train/test (stratified on winner)
-    train_df, test_df = train_test_split(
-        df,
+    # Split at matchup level: a canonical key ensures (A vs B) and (B vs A) stay in the same fold
+    df['_matchup_key'] = df.apply(
+        lambda r: f"{min(r['pokemon_a_id'], r['pokemon_b_id'])}_{max(r['pokemon_a_id'], r['pokemon_b_id'])}",
+        axis=1
+    )
+    unique_matchups = df['_matchup_key'].unique()
+
+    train_keys, test_keys = train_test_split(
+        unique_matchups,
         test_size=test_size,
         random_state=RANDOM_SEED,
-        stratify=df['winner']
     )
+    train_df = df[df['_matchup_key'].isin(set(train_keys))].drop('_matchup_key', axis=1).copy()
+    test_df = df[df['_matchup_key'].isin(set(test_keys))].drop('_matchup_key', axis=1).copy()
+
+    print(f" Train: {len(train_df):,} samples ({len(train_keys):,} unique matchups)")
+    print(f" Test:  {len(test_df):,} samples ({len(test_keys):,} unique matchups)")
 
     return train_df, test_df
 
