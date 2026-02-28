@@ -110,9 +110,9 @@ def test_metadata_content(metadata):
 
 def test_metadata_values(metadata):
     """Test that metadata values are reasonable."""
-    # Updated to 135 features (current model version)
-    assert metadata['n_features'] >= 135, \
-        f"Expected at least 135 features, got {metadata['n_features']}"
+    # Updated to 133 features (v2 model — pokemon_a_id/b_id retirés, correction fuite de données)
+    assert metadata['n_features'] >= 133, \
+        f"Expected at least 133 features, got {metadata['n_features']}"
 
     assert metadata['version'] == 'v2', \
         f"Expected version v2, got {metadata['version']}"
@@ -363,7 +363,7 @@ def test_extreme_stat_values(model):
                 X_extreme[col] = [0, 0]
 
     # Ensure we have correct number of features
-    n_features = 135  # From model metadata
+    n_features = 133  # v2 model — sans pokemon_a_id/b_id (correction fuite de données)
     while len(X_extreme.columns) < n_features:
         X_extreme[f'dummy_feature_{len(X_extreme.columns)}'] = [0, 0]
 
@@ -415,7 +415,7 @@ def test_same_pokemon_vs_itself(model, X_test):
 def test_inference_with_all_zeros(model, metadata):
     """Test model with all-zero features (edge case)."""
     # Create sample with all zeros
-    n_features = metadata.get('n_features', 135)
+    n_features = metadata.get('n_features', 133)
     X_zeros = pd.DataFrame(np.zeros((1, n_features)))
     X_zeros.columns = [f'feature_{i}' for i in range(n_features)]
 
@@ -553,8 +553,8 @@ def test_api_integration_mock():
         mock_load.return_value = mock_model
 
         # Simulate API call
-        prediction = mock_model.predict([[0] * 135])
-        probability = mock_model.predict_proba([[0] * 135])
+        prediction = mock_model.predict([[0] * 133])
+        probability = mock_model.predict_proba([[0] * 133])
 
         assert prediction[0] in [0, 1]
         assert len(probability[0]) == 2
