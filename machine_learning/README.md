@@ -63,9 +63,9 @@ POSTGRES_HOST=localhost python machine_learning/build_battle_winner_dataset_v2.p
 
 | Métrique | Score |
 |----------|-------|
-| Accuracy | 96.26% |
-| F1-Score | 96.26% |
-| ROC-AUC | 99.5% |
+| Accuracy | 95.70% |
+| F1-Score | 95.70% |
+| ROC-AUC | 99.4% |
 
 Les features les plus importantes : stat_ratio (ratio des stats totales), effective_power_diff, hp_diff.
 

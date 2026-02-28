@@ -46,7 +46,7 @@ with col1:
     ### Data Science
     - Collecter et centraliser les données Pokémon
     - Nettoyer et préparer un dataset de 898,612 combats
-    - Entraîner un modèle XGBoost avec 96.26% de précision
+    - Entraîner un modèle XGBoost avec 95.70% de précision
     - Analyser 135 features pour chaque prédiction
     """)
 
@@ -120,7 +120,7 @@ with col2:
 with col3:
     st.metric("Combats simulés", "898,612", help="Dataset d'entraînement ML")
 with col4:
-    st.metric("Précision", "96.26%", help="Accuracy du modèle XGBoost")
+    st.metric("Précision", "95.70%", help="Accuracy du modèle XGBoost")
 
 st.markdown("<br>", unsafe_allow_html=True)
 

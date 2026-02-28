@@ -42,7 +42,7 @@ app = FastAPI(
 ### Features
 - **Pokémon Database**: Complete Gen 1 data (151 Pokémon + forms)
 - **Move Database**: All moves with stats and type effectiveness
-- **ML Predictions**: Battle winner prediction (96.26% accuracy)
+- **ML Predictions**: Battle winner prediction (95.70% accuracy)
 - **Monitoring**: Prometheus metrics + drift detection
 - **Security**: API Key authentication
 
@@ -57,7 +57,7 @@ Most endpoints require an API Key in the `X-API-Key` header.
 
 ### ML Model
 - **Model**: XGBoost Classifier
-- **Accuracy**: 96.26%
+- **Accuracy**: 95.70%
 - **Features**: 135 (stats, types, moves, STAB, effectiveness)
 - **Training**: 718,889 battles (3 scenarios)
 - **Registry**: MLflow Model Registry

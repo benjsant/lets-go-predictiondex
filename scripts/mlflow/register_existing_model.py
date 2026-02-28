@@ -2,7 +2,7 @@
 """
 Script to register the existing model in MLflow Model Registry.
 
-Registers model v2 (96.26% accuracy) that already exists on disk.
+Registers model v2 (95.70% accuracy) that already exists on disk.
 """
 import json
 import os
@@ -164,37 +164,55 @@ def register_model_v2():
     except mlflow.exceptions.MlflowException as exc:
         print_error(f"Error logging parameters: {exc}")
 
-    # Log metrics
+    # Log metrics (only numeric values — mlflow.log_metrics rejects strings)
     print_info("\nLogging metrics...")
     try:
-        metrics_to_log = metadata.get('metrics', {})
+        raw_metrics = metadata.get('metrics', {})
+        metrics_to_log = {k: float(v) for k, v in raw_metrics.items() if isinstance(v, (int, float))}
         tracker.log_metrics(metrics_to_log)
         print_success(f"{len(metrics_to_log)} metrics logged")
     except mlflow.exceptions.MlflowException as exc:
         print_error(f"Error logging metrics: {exc}")
 
-    # Log the model
-    print_info("\nLogging model...")
+    # Log model using sklearn flavor (creates the MLmodel file needed for registry)
+    print_info("\nLogging model artifacts...")
     try:
-        # Prepare metadata for MLflow
-        mlflow_metadata = {
-            'model_type': metadata.get('model_type', 'XGBClassifier'),
-            'version': metadata.get('version', 'v2'),
-            'training_date': metadata.get('training_date'),
-            'n_features': metadata.get('n_features'),
-            'feature_columns': metadata.get('feature_columns', [])
-        }
+        import tempfile
+        import os as _os
 
-        tracker.log_model(
-            model=model,
-            artifact_path="model",
-            model_type='xgboost',
-            scalers=scalers,
-            metadata=mlflow_metadata
+        # Log model via sklearn flavor (XGBClassifier is sklearn-compatible)
+        # This creates the MLmodel file required by mlflow.register_model
+        mlflow.sklearn.log_model(
+            sk_model=model,
+            name="model",
+            input_example=None,
         )
-        print_success("Model logged with scalers and metadata")
-    except mlflow.exceptions.MlflowException as exc:
-        print_error(f"Error logging model: {exc}")
+        print_success("Model logged via sklearn flavor (MLmodel format)")
+
+        # Log scalers as additional artifact
+        if scalers_path.exists():
+            mlflow.log_artifact(str(scalers_path), artifact_path="extras")
+            print_success(f"Scalers artifact logged: {scalers_path.name}")
+
+        # Log metadata JSON as additional artifact
+        if metadata_path.exists():
+            mlflow.log_artifact(str(metadata_path), artifact_path="extras")
+            print_success(f"Metadata artifact logged: {metadata_path.name}")
+
+        # Log feature list as text for easy inspection
+        feature_columns = metadata.get('feature_columns', [])
+        if feature_columns:
+            with tempfile.NamedTemporaryFile(
+                mode='w', suffix='_features.txt', delete=False, prefix='model_'
+            ) as f:
+                f.write('\n'.join(feature_columns))
+                features_path = f.name
+            mlflow.log_artifact(features_path, artifact_path="extras")
+            _os.remove(features_path)
+            print_success(f"{len(feature_columns)} features logged")
+
+    except Exception as exc:
+        print_error(f"Error logging model artifacts: {exc}")
         tracker.end_run()
         return False
 
@@ -302,7 +320,7 @@ def main():
     print_section("REGISTERING MODEL V2 IN MLFLOW")
 
     print_info("This script will:")
-    print_info(" 1. Load the existing v2 model (96.26% accuracy)")
+    print_info(" 1. Load the existing v2 model (95.70% accuracy)")
     print_info(" 2. Create an MLflow experiment")
     print_info(" 3. Log model, metrics, and hyperparameters")
     print_info(" 4. Register in MLflow Model Registry")

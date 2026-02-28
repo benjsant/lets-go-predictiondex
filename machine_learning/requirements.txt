@@ -11,3 +11,4 @@ pyarrow==22.0.0
 sqlalchemy==2.0.23
 psycopg2-binary==2.9.11
 mlflow==3.8.1
+psutil==7.2.1

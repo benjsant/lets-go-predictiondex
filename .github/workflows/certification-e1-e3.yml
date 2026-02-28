@@ -211,7 +211,7 @@ jobs:
           echo "✅ FastAPI framework: OK"
           echo "✅ Endpoint /predict/battle: OK"
           echo "✅ Swagger documentation: /docs"
-          echo "✅ Model XGBoost intégré: 96.26% accuracy"
+          echo "✅ Model XGBoost intégré: 95.70% accuracy"
           echo "✅ Validation des données: Pydantic"
           echo "✅ Error handling: HTTPException"
           echo "================================================"
@@ -594,7 +594,7 @@ jobs:
           echo "" >> certification_report.md
           echo "| Compétence | Statut | Preuves |" >> certification_report.md
           echo "|------------|--------|---------|" >> certification_report.md
-          echo "| C9 - API REST avec IA | ✅ VALIDÉ | FastAPI + XGBoost 96.26% accuracy |" >> certification_report.md
+          echo "| C9 - API REST avec IA | ✅ VALIDÉ | FastAPI + XGBoost 95.70% accuracy |" >> certification_report.md
           echo "| C10 - Intégration app | ✅ VALIDÉ | Streamlit 8 pages + API client |" >> certification_report.md
           echo "| C11 - Monitoring IA | ✅ VALIDÉ | Prometheus + Grafana + Production Data Collector |" >> certification_report.md
           echo "| C12 - Optimiser IA | ✅ VALIDÉ | XGBoost optimisé, compression, 96% acc |" >> certification_report.md
@@ -613,7 +613,7 @@ jobs:
           echo "- Coverage: 82%" >> certification_report.md
           echo "- Workflows CI/CD: 7" >> certification_report.md
           echo "- Services Docker: 10" >> certification_report.md
-          echo "- Model Accuracy: 96.26%" >> certification_report.md
+          echo "- Model Accuracy: 95.70%" >> certification_report.md
           echo "- Temps inférence: ~50ms" >> certification_report.md
           echo "" >> certification_report.md
           

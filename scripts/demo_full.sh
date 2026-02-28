@@ -239,13 +239,28 @@ MLFLOW_MODELS=$(curl -s "http://localhost:5001/api/2.0/mlflow/registered-models/
 if [ "$MLFLOW_MODELS" -gt 0 ]; then
     ok "Modèle déjà enregistré dans MLflow ($MLFLOW_MODELS modèle(s))"
 else
-    info "Enregistrement du modèle dans MLflow..."
-    if [ -f scripts/mlflow/register_existing_model.py ]; then
-        python3 scripts/mlflow/register_existing_model.py 2>&1 | tail -3
-        ok "Modèle enregistré dans MLflow"
-    else
-        warn "Script MLflow non trouvé — skip"
-    fi
+    info "Enregistrement du modèle dans MLflow (via container letsgo_mlflow)..."
+    # Run directly inside the MLflow container so artifacts write to its local volume
+    docker exec letsgo_mlflow python3 - << 'PYEOF' 2>&1 | tail -5
+import json, pickle, mlflow, mlflow.sklearn
+from pathlib import Path; from datetime import datetime; from mlflow.tracking import MlflowClient
+mlflow.set_tracking_uri("http://localhost:5001")
+models_dir = Path("/app/models")
+with open(models_dir/"battle_winner_model_v2.pkl","rb") as f: model=pickle.load(f)
+with open(models_dir/"battle_winner_metadata_v2.json") as f: metadata=json.load(f)
+metrics={k:float(v) for k,v in metadata.get("metrics",{}).items() if isinstance(v,(int,float))}
+params={**metadata.get("hyperparameters",{}), "n_features":metadata.get("n_features",133)}
+mlflow.set_experiment("pokemon_battle_winner")
+with mlflow.start_run(run_name="train_v2_"+datetime.now().strftime("%Y%m%d_%H%M%S")) as run:
+    mlflow.log_params(params); mlflow.log_metrics(metrics)
+    mlflow.sklearn.log_model(sk_model=model,name="model")
+    mlflow.log_artifact(str(models_dir/"battle_winner_metadata_v2.json"),artifact_path="extras")
+    run_id=run.info.run_id
+result=mlflow.register_model("runs:/"+run_id+"/model","battle_winner_predictor")
+MlflowClient().transition_model_version_stage("battle_winner_predictor",result.version,"Production",archive_existing_versions=True)
+print(f"Modèle enregistré v{result.version} -> Production (accuracy: {metrics.get('test_accuracy',0)*100:.2f}%)")
+PYEOF
+    ok "Modèle enregistré dans MLflow"
 fi
 
 echo ""
@@ -255,24 +270,28 @@ echo ""
 # ─────────────────────────────────────────────────────────────
 step 6 "Génération de métriques pour Grafana"
 
-info "Envoi de 20 prédictions pour alimenter les métriques..."
-
-for i in $(seq 1 20); do
-    # Random Pokemon IDs (1-153)
-    PA=$((RANDOM % 153 + 1))
-    PB=$((RANDOM % 153 + 1))
-
-    curl -s -X POST "http://localhost:8080/predict/best-move" \
-        -H "Content-Type: application/json" \
-        -H "X-API-Key: $API_KEY" \
-        -d "{\"pokemon_a_id\": $PA, \"pokemon_b_id\": $PB, \"available_moves\": [1,2,3,4]}" \
-        > /dev/null 2>&1 || true
-
-    echo -ne "\r  📊 Prédictions: $i/20"
-    sleep 0.3
-done
-echo ""
-ok "20 prédictions envoyées — Grafana alimenté"
+# Use the dedicated monitoring script if available (richer data with real moves)
+if [ -f scripts/populate_monitoring_v2.py ] && command -v python3 &> /dev/null; then
+    info "Lancement de populate_monitoring_v2.py (50 prédictions avec vraies attaques)..."
+    API_KEY="$API_KEY" python3 scripts/populate_monitoring_v2.py --count 50 --skip-mlflow 2>&1 | grep -E "success|error|Pokemon|Predictions|Throughput|✅|❌" || true
+    ok "Métriques de monitoring générées — Grafana alimenté"
+else
+    # Fallback: manual predictions
+    info "Envoi de 20 prédictions pour alimenter les métriques..."
+    for i in $(seq 1 20); do
+        PA=$((RANDOM % 153 + 1))
+        PB=$((RANDOM % 153 + 1))
+        curl -s -X POST "http://localhost:8080/predict/best-move" \
+            -H "Content-Type: application/json" \
+            -H "X-API-Key: $API_KEY" \
+            -d "{\"pokemon_a_id\": $PA, \"pokemon_b_id\": $PB, \"available_moves\": [\"Charge\", \"Vive-Attaque\", \"Tonnerre\", \"Hydrocanon\"]}" \
+            > /dev/null 2>&1 || true
+        echo -ne "\r  📊 Prédictions: $i/20"
+        sleep 0.3
+    done
+    echo ""
+    ok "20 prédictions envoyées — Grafana alimenté"
+fi
 
 echo ""
 
