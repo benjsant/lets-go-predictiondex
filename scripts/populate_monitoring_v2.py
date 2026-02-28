@@ -63,7 +63,7 @@ def get_pokemon_list() -> List[Dict]:
     headers = {"X-API-Key": API_KEY}
 
     try:
-        response = requests.get(f"{API_URL}/pokemon", headers=headers, timeout=10)
+        response = requests.get(f"{API_URL}/pokemon/", headers=headers, timeout=10)
         if response.status_code == 200:
             pokemon_list = response.json()
             print(f"{len(pokemon_list)} Pokemon retrieved")

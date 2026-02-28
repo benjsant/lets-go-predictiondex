@@ -188,7 +188,7 @@ Phase 2: BACKEND COMPONENTS (10 min)
   7. ETL Pipeline (3 min) - Formatted Docker logs
      → 5 steps: Init → CSV → PokeAPI → Scraping → Validation
   8. ML Training (4 min) - Logs + Notebooks
-     → 898k battles dataset → XGBoost 94.46% accuracy
+     → 898k battles dataset → XGBoost 95.70% accuracy
 
 Phase 3: ADVANCED TECHNICAL (8 min)
   9. Drift Detection (2 min) - Evidently HTML reports
@@ -212,7 +212,7 @@ Phase 3: ADVANCED TECHNICAL (8 min)
 ╠═════════════════════════════════════════════════════════════════════╣
 ║ BLOCK E3 - AI PRODUCTION ║
 ╠═════════════════════════════════════════════════════════════════════╣
-║ C9 - REST API + AI │ FastAPI + XGBoost 94.46% ║
+║ C9 - REST API + AI │ FastAPI + XGBoost 95.70% ║
 ║ C10 - App Integration │ Streamlit 8 pages ║
 ║ C11 - AI Monitoring │ Prometheus + Grafana + Evidently ║
 ║ C12 - AI Optimization │ XGBoost optimized < 500ms ║
