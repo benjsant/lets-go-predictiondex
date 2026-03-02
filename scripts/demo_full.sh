@@ -241,26 +241,36 @@ if [ "$MLFLOW_MODELS" -gt 0 ]; then
 else
     info "Enregistrement du modèle dans MLflow (via container letsgo_mlflow)..."
     # Run directly inside the MLflow container so artifacts write to its local volume
-    docker exec letsgo_mlflow python3 - << 'PYEOF' 2>&1 | tail -5
-import json, pickle, mlflow, mlflow.sklearn
-from pathlib import Path; from datetime import datetime; from mlflow.tracking import MlflowClient
-mlflow.set_tracking_uri("http://localhost:5001")
-models_dir = Path("/app/models")
-with open(models_dir/"battle_winner_model_v2.pkl","rb") as f: model=pickle.load(f)
-with open(models_dir/"battle_winner_metadata_v2.json") as f: metadata=json.load(f)
-metrics={k:float(v) for k,v in metadata.get("metrics",{}).items() if isinstance(v,(int,float))}
-params={**metadata.get("hyperparameters",{}), "n_features":metadata.get("n_features",133)}
-mlflow.set_experiment("pokemon_battle_winner")
-with mlflow.start_run(run_name="train_v2_"+datetime.now().strftime("%Y%m%d_%H%M%S")) as run:
+    # Note: uses python3 -c instead of heredoc for better compatibility with docker exec
+    MLFLOW_REGISTER_OUTPUT=$(docker exec -e GIT_PYTHON_REFRESH=quiet letsgo_mlflow python3 -c "
+import json, pickle, mlflow, mlflow.sklearn, warnings
+from datetime import datetime
+from pathlib import Path
+from mlflow.tracking import MlflowClient
+warnings.filterwarnings('ignore')
+mlflow.set_tracking_uri('http://localhost:5001')
+models_dir = Path('/app/models')
+with open(models_dir/'battle_winner_model_v2.pkl','rb') as f: model=pickle.load(f)
+with open(models_dir/'battle_winner_metadata_v2.json') as f: metadata=json.load(f)
+metrics={k:float(v) for k,v in metadata.get('metrics',{}).items() if isinstance(v,(int,float))}
+params={**metadata.get('hyperparameters',{}), 'n_features':metadata.get('n_features',133)}
+mlflow.set_experiment('pokemon_battle_winner')
+with mlflow.start_run(run_name='train_v2_'+datetime.now().strftime('%Y%m%d_%H%M%S')) as run:
     mlflow.log_params(params); mlflow.log_metrics(metrics)
-    mlflow.sklearn.log_model(sk_model=model,name="model")
-    mlflow.log_artifact(str(models_dir/"battle_winner_metadata_v2.json"),artifact_path="extras")
+    mlflow.sklearn.log_model(sk_model=model,name='model')
+    mlflow.log_artifact(str(models_dir/'battle_winner_metadata_v2.json'),artifact_path='extras')
     run_id=run.info.run_id
-result=mlflow.register_model("runs:/"+run_id+"/model","battle_winner_predictor")
-MlflowClient().transition_model_version_stage("battle_winner_predictor",result.version,"Production",archive_existing_versions=True)
-print(f"Modèle enregistré v{result.version} -> Production (accuracy: {metrics.get('test_accuracy',0)*100:.2f}%)")
-PYEOF
-    ok "Modèle enregistré dans MLflow"
+result=mlflow.register_model('runs:/'+run_id+'/model','battle_winner_predictor')
+MlflowClient().transition_model_version_stage('battle_winner_predictor',result.version,'Production',archive_existing_versions=True)
+print('OK: v'+str(result.version)+' -> Production (accuracy: '+str(round(metrics.get('test_accuracy',0)*100,2))+'%)')
+" 2>&1)
+    if echo "$MLFLOW_REGISTER_OUTPUT" | grep -q "OK:"; then
+        ok "$(echo "$MLFLOW_REGISTER_OUTPUT" | grep "OK:")"
+    else
+        warn "Enregistrement MLflow échoué. Détail :"
+        echo "$MLFLOW_REGISTER_OUTPUT" | tail -10
+        info "Vous pouvez relancer manuellement : python3 scripts/mlflow/enable_mlflow.py"
+    fi
 fi
 
 echo ""
