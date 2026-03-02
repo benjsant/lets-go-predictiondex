@@ -130,7 +130,7 @@ def print_success_message():
     print(f"{GREEN}{'SUCCESS!':^40}{RESET}")
     print(f"{GREEN}{'='*40}{RESET}\n")
 
-    print_success("Model v2 (95.70% accuracy) has been registered in MLflow\n")
+    print_success("Model v2 (96.26% accuracy) has been registered in MLflow\n")
 
     print_info("Check in MLflow UI:")
     print(" http://localhost:5001\n")

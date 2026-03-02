@@ -17,7 +17,7 @@ models/
 
 **v1** : entraîné sur 34k échantillons (scénario best_move uniquement). 94.24% accuracy. Simple et rapide.
 
-**v2** : entraîné sur ~898k échantillons (3 scénarios). 95.70% accuracy sur le test set, avec GridSearchCV. Plus robuste sur des situations de combat variées, fonctionne mieux avec le paramètre `available_moves_b` de l'API.
+**v2** : entraîné sur ~898k échantillons (3 scénarios). 96.26% accuracy sur le test set, avec GridSearchCV. Plus robuste sur des situations de combat variées, fonctionne mieux avec le paramètre `available_moves_b` de l'API.
 
 En production, on recommande le **v2** pour sa robustesse sauf contrainte de ressources.
 

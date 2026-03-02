@@ -31,7 +31,7 @@ pikachu_eevee_mascots()
 info_box(
     "Bienvenue, Dresseur !",
     """
-    Avec <strong>95.70% de precision</strong>, decouvre quelle capacite
+    Avec <strong>96.26% de precision</strong>, decouvre quelle capacite
     te donnera le plus de chances de gagner tes combats !
     <br><br>
     PredictionDex analyse <strong>135 features</strong> pour predire le resultat de chaque combat en moins de <strong>500ms</strong>.
@@ -168,7 +168,7 @@ with st.expander("Comment ca marche ?"):
     4. Il predit le vainqueur et la probabilite de victoire
 
     **Resultat :**
-    - **95.70% de precision** (predit le bon gagnant 96 fois sur 100)
+    - **96.26% de precision** (predit le bon gagnant 96 fois sur 100)
     - **Temps de reponse < 500ms**
     - **135 features analysees** pour chaque prediction
     """)
@@ -189,7 +189,7 @@ with st.expander("Le savais-tu ?"):
     - Entraine sur **898,612 combats** simules
     - Analyse **135 features** differentes
     - Repond en moins de **500ms**
-    - **95.70% de precision** sur les tests (v2)
+    - **96.26% de precision** sur les tests (v2)
     - Algorithme **XGBoost** optimise pour les combats
 
     **Statistique :** Avec toutes les combinaisons Pokemon x Capacites,
@@ -203,7 +203,7 @@ st.markdown(f"""
 <div style='text-align:center;color:{POKEMON_COLORS['text_secondary']};padding:30px 0;'>
     <p style='font-size:1.1rem;'><strong>Propulse par XGBoost</strong></p>
     <p style='font-size:0.95rem;'>
-        Precision : <strong style='color:{POKEMON_COLORS['primary']};'>95.70%</strong> |
+        Precision : <strong style='color:{POKEMON_COLORS['primary']};'>96.26%</strong> |
         Features : <strong style='color:{POKEMON_COLORS['primary']};'>135</strong> |
         Latence : <strong style='color:{POKEMON_COLORS['primary']};">&lt;500ms</strong>
     </p>

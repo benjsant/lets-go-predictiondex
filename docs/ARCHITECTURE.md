@@ -46,7 +46,7 @@
 │ 898k combats│ │ • /moves │ │ • Prédictions │
 │ • 135 features│ │ • /types │ │ • Visualisations │
 │ • Accuracy │ │ • /predict │ │ • Quiz types │
-│ 95.70% │ │ • /health │ │ │
+│ 96.26% │ │ • /health │ │ │
 └──────┬───────┘ └──────┬───────┘ └────────┬─────────┘
  │ │ │
  └────────────────┴───────────────────┘
